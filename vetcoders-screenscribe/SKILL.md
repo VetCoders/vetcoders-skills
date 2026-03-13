@@ -1,6 +1,6 @@
 ---
 name: vetcoders-screenscribe
-version: 1.0.0
+version: 1.1.0
 description: >
   ScreenScribe workflow skill for analyzing screencast recordings and for
   working inside the ScreenScribe repo itself. Use this whenever the user
@@ -54,6 +54,20 @@ Use this skill when the user wants to:
 Do not treat ScreenScribe like a vague "video AI thing."
 It is a concrete pipeline with real steps, real artifacts, and real failure points.
 
+Default to the shortest working path.
+If the user hands you a video and wants review findings, the first move is
+usually just:
+
+```bash
+screenscribe review /absolute/path/to/video.mov
+```
+
+Do not start by circling around `uv run`, repo internals, or `--help` unless:
+
+- the user explicitly wants repo/debug work
+- the `screenscribe` command is missing
+- the first real run failed and you are diagnosing why
+
 Always establish:
 
 - what the input video set is
@@ -66,21 +80,49 @@ Always establish:
 Use this mapping:
 
 - User wants full actionable review from one or more narrated videos:
-    - use `review`
+  - use `screenscribe review ...`
 - User wants transcript only:
-    - use `transcribe`
+  - use `screenscribe transcribe ...`
 - User wants interactive/reversed flow server:
-    - use `analyze`
+  - use `screenscribe analyze ...` or repo `make analyze`
 - User wants to change the tool itself:
-    - work in repo and run repo quality gates
+  - work in repo and run repo quality gates
 
-## Canonical Run Paths
+## Fast Path First
 
-Prefer running from the repo for reproducibility:
+For normal user-facing video analysis, prefer the installed CLI directly:
+
+```bash
+screenscribe review /absolute/path/to/video.mov
+```
+
+Batch:
+
+```bash
+screenscribe review /path/video1.mov /path/video2.mov -o /absolute/output/dir
+```
+
+Transcript only:
+
+```bash
+screenscribe transcribe /absolute/path/to/video.mov -o /absolute/path/to/transcript.txt
+```
+
+This is the default path unless it fails.
+
+## Repo / Debug Path
+
+Drop into the repo only when:
+
+- the CLI is missing or broken
+- provider/config/runtime debugging is needed
+- the user wants work on ScreenScribe itself
+
+Then prefer:
 
 ```bash
 cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
-uv run python -m screenscribe --help
+uv run python -m screenscribe review /absolute/path/to/video.mov
 ```
 
 ### Review
@@ -123,6 +165,17 @@ Preferred:
 ```bash
 cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
 make analyze VIDEO=/absolute/path/to/video.mov PORT=8766
+```
+
+### Safe Triage Commands
+
+Only use these if the normal `screenscribe review ...` path failed:
+
+```bash
+screenscribe review --help
+screenscribe version
+ffmpeg -version
+test -f ~/.config/screenscribe/config.env && echo CONFIG_OK || echo CONFIG_MISSING
 ```
 
 ## Output Expectations
@@ -224,7 +277,7 @@ If the task is simple, compress this into a short paragraph.
 
 **Example 1**
 Input: "Przelec mi ten review.mov i wypluj JSON + markdown z bugami."
-Action: run `review` from repo, return output dir and key findings.
+Action: run `screenscribe review /absolute/path/to/review.mov`, return output dir and key findings.
 
 **Example 2**
 Input: "Mam 3 nagrania sprint review, chcemy kontekst między nimi."
@@ -243,6 +296,8 @@ Action: edit repo, then run `make lint`, `make typecheck`, and `make test`.
 Do not:
 
 - treat ScreenScribe as a generic summarizer
+- start with repo plumbing when a plain `screenscribe review <file>` would do
+- probe `--help` before the first real run on a normal video-analysis request
 - run random repo commands when `make` already defines the quality path
 - skip reporting the output directory
 - ignore whether the user wants `review` vs `transcribe` vs `analyze`

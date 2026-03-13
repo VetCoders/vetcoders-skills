@@ -38,32 +38,40 @@ Główne tryby narzędzia:
 Najczęstsze mapowanie:
 
 - pełny actionable review z narracją:
-    - użyj `review`
+    - użyj `screenscribe review ...`
 - transcript only:
-    - użyj `transcribe`
+    - użyj `screenscribe transcribe ...`
 - tryb interaktywny / serverowy:
-    - użyj `analyze`
+    - użyj `screenscribe analyze ...` albo repo `make analyze`
 
-## Canonical run path
+## Fast path
 
-Skill zakłada pracę z repo `ScreenScribe` w sposób reprodukowalny, zwykle przez:
+Domyślny odruch przy zwykłym review nagrania ma być prosty:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
-uv run python -m screenscribe --help
+screenscribe review /absolute/path/to/video.mov
 ```
 
 Przykłady:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
-uv run python -m screenscribe review /absolute/path/to/video.mov
+screenscribe review /absolute/path/to/video.mov
 ```
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
-uv run python -m screenscribe transcribe /absolute/path/to/video.mov -o /absolute/path/to/transcript.txt
+screenscribe review /path/video1.mov /path/video2.mov -o /absolute/output/dir
 ```
+
+```bash
+screenscribe transcribe /absolute/path/to/video.mov -o /absolute/path/to/transcript.txt
+```
+
+Repo `ScreenScribe` i `uv run python -m screenscribe ...` są ścieżką drugą, nie pierwszą.
+Wchodzimy tam dopiero wtedy, gdy:
+
+- zwykły `screenscribe` CLI jest niedostępny albo popsuty
+- debugujemy provider/config/runtime
+- użytkownik chce pracować nad samym repo `ScreenScribe`
 
 ## Jak myśleć o tym skillu
 
@@ -78,6 +86,12 @@ Zanim ruszysz:
 - ustal, czy celem jest `review`, `analyze`, czy `transcribe`
 - sprawdź, czy ważniejsza jest szybkość, głębokość, czy interaktywność
 - upewnij się, że provider config i FFmpeg są dostępne
+
+Nie rób na starcie:
+
+- `uv run ... --help`, jeśli zwykły review można po prostu odpalić
+- repo plumbing przy zwykłym user-facing review
+- okrążania problemu zamiast pierwszego realnego runu
 
 ## Pliki
 

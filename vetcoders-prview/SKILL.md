@@ -27,10 +27,10 @@ Author: Monika (@m-szymanska) — LibraxisAI
 ### Most common: local branch review
 
 ```bash
-prview --quick
+prview --pr <NUMBER>
 ```
 
-Analyzes current branch HEAD vs develop/main. Fast (<10s). Best for daily work.
+Analyzes current branch HEAD vs develop/main. Fast (<20s). Best for daily work.
 
 ### Remote branch (no checkout needed)
 
