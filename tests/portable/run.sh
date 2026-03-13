@@ -182,6 +182,26 @@ assert_contains "$gemini_report" 'fake gemini stdout'
 log "helper shell smoke"
 env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH" zsh -ic 'source "$HOME/.zshrc" >/dev/null 2>&1; command -v codex-implement >/dev/null && command -v claude-implement >/dev/null && command -v gemini-implement >/dev/null && command -v skills-sync >/dev/null && echo helper-ok' | grep -Fq 'helper-ok' || die 'zsh helper layer not loaded'
 
+log "sync dry-run smoke"
+cat > "$fake_bin/ssh" <<'EOF_SSH'
+#!/usr/bin/env bash
+# mock ssh just echoes the command
+shift
+echo "$@"
+EOF_SSH
+chmod +x "$fake_bin/ssh"
+
+cat > "$fake_bin/rsync" <<'EOF_RSYNC'
+#!/usr/bin/env bash
+# mock rsync just echoes args
+echo rsync "$@"
+EOF_RSYNC
+chmod +x "$fake_bin/rsync"
+
+sync_output="$(env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH" bash "$repo_root/vetcoders-spawn/scripts/skills_sync.sh" fakehost --source "$repo_root" --dry-run)"
+echo "$sync_output" | grep -q "Syncing skills from" || die "Sync dry-run failed to start"
+echo "$sync_output" | grep -q "rsync .* --dry-run" || die "Sync dry-run didn't pass dry-run to rsync"
+
 log "docs truth checks"
 assert_not_contains "$repo_root/vetcoders-followup/SKILL.md" 'Use canonical Terminal spawn (`osascript`)'
 assert_not_contains "$repo_root/vetcoders-workflow/SKILL.md" 'osascript preferred'
