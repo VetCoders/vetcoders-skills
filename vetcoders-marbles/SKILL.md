@@ -1,6 +1,6 @@
 ---
 name: vetcoders-marbles
-version: 1.0.0
+version: 1.1.0
 description: >
   Iterative convergence skill — the noise scheduler for code.
   Runs adaptive denoising loops until the product surface converges from
@@ -190,6 +190,54 @@ Do not continue blind iteration on a diverging trajectory.
 ```
 
 ## Implementation Pattern
+
+### Supervisor / Watchdog Mode
+
+When `marbles` acts as a supervisor rather than the primary implementer,
+run a standing watchdog loop that periodically checks the branch, reads fresh
+agent artifacts, and writes a rolling status snapshot.
+
+Use this mode when:
+- external agents are already implementing in parallel
+- the main thread should stay available for synthesis and decisive cuts
+- the team wants a recurring pulse without manually babysitting every run
+
+Canonical cadence:
+- every `600` seconds by default
+- shorter only for short fire drills
+- longer only when gates are expensive and progress is slow
+
+The watchdog loop is not a substitute for thinking. It is a heartbeat:
+
+```bash
+while true; do
+  sleep 600
+  # inspect branch status
+  # inspect fresh agent reports/meta/transcripts
+  # write/update a supervisor snapshot artifact
+  # decide whether to intervene, continue, or stop
+done
+```
+
+Preferred outputs:
+- `.ai-agents/pipeline/<slug>/reports/supervisor-latest.md`
+- `.ai-agents/pipeline/<slug>/reports/supervisor-watch.log`
+
+If the platform supports a native recurring prompt primitive such as `/loop`,
+prefer combining it with `marbles` rather than replacing `marbles` with it:
+
+```text
+/loop 10m <marbles supervisor prompt>
+```
+
+The timer provides cadence.
+`marbles` provides convergence logic, entropy scoring, and stop conditions.
+
+Supervisor mode must still:
+- track P0/P1/P2 trajectory
+- detect divergence
+- escalate when agents plateau
+- stop when the circle is full
 
 ### Using vetcoders-implement (native, safe)
 

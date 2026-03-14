@@ -1,15 +1,16 @@
 ---
 name: vetcoders-screenscribe
-version: 1.1.0
+version: 1.2.1
 description: >
   ScreenScribe workflow skill for analyzing screencast recordings and for
   working inside the ScreenScribe repo itself. Use this whenever the user
   mentions ScreenScribe, screencast review, app review videos, bug demo
-  recordings, HTML Pro reports, extracting actionable findings from narrated
-  videos, batch video analysis, or wants to debug/build/improve the
-  /Users/maciejgad/hosted/VetCoders/ScreenScribe project. Prefer this skill
-  even if the user does not explicitly ask for "ScreenScribe" but clearly wants
-  a spoken screen recording turned into structured engineering findings.
+  recordings, HTML Pro reports, transcript-first artifact extraction,
+  extracting actionable findings from narrated videos, batch video analysis,
+  or wants to debug/build/improve the ScreenScribe project or the canonical
+  https://github.com/VetCoders/Screenscribe repository. Prefer this skill even
+  if the user does not explicitly ask for "ScreenScribe" but clearly wants a
+  spoken screen recording turned into structured engineering findings.
 ---
 
 # VetCoders ScreenScribe
@@ -21,19 +22,22 @@ Use this skill for two related jobs:
 
 ## What ScreenScribe Is
 
-ScreenScribe is an AI-powered screencast analysis tool that:
+ScreenScribe is a screencast pipeline, not a vague "video AI thing."
+
+Its strongest value is artifact production:
 
 - extracts audio from videos
 - transcribes commentary with timestamps
 - detects bugs, change requests, and UI issues
 - captures screenshots at relevant moments
-- generates JSON, Markdown, and optional HTML Pro reports
+- generates transcript, JSON, Markdown, and optional HTML Pro outputs
 
 Primary commands exposed by the project:
 
 - `review`
 - `analyze`
 - `transcribe`
+- `preprocess`
 - `config`
 - `version`
 
@@ -44,19 +48,19 @@ Use this skill when the user wants to:
 - analyze a screen recording of an app review
 - turn spoken bug commentary into structured findings
 - process one or many `.mov` / `.mp4` files
-- generate HTML Pro reports, screenshots, or transcripts
+- generate HTML Pro reports, screenshots, transcripts, or transcript-first bundles
 - run ScreenScribe in dry-run, estimate, resume, or batch mode
+- extract artifacts first and let an agent/model analyze them later
 - debug ScreenScribe output, prompts, providers, or report generation
 - modify the ScreenScribe repo and keep its quality gates honest
 
 ## Default Mindset
 
-Do not treat ScreenScribe like a vague "video AI thing."
-It is a concrete pipeline with real steps, real artifacts, and real failure points.
+Do not treat ScreenScribe like a model endpoint.
+Treat it like a concrete pipeline with real stages, real artifacts, and real failure points.
 
 Default to the shortest working path.
-If the user hands you a video and wants review findings, the first move is
-usually just:
+If the user hands you a video and wants review findings, the first move is usually just:
 
 ```bash
 screenscribe review /absolute/path/to/video.mov
@@ -71,8 +75,8 @@ Do not start by circling around `uv run`, repo internals, or `--help` unless:
 Always establish:
 
 - what the input video set is
-- whether the goal is `review`, `analyze`, or `transcribe`
-- whether the user wants speed, depth, or interactivity
+- whether the goal is `review`, `preprocess`, `analyze`, or `transcribe`
+- whether the user wants speed, depth, interactivity, or artifact extraction
 - whether provider config and FFmpeg are available
 
 ## Fast Decision Table
@@ -81,6 +85,8 @@ Use this mapping:
 
 - User wants full actionable review from one or more narrated videos:
   - use `screenscribe review ...`
+- User wants transcript-first artifact bundle for downstream model/agent work:
+  - use `screenscribe preprocess ...`
 - User wants transcript only:
   - use `screenscribe transcribe ...`
 - User wants interactive/reversed flow server:
@@ -102,6 +108,12 @@ Batch:
 screenscribe review /path/video1.mov /path/video2.mov -o /absolute/output/dir
 ```
 
+Transcript-first bundle:
+
+```bash
+screenscribe preprocess /absolute/path/to/video.mov
+```
+
 Transcript only:
 
 ```bash
@@ -110,7 +122,39 @@ screenscribe transcribe /absolute/path/to/video.mov -o /absolute/path/to/transcr
 
 This is the default path unless it fails.
 
+## Transcript-First Lane
+
+`preprocess` is the artifact-first lane.
+Use it when the user wants the deterministic parts of the pipeline without committing to semantic/VLM analysis.
+
+Expected bundle:
+
+```text
+{video}_preprocess/
+  transcript.txt
+  transcript.timestamped.txt
+  transcript.segments.json
+  transcript.vtt
+  preprocess.json
+  audio.mp3
+```
+
+This is the best handoff shape when:
+
+- a later model/agent should choose timestamps or POIs
+- the user wants transcript and timing truth first
+- analysis quality is suspect and the artifact pack matters more
+
 ## Repo / Debug Path
+
+Canonical upstream repo:
+
+- [VetCoders/Screenscribe](https://github.com/VetCoders/Screenscribe)
+
+When repo work is needed, prefer the current ScreenScribe checkout if the user
+already opened one. Do not assume a fixed local path. If no checkout is open,
+refer to the canonical repo above and only mention a local path once it is
+actually known.
 
 Drop into the repo only when:
 
@@ -121,7 +165,7 @@ Drop into the repo only when:
 Then prefer:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
+cd /path/to/ScreenScribe
 uv run python -m screenscribe review /absolute/path/to/video.mov
 ```
 
@@ -130,14 +174,14 @@ uv run python -m screenscribe review /absolute/path/to/video.mov
 Single video:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
+cd /path/to/ScreenScribe
 uv run python -m screenscribe review /absolute/path/to/video.mov
 ```
 
 Batch:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
+cd /path/to/ScreenScribe
 uv run python -m screenscribe review /path/video1.mov /path/video2.mov -o /absolute/output/dir
 ```
 
@@ -151,10 +195,24 @@ Useful flags:
 - `--lang en`
 - `-o /path/output`
 
+### Preprocess
+
+```bash
+cd /path/to/ScreenScribe
+uv run python -m screenscribe preprocess /absolute/path/to/video.mov
+```
+
+Useful flags:
+
+- `--no-audio`
+- `--force`
+- `--lang en`
+- `-o /path/output`
+
 ### Transcribe
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
+cd /path/to/ScreenScribe
 uv run python -m screenscribe transcribe /absolute/path/to/video.mov -o /absolute/path/to/transcript.txt
 ```
 
@@ -163,16 +221,17 @@ uv run python -m screenscribe transcribe /absolute/path/to/video.mov -o /absolut
 Preferred:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
+cd /path/to/ScreenScribe
 make analyze VIDEO=/absolute/path/to/video.mov PORT=8766
 ```
 
 ### Safe Triage Commands
 
-Only use these if the normal `screenscribe review ...` path failed:
+Only use these if the normal `screenscribe review ...` or `screenscribe preprocess ...` path failed:
 
 ```bash
 screenscribe review --help
+screenscribe preprocess --help
 screenscribe version
 ffmpeg -version
 test -f ~/.config/screenscribe/config.env && echo CONFIG_OK || echo CONFIG_MISSING
@@ -191,12 +250,14 @@ For a normal review run, expect an output directory like:
   screenshots/
 ```
 
+For preprocess, expect the transcript-first bundle described above.
+
 When reporting results back to the user, always include:
 
 - input video(s)
 - exact command run
 - output directory path
-- whether run was full, dry-run, keywords-only, or no-vision
+- whether run was full, preprocess-only, dry-run, keywords-only, or no-vision
 - important blockers or warnings
 
 ## Config and Dependencies
@@ -218,7 +279,7 @@ If a run fails, check these first:
 2. API keys configured
 3. endpoint/model alignment
 4. output path permissions
-5. whether user wanted `review` but actually needed `transcribe` or `analyze`
+5. whether user wanted `review` but actually needed `preprocess`, `transcribe`, or `analyze`
 
 Do not invent config values or fake API success.
 
@@ -227,7 +288,7 @@ Do not invent config values or fake API success.
 When editing or debugging ScreenScribe itself, use the repo-native gates:
 
 ```bash
-cd /Users/maciejgad/hosted/VetCoders/ScreenScribe
+cd /path/to/ScreenScribe
 make lint
 make typecheck
 make test
@@ -252,7 +313,7 @@ When ScreenScribe behavior looks wrong, debug in this order:
 2. input file validity
 3. FFmpeg/audio extraction
 4. transcription output
-5. detection mode choice
+5. detection or preprocess mode choice
 6. screenshot extraction
 7. semantic / unified analysis
 8. report generation
@@ -276,33 +337,30 @@ If the task is simple, compress this into a short paragraph.
 ## Examples
 
 **Example 1**
-Input: "Przelec mi ten review.mov i wypluj JSON + markdown z bugami."
+Input: "Przeleć mi ten review.mov i wypluj JSON + markdown z bugami."
 Action: run `screenscribe review /absolute/path/to/review.mov`, return output dir and key findings.
 
 **Example 2**
-Input: "Mam 3 nagrania sprint review, chcemy kontekst między nimi."
-Action: run batch `review` with all files in one command so shared context can matter.
+Input: "Mam video, ale chcę tylko transcript, timestampy i pack dla agenta."
+Action: run `screenscribe preprocess /absolute/path/to/video.mov`, return bundle dir and artifact list.
 
 **Example 3**
-Input: "Czemu HTML Pro report się nie otwiera po wygenerowaniu?"
-Action: inspect report generation, served assets, and `analyze`/report open flow before changing templates.
-
-**Example 4**
-Input: "Zmień coś w ScreenScribe i upewnij się, że repo jest zdrowe."
-Action: edit repo, then run `make lint`, `make typecheck`, and `make test`.
+Input: "W repo https://github.com/VetCoders/Screenscribe coś popsuliśmy w HTML Pro."
+Action: treat this as repo work, use repo-native commands and quality gates, not a plain review run.
 
 ## Anti-Patterns
 
 Do not:
 
 - treat ScreenScribe as a generic summarizer
-- start with repo plumbing when a plain `screenscribe review <file>` would do
+- start with repo plumbing when a plain `screenscribe review <file>` or `screenscribe preprocess <file>` would do
 - probe `--help` before the first real run on a normal video-analysis request
 - run random repo commands when `make` already defines the quality path
 - skip reporting the output directory
-- ignore whether the user wants `review` vs `transcribe` vs `analyze`
+- ignore whether the user wants `review` vs `preprocess` vs `transcribe` vs `analyze`
 - claim a run is valid if FFmpeg or provider config is missing
 - assume HTML report exists unless the run actually produced it
+- trust the AI layer more than the transcript/screenshot artifacts when they disagree
 
 ## Definition of Done
 
