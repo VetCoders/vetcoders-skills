@@ -79,7 +79,27 @@ Build context only (no agent launch):
 aicx init --no-run --action "Review and refactor auth module"
 ```
 
-### 4. Reference Lookup
+### 4. Quality Ranking
+
+Rank stored chunks by content quality (signal density, noise filtering):
+
+```bash
+aicx rank -p CodeScribe -H 72
+```
+
+Strict mode (only show quality chunks, hide noise):
+
+```bash
+aicx rank -p CodeScribe -H 72 --strict
+```
+
+Top N bundles only:
+
+```bash
+aicx rank -p CodeScribe --top 5
+```
+
+### 5. Reference Lookup
 
 Find stored context files from last 3 days:
 
@@ -87,13 +107,27 @@ Find stored context files from last 3 days:
 aicx refs -H 72
 ```
 
-Filter by project:
+Filter by project, strict mode (exclude noise artifacts):
 
 ```bash
-aicx refs -H 168 -p CodeScribe
+aicx refs -H 168 -p CodeScribe --strict
 ```
 
-### 5. State Management
+### 6. Dashboard
+
+Generate and serve a searchable HTML dashboard with search endpoints:
+
+```bash
+aicx dashboard-serve --port 8033
+```
+
+Available search endpoints:
+
+- `GET /api/search/fuzzy?q=<query>` — Fuzzy text search with quality scoring
+- `GET /api/search/semantic?q=<query>&ns=<namespace>` — Vector search via rmcp-memex
+- `GET /api/search/cross?q=<query>` — Cross-namespace semantic search
+
+### 7. State Management
 
 Check dedup statistics:
 
@@ -109,18 +143,20 @@ aicx state --reset -p CodeScribe
 
 ## Command Reference (Quick)
 
-| Command      | Purpose                          | Key Flags                                |
-|--------------|----------------------------------|------------------------------------------|
-| `all`        | Extract from all agents          | `-H`, `--incremental`, `--memex`, `-p`   |
-| `claude`     | Extract Claude Code sessions     | `-H`, `-p`, `--incremental`, `--loctree` |
-| `codex`      | Extract Codex sessions           | `-H`, `-p`, `--incremental`              |
-| `extract`    | One-shot file extraction         | `--format <claude\|codex\|gemini>`, `-o` |
-| `store`      | Store + optional memex sync      | `-p`, `-a`, `-H`, `--memex`              |
-| `memex-sync` | Sync chunks to vector memory     | `-n`, `--per-chunk`, `--db-path`         |
-| `list`       | Discover available sessions      | (no flags)                               |
-| `refs`       | List stored context files        | `-H`, `-p`                               |
-| `state`      | Manage dedup/watermarks          | `--info`, `--reset`, `-p`                |
-| `init`       | Bootstrap .ai-context/ workspace | `--agent`, `--action`, `--no-run`        |
+| Command          | Purpose                          | Key Flags                                |
+|------------------|----------------------------------|------------------------------------------|
+| `all`            | Extract from all agents          | `-H`, `--incremental`, `--memex`, `-p`   |
+| `claude`         | Extract Claude Code sessions     | `-H`, `-p`, `--incremental`, `--loctree` |
+| `codex`          | Extract Codex sessions           | `-H`, `-p`, `--incremental`              |
+| `extract`        | One-shot file extraction         | `--format <claude\|codex\|gemini>`, `-o` |
+| `rank`           | Quality-rank stored chunks       | `-p`, `-H`, `--strict`, `--top`          |
+| `store`          | Store + optional memex sync      | `-p`, `-a`, `-H`, `--memex`              |
+| `list`           | Discover available sessions      | (no flags)                               |
+| `refs`           | List stored context files        | `-H`, `-p`, `--strict`, `--summary`      |
+| `state`          | Manage dedup/watermarks          | `--info`, `--reset`, `-p`                |
+| `init`           | Bootstrap .ai-context/ workspace | `--agent`, `--action`, `--no-run`        |
+| `dashboard`      | Generate HTML dashboard          | `--store-root`, `--output`, `--title`    |
+| `dashboard-serve`| Serve dashboard + search API     | `--port`, `--host`, `--store-root`       |
 
 For detailed flag reference, consult `references/commands.md`.
 

@@ -153,21 +153,65 @@ Discover available AI agent session sources on this machine. No flags.
 
 ---
 
+## aicx rank
+
+Rank and filter stored chunks by content quality. Uses per-chunk signal density
+scoring to separate actionable content (decisions, TODOs, architecture changes)
+from noise (echoed skill prompts, tool JSON, system reminders).
+
+| Flag               | Short | Default | Description                               |
+|--------------------|-------|---------|-------------------------------------------|
+| `--project <NAME>` | `-p`  | (req)   | Project filter                            |
+| `--hours <N>`      | `-H`  | 48      | Lookback window                           |
+| `--strict`         |       | off     | Only show chunks scoring >= 5/10          |
+| `--top <N>`        |       | all     | Show only top N bundles by score          |
+
+**Score scale (per chunk, 0-10):**
+
+- 0-2: NOISE (echoed skills, tool output, system reminders)
+- 3-4: LOW (some signal, mostly filler)
+- 5-7: MEDIUM (actionable content)
+- 8-10: HIGH (decisions, outcomes, deployments)
+
+**Output format:**
+
+```
+- Bundle: 2026-03-14/030555_claude (4 files) — Avg: 6.2/10  Peak: 8/10  Density: 35%  [MEDIUM]
+    + 030555_claude-001.md 8/10 (sig:48 noise:0 total:135)
+    ~ 030555_claude-002.md 5/10 (sig:12 noise:0 total:50)
+    - 030555_claude-003.md 3/10 (sig:5 noise:0 total:71)
+    x 030555_claude-004.md 0/10 (sig:0 noise:87 total:115)
+```
+
+Markers: `+` HIGH, `~` MEDIUM, `-` LOW, `x` NOISE
+
+**Examples:**
+
+```bash
+aicx rank -p CodeScribe -H 72
+aicx rank -p CodeScribe -H 72 --strict
+aicx rank -p CodeScribe --top 5
+```
+
+---
+
 ## aicx refs
 
 List stored context files from central store, filtered by recency.
 
-| Flag               | Short | Default | Description       |
-|--------------------|-------|---------|-------------------|
-| `--hours <N>`      | `-H`  | 48      | File mtime filter |
-| `--project <NAME>` | `-p`  | all     | Project filter    |
+| Flag               | Short | Default | Description                     |
+|--------------------|-------|---------|---------------------------------|
+| `--hours <N>`      | `-H`  | 48      | File mtime filter               |
+| `--project <NAME>` | `-p`  | all     | Project filter                  |
+| `--strict`         |       | off     | Exclude noise artifacts         |
+| `--summary`        |       | off     | Print summary stats per project |
 
 **Output:** One file path per line.
 
 **Example:**
 
 ```bash
-aicx refs -H 72 -p CodeScribe
+aicx refs -H 72 -p CodeScribe --strict
 ```
 
 ---
@@ -229,6 +273,65 @@ aicx init --agent codex --no-confirm --action "Audit memory and propose next ste
 aicx init --no-run --action "Review auth module"
 aicx init --agent claude --agent-prompt-file ./custom-rules.md --no-confirm
 aicx init -p CodeScribe --agent codex -H 720 --action "Full refactor plan"
+```
+
+---
+
+## aicx dashboard
+
+Generate a searchable HTML dashboard from the central store.
+
+| Flag                  | Short | Default                 | Description                     |
+|-----------------------|-------|-------------------------|---------------------------------|
+| `--store-root <DIR>`  |       | `~/.ai-contexters`      | Store root directory            |
+| `--output <PATH>`     | `-o`  | `aicx-dashboard.html`   | Output HTML file path           |
+| `--title <TEXT>`      |       | AI Contexters Dashboard | Dashboard title                 |
+| `--preview-chars <N>` |       | 320                     | Max preview characters per item |
+
+**Example:**
+
+```bash
+aicx dashboard -o /tmp/dashboard.html
+```
+
+---
+
+## aicx dashboard-serve
+
+Run a live dashboard HTTP server with on-demand regeneration and search endpoints.
+
+| Flag                  | Short | Default                 | Description                     |
+|-----------------------|-------|-------------------------|---------------------------------|
+| `--store-root <DIR>`  |       | `~/.ai-contexters`      | Store root directory            |
+| `--port <N>`          |       | 8033                    | HTTP server port                |
+| `--host <ADDR>`       |       | 127.0.0.1               | Bind address (loopback only)    |
+| `--title <TEXT>`      |       | AI Contexters Dashboard | Dashboard title                 |
+| `--artifact <PATH>`   |       | `aicx-dashboard.html`   | Artifact output path            |
+| `--preview-chars <N>` |       | 320                     | Max preview characters per item |
+
+**API Endpoints:**
+
+| Endpoint                         | Method | Description                                  |
+|----------------------------------|--------|----------------------------------------------|
+| `/`                              | GET    | Serve dashboard HTML                         |
+| `/api/status`                    | GET    | Server status, stats, build count            |
+| `/api/regenerate`                | POST   | Rebuild dashboard (requires action header)   |
+| `/api/search/fuzzy?q=<query>`    | GET    | Fuzzy text search across stored chunks       |
+| `/api/search/semantic?q=&ns=`    | GET    | Vector search via rmcp-memex                 |
+| `/api/search/cross?q=<query>`    | GET    | Cross-namespace semantic search              |
+
+**Search parameters:**
+
+- `q` (required) — Search query
+- `limit` (optional, default 20) — Max results
+- `ns` (semantic only, default `ai-contexts`) — Vector namespace
+- `mode` (semantic/cross, default `hybrid`) — Search mode: `vector`, `bm25`, `hybrid`
+
+**Example:**
+
+```bash
+aicx dashboard-serve --port 8033
+# Then: curl "http://127.0.0.1:8033/api/search/fuzzy?q=decision+architecture"
 ```
 
 ---
