@@ -1,50 +1,36 @@
 ---
 name: vetcoders-spawn
-version: 1.2.0
+version: 1.3.0
 description: >
-  Spawn external subagents via the portable scripts shipped in
-  vetcoders-spawn/scripts/. The real trick is an explicit spawn contract over
-  zsh -ic, so each spawned agent gets a fresh interactive shell, sees the local
-  CLI/runtime exactly as a user would, and writes durable report/transcript/meta
-  artifacts into .ai-agents/. Terminal.app is supported as a visible mode, with
-  headless mode now first-class.
-  Trigger phrases: "spawn agents", "terminal agents", "spawn fleet",
-  "odpal agentow", "deleguj przez terminal", "codex agents",
-  "power spawn".
+  Spawn external subagents via the VetCoders method using the operator-facing
+  helper launchers in an interactive `zsh -ic` shell. Use when the user wants
+  full isolation, visible Terminal agents, durable artifacts in `.ai-agents/`,
+  and real delegated implementation instead of in-thread analysis. Trigger
+  phrases: "spawn agents", "terminal agents", "spawn fleet", "odpal agentow",
+  "deleguj przez terminal", "codex agents", "power spawn".
 ---
 
-# VetCoders Spawn - External Agent Fleet via Terminal
-
-> The power-user path. Full process isolation, visible Terminal windows, and
-> durable artifacts in `.ai-agents/reports/`.
->
-> Canonical path now lives in this repo under `vetcoders-spawn/scripts/`.
-> Personal dotfile wrappers are optional sugar, not the source of truth.
->
-> For the safe in-session alternative, see `vetcoders-implement`.
+# VetCoders Spawn
 
 ## When to use
 
-Trigger when the user wants full isolation, long-running delegated work, or a
-visible fleet in Terminal, especially for:
+Trigger when the user asks to delegate work, especially phrases like:
 
-- parallel implementation or review tracks
-- work that should survive your current context window
-- Codex, Claude, or Gemini in separate processes
-- observation through durable artifacts instead of chat memory
+- "Uzyj ... do agentow", "Deleguj ... agentom", "Zlec to agentowi"
+- Any request that implies parallelization or multi-track execution
+- Any request that wants visible Terminal agents or long-running isolated work
 
-## Why this skill exists
+## Why use spawn
 
-- Your main context stays focused while subagents take bounded slices.
-- The portable scripts remove dependency on one person's private dotfiles.
-- The contract is explicit: terminal/visible mode is optional, headless mode is
-  supported, and both use the same durable artifact outputs.
-- Repo-owned scripts are easier to install, review, version, and improve.
+- Your context is precious and built through many sessions, so you should delegate precisely and minimize context bloat.
+- Spawning through the VetCoders method requires a strict execution pattern.
+- The command shape is canonical and obligatory without exceptions. If you hesitate to use it as provided, do not use this skill.
+- Agents are copies of yourself: same smart, same capable, just lighter and more agile because they do not carry your full context window.
+- Spawn exists so field teams can implement, research, review, and converge outside the main thread while still leaving durable artifacts in `.ai-agents/`.
 
 ## Goal
 
-Create a small fleet of subagents that each get a precise task in
-`.ai-agents/plans/`, then collect their results in `.ai-agents/reports/`.
+Create a small fleet of subagents that each get a precise task into `.ai-agents/plans/`.
 
 Delegate:
 
@@ -53,22 +39,30 @@ Delegate:
 - implementation
 - review
 
+Then collect their results in `.ai-agents/reports/` in the current repo.
+
 ## Standard workflow
 
-1. Clarify scope if the task split is not explicit.
-2. Ensure `.ai-agents/plans/`, `.ai-agents/reports/`, and `.ai-agents/tmp/`
-   exist in the repo root.
+1. Clarify scope if needed.
+   - If tasks are not explicit, propose a split into 2-5 items and get alignment.
+2. Prepare repo folders.
+   - Ensure `.ai-agents/plans/`, `.ai-agents/reports/`, and `.ai-agents/tmp/` exist in the repo root.
 3. Write one plan per subagent in `.ai-agents/plans/`.
-4. Spawn agents through the repo-owned scripts.
-5. Observe progress through metadata/transcripts.
-6. Synthesize reports back into the main thread.
+   - Keep it high level, decisive, and test-gated.
+   - Provide reason and context.
+   - Give a clear `[ ]` todo list.
+   - Include acceptance criteria and required checks.
+   - End with a short call to action.
+4. Spawn subagents through the helper launchers in an interactive `zsh -ic` shell.
+5. Observe progress through artifacts and transcripts.
+6. Synthesize results back into the main thread.
 
 ## Mandatory plan rules
 
 Every subagent plan should:
 
 - be high level, decisive, and test-gated
-- include reason/context
+- include reason and context
 - include a clear checkbox todo list
 - include acceptance criteria
 - include required checks
@@ -86,175 +80,101 @@ Run required checks. If something is blocked, report the exact blocker and run t
 
 Keep this preamble repo-agnostic.
 
-## Canonical runtime
+## Vibecraft doctrine
 
-Portable scripts now live here:
+- Do not treat agents like couriers or report printers. Treat them like artists and implementers.
+- Do not over-restrict them into tiny bureaucratic slices when the task wants a real rewrite.
+- Sometimes a full replacement is cleaner than patching scar tissue.
+- VetCoders built real products through vibeguiding. Agents should be trusted to do the same.
 
-- `vetcoders-spawn/scripts/common.sh`
-- `vetcoders-spawn/scripts/codex_spawn.sh`
-- `vetcoders-spawn/scripts/claude_spawn.sh`
-- `vetcoders-spawn/scripts/gemini_spawn.sh`
-- `vetcoders-spawn/scripts/observe.sh`
-- `vetcoders-spawn/scripts/install.sh`
-- `vetcoders-spawn/scripts/skills_sync.sh`
+## Plan template
 
-The scripts generate:
+Use this structure:
 
-- report: `.ai-agents/reports/<timestamp>_<slug>_<agent>.md`
-- transcript: `.ai-agents/reports/<timestamp>_<slug>_<agent>.transcript.log`
-- metadata: `.ai-agents/reports/<timestamp>_<slug>_<agent>.meta.json`
-- launcher: `.ai-agents/tmp/<timestamp>_<slug>_<agent>_launch.sh`
+```text
+# Task: <short title>
 
-## Canonical commands
+Goal:
+- <1-3 bullets>
 
-From a repo checkout, the cleanest direct path is:
+Scope:
+- In scope: <files/areas> as high-level suggestions
+- Out of scope: <explicit>
 
-Codex:
+Constraints:
+- No --no-verify
+- Follow repo conventions
 
-```bash
-bash vetcoders-spawn/scripts/codex_spawn.sh .ai-agents/plans/<plan>.md --mode implement --runtime terminal
+Acceptance:
+- [ ] <objective outcome>
+- [ ] <objective outcome>
+
+Test gate:
+- <command(s)>
+
+Context:
+- <very short summary>
+
+Living tree note:
+- You work on a living tree with Vibecrafting methodology, so concurrent changes are expected.
+- Adapt proactively and continue, but this is never permission to skip quality, security, or test gates.
+- Run required checks. If something is blocked, report the exact blocker and run the closest safe equivalent.
 ```
 
-Claude:
+## Spawn commands
+
+The only correct operator-facing launch path is an interactive shell helper invocation via `zsh -ic`.
+This guarantees the user's real shell environment, aliases, and helper wrappers are loaded.
+
+### Codex
 
 ```bash
-bash vetcoders-spawn/scripts/claude_spawn.sh .ai-agents/plans/<plan>.md --mode review --runtime terminal
+zsh -ic 'codex-implement .ai-agents/plans/<plan>.md'
 ```
 
-Gemini:
+### Claude
 
 ```bash
-bash vetcoders-spawn/scripts/gemini_spawn.sh .ai-agents/plans/<plan>.md --mode implement --runtime terminal
+zsh -ic 'claude-implement .ai-agents/plans/<plan>.md'
 ```
 
-If the skill is installed into the default home paths, the installed-script path is:
-
-Codex:
+### Gemini
 
 ```bash
-bash ~/.codex/skills/vetcoders-spawn/scripts/codex_spawn.sh .ai-agents/plans/<plan>.md --mode implement --runtime terminal
+zsh -ic 'gemini-implement .ai-agents/plans/<plan>.md'
 ```
 
-Claude:
+If these helper wrappers are unavailable, stop pretending spawn is correctly configured and say so explicitly.
 
-```bash
-bash ~/.claude/skills/vetcoders-spawn/scripts/claude_spawn.sh .ai-agents/plans/<plan>.md --mode review --runtime terminal
-```
+## Output convention
 
-Gemini:
+- Plans: `.ai-agents/plans/<timestamp>_<slug>.md` or another stable per-task filename
+- Reports: `.ai-agents/reports/<timestamp>_<slug>_<agent>.md`
+- Transcripts: `.ai-agents/reports/<timestamp>_<slug>_<agent>.transcript.log`
+- Metadata: `.ai-agents/reports/<timestamp>_<slug>_<agent>.meta.json`
 
-```bash
-bash ~/.gemini/skills/vetcoders-spawn/scripts/gemini_spawn.sh .ai-agents/plans/<plan>.md --mode implement --runtime terminal
-```
+## Observation
 
-Observe latest Codex run:
+Observe progress through durable artifacts in `.ai-agents/reports/`.
+
+If your environment exposes the observer helper, the standard check is:
 
 ```bash
 bash ~/.codex/skills/vetcoders-spawn/scripts/observe.sh codex --last
 ```
 
-If you install the optional zsh helper layer, the human-friendly wrappers are:
-
-```bash
-codex-implement .ai-agents/plans/<plan>.md
-claude-review .ai-agents/plans/<plan>.md
-gemini-plan .ai-agents/plans/<plan>.md
-codex-prompt "Review the latest changes"
-skills-sync mgbook16
-skills-sync mgbook16 --with-shell
-```
-
-## Canonical launch modes
-
-All three launchers share:
-
-- `--runtime terminal|visible` (default): launch via visible Terminal.app
-- `--runtime headless|background|detached`: launch as detached background process
-- `--root <path>`: explicit repo root for `cd` and artifact staging
-- `--dry-run`: generate launcher and metadata without executing it
-
-`--runtime terminal` falls back to headless mode when Terminal automation is not
-available in the current environment.
-
-## The real trick
-
-The important discovery is not the wrapper name. The important discovery is:
-
-```bash
-zsh -ic "cd <repo> && <agent-cli> ..."
-```
-
-That gives the spawned process an interactive shell in the chosen spawn runtime
-(visible or headless), so it sees the user's real
-`~/.zshrc` environment and CLI setup.
-
-Raw example without helper wrappers:
-
-```bash
-zsh -ic "cd '/path/to/repo' && codex exec -C '/path/to/repo' --dangerously-bypass-approvals-and-sandbox --output-last-message '/path/to/report.md' - < '/path/to/plan.md'"
-```
-
-## Scope note
-
-The repo-owned runtime currently covers:
-
-- spawn
-- artifact generation
-- observe
-
-Resume flows can remain local sugar for now if a team wants them, but they are
-not required for the portable core.
-
-By default the installer and remote sync are conservative: they do not delete
-extra files inside already-installed skills. Use `--mirror` when you want a
-strict 1:1 canonical copy.
-
-## Install and distribution
-
-The portable path now has three layers:
-
-- `install.sh` at repo root: bootstrap for the future `curl | sh` flow
-- `vetcoders-spawn/scripts/install.sh`: local install into `~/.{codex,claude,gemini}/skills`
-- `vetcoders-spawn/scripts/install-shell.sh`: optional zsh helper install (`codex-implement`, `claude-implement`,
-  `gemini-implement`, `*-prompt`, `*-observe`, `skills-sync`, Gemini Keychain helpers)
-- `vetcoders-spawn/scripts/skills_sync.sh`: remote sync to another machine's skill homes, optionally with the same
-  helper layer
-
-The installer and remote sync now also preflight the two foundation binaries that make the whole stack feel complete:
-
-- `aicx`
-- `loctree-mcp`
-
-`prview` is treated as a specialist companion tool, not a hard base dependency for every install.
-
-If they are missing, install still proceeds, but the user gets the explicit next step:
-`cargo install aicx loctree-mcp`
-
-## Fallback method
-
-Use raw `osascript` only if the portable scripts are unavailable.
-
-Codex fallback:
-
-```bash
-osascript -e '
-tell application "Terminal"
-  activate
-  do script "zsh -ic \"cd '\''$ROOT'\'' && codex exec -C '\''$ROOT'\'' --dangerously-bypass-approvals-and-sandbox --output-last-message '\''$REPORT'\'' - < '\''$PLAN'\''\""
-end tell
-'
-```
+Use the equivalent agent observer when needed.
 
 ## Quality gate expectations
 
 Keep the standard VetCoders quality bar:
 
-- loctree-mcp first for exploration when available
-- semgrep first for security when available
+- loctree-mcp as first-choice exploration and search tool with fail-fast if inaccessible
+- semgrep as first-choice security guard when available
 - Rust repos: `cargo clippy -- -D warnings`
-- non-Rust repos: nearest equivalent lint/type/test gate
-- write and run tests for new implementation work when feasible
-- if a gate is blocked, report the exact blocker and run the closest safe equivalent
+- Non-Rust repos: choose the closest equivalent lint/type/test gate
+- Tests: run if reviewing; write if implementing new behavior; prefer real e2e coverage for the actual pipeline
+- If a gate is blocked, report the exact blocker and run the closest safe equivalent
 
 ## Safety rules
 
@@ -262,4 +182,10 @@ Keep the standard VetCoders quality bar:
 - Never use `--no-verify` for `commit` or `push`.
 - Do not rewrite git history unless the user explicitly asks.
 - Treat concurrent edits as normal, but still verify before overwriting.
-- If the repo has a canonical gate such as `make check`, run it or explain why not.
+- If a repo has a strict command such as `make check`, run it or explain why not.
+
+## Final principle
+
+Spawn is not for outsourcing thought.
+Spawn is for deploying equally capable front-line agents through a strict, canonical launch path.
+Use them to implement, not merely to comment on implementation.
