@@ -49,10 +49,14 @@ Fallback paths:
 ### GitHub PR by number
 
 ```bash
-prview --pr <NUMBER> --quick
+prview --pr <NUMBER> --with-tests --with-lint
 ```
 
 Add `--gh-repo owner/repo` if origin is ambiguous.
+
+Default for this skill: **do not use `--quick` for PR review**.
+Use `--quick` only for explicit fast triage, artifact refresh under time pressure,
+or when heavy gates are impossible in the current environment.
 
 ### Deep review (all gates)
 
@@ -76,7 +80,7 @@ prview --with-tests --with-lint --with-security
 
 | Flag                   | What                                                  |
 |------------------------|-------------------------------------------------------|
-| `--quick`              | Skip tests/lint/bundle/heuristics                     |
+| `--quick`              | Skip tests/lint/bundle/heuristics; triage only        |
 | `--deep`               | All checks enabled                                    |
 | `--ci`                 | CI mode (strict exit)                                 |
 | `--pr N`               | Analyze GitHub PR #N                                  |
@@ -99,7 +103,8 @@ prview --with-tests --with-lint --with-security
 | `--breaking-change`    | Mark PR as breaking                                   |
 | `-v, --verbose`        | Verbose output                                        |
 
-Shell aliases: `prv` → `--quick`, `prvpr <N>` → `--pr N --quick`, `prvjson` → `--json --quiet`
+Shell aliases exist (`prv`, `prvpr`, `prvjson`), but this skill should not use
+the quick aliases for review-quality output.
 
 ---
 
@@ -392,7 +397,7 @@ Auto-detected from repo contents. Override: `--profile <PROFILE>`.
 ### As input to vetcoders-followup
 
 ```bash
-prview --pr $PR_NUMBER --quick
+prview --pr $PR_NUMBER --with-tests --with-lint
 ARTIFACTS=".tools/pr-artifacts/<branch>/latest"
 ```
 
@@ -419,7 +424,8 @@ prview --json --quiet | jq '.checks[] | select(.status == "Failed")'
 
 ### Tool usage
 
-- Running `--deep` on every PR (slow; use `--quick` for daily, `--deep` for merge)
+- Using `--quick` as the default for PR review in this skill (it drops test/lint/security signal)
+- Running `--deep` on every PR when `--with-tests --with-lint` is enough (save `--deep` for merge gate / high-risk PRs)
 - Reading `full.patch` entirely for large PRs (use `per-file-diffs/` for focused review)
 - Ignoring `report.json` and `MERGE_GATE.json` (parse structured data first)
 - Not using `--update` after amend/force-push (generates duplicate artifact sets)

@@ -106,7 +106,7 @@ Do NOT spend late loops on structural changes (that's a new diffusion run).
 │     └─ Max 3-5 items per loop (don't boil the ocean)     │
 │                                                          │
 │  3. IMPLEMENT fixes                                      │
-│     └─ vetcoders-implement (safe) or spawn (power)       │
+│     └─ vetcoders-agents (first choice) or vetcoders-delegate (small fallback) │
 │     └─ Each fix is a marble thrown at a known gap         │
 │                                                          │
 │  4. DENOISE (followup on this loop's changes)            │
@@ -239,7 +239,7 @@ Supervisor mode must still:
 - escalate when agents plateau
 - stop when the circle is full
 
-### Using vetcoders-implement (native, safe)
+### Using vetcoders-delegate (native, small-task fallback)
 
 ```
 For each loop:
@@ -257,7 +257,7 @@ For each loop:
   7. If not converged → loop N+1
 ```
 
-### Using vetcoders-spawn (Terminal, power)
+### Using vetcoders-agents (Terminal, first choice)
 
 ```
 For each loop:

@@ -47,7 +47,7 @@ skill and upgraded with triple-agent triangulation.
 Do NOT use for:
 - Questions answerable by reading one file in the repo
 - Problems where loctree slice + grep gives the answer in 30 seconds
-- Pure implementation tasks (use vetcoders-workflow or vetcoders-implement)
+- Pure implementation tasks (use vetcoders-workflow, usually through vetcoders-agents; use vetcoders-delegate only for small model-agnostic work)
 
 ## The 6-Step Research Flow
 
@@ -127,7 +127,7 @@ gemini-research .ai-agents/pipeline/<slug>/plans/research-plan.md
 
 If `{agent}-research` helpers are not available, fall back to:
 ```bash
-bash ~/.{claude,codex,gemini}/skills/vetcoders-spawn/scripts/{agent}_spawn.sh \
+bash ~/.{claude,codex,gemini}/skills/vetcoders-agents/scripts/{agent}_spawn.sh \
   --mode research .ai-agents/pipeline/<slug>/plans/research-plan.md
 ```
 
@@ -211,7 +211,7 @@ vetcoders-research can be used:
   doing single-agent research
 - **Before vetcoders-partner** — when partner mode needs ground truth before
   debug session
-- **Before vetcoders-implement/spawn** — research feeds implementation plans
+- **Before vetcoders-agents/vetcoders-delegate** — research feeds implementation plans
 
 ```
          ┌─── claude ──→ report ───┐

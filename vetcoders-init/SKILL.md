@@ -102,7 +102,7 @@ Agent has memory and eyes. Proceeding with task.
 
 ## For Subagent Prompts
 
-When delegating to subagents via vetcoders-spawn, include this preamble:
+When delegating to subagents via vetcoders-agents, include this preamble:
 
 ```
 ## Context Bootstrap

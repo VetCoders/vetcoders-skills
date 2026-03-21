@@ -38,7 +38,7 @@ The skill assumes:
 This skill often composes with:
 
 - `vetcoders-partner` for shared executive debugging and framing
-- `vetcoders-spawn` for external field-team agents
+- `vetcoders-agents` for external field-team agents
 - `vetcoders-marbles` for convergence loops
 - `vetcoders-dou` for product-surface gap finding
 - `vetcoders-decorate` and `vetcoders-hydrate` for finish and market polish

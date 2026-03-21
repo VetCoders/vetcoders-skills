@@ -1,39 +1,52 @@
 ---
-name: vetcoders-implement
+name: vetcoders-delegate
 version: 1.0.0
 description: >
   Native Claude subagent delegation skill using Claude's built-in Task tool.
-  Safe, sandboxed alternative to vetcoders-spawn (external process method).
+  Safe, sandboxed fallback to vetcoders-agents (external process method).
   Delegates implementation, research, and audit tracks to Claude subagents
   that run within the same session — no Terminal windows, no --dangerously flags,
-  no external processes. Less robust but universally safe.
+  no external processes. Use only when the task is small or does not need
+  model-specific strengths such as Codex purity, Claude investigative depth,
+  or Gemini creativity. Otherwise vetcoders-agents is always first choice.
   Trigger phrases: "implement with agents", "delegate to subagents", "zaimplementuj",
   "run agents", "parallel tasks", "delegate safely", "native agents",
   "Task tool agents", "implement plan", "uruchom agentów", "subagenty natywne",
-  "bezpieczne agenty", "implement without spawn", "no osascript".
+  "bezpieczne agenty", "implement without externals", "no osascript".
 ---
 
-# vetcoders-implement — Native Claude Subagent Delegation
+# vetcoders-delegate — Native Claude Subagent Delegation
 
 > Safe parallel delegation using Claude's built-in Task tool.
-> The civilized sibling of `vetcoders-spawn`.
+> Fallback mode only. `vetcoders-agents` is the default first choice.
 
 ## When To Use
 
-Use this skill when you want parallel agent delegation **without** Terminal spawn:
+Use this skill only when all of the following are true:
+
+- The task is small, bounded, or clearly low-risk for native delegation
+- The task does not need model-specific strengths such as Codex purity, Claude investigative nature, or Gemini creativity
+- You want in-session visibility more than runtime robustness
+- Terminal/CLI agent runtime is unavailable, undesirable, or disproportionate
+
+Typical cases:
 
 - Working in Cowork mode, Claude.ai, or any environment without Terminal.app
 - When `--dangerously-skip-permissions` is not acceptable
 - When you want sandboxed execution with built-in safety
-- When the team prefers visibility in the conversation over Terminal windows
 - When osascript is unavailable (Linux, remote, CI)
 
-**If you need** full Terminal isolation, persistent processes, or Codex agents →
-use `vetcoders-spawn` instead.
+Default rule:
 
-## Comparison: implement vs spawn
+- Start with `vetcoders-agents`
+- Drop to `vetcoders-delegate` only if the task is small or does not need those model-specific advantages
 
-| Capability      | vetcoders-implement                | vetcoders-spawn                   |
+**If you need** full Terminal isolation, persistent processes, Codex agents, or any specific-model-only edge →
+use `vetcoders-agents`.
+
+## Comparison: delegate vs agents
+
+| Capability      | vetcoders-delegate                | vetcoders-agents                   |
 |-----------------|------------------------------------|-----------------------------------|
 | **Execution**   | Claude Task tool (in-process)      | Portable scripts (out-of-process) |
 | **Safety**      | Sandboxed, no dangerous flags      | Requires `--dangerously-*` flags  |
@@ -43,13 +56,21 @@ use `vetcoders-spawn` instead.
 | **Visibility**  | Results returned to conversation   | Must read report files            |
 | **Robustness**  | Limited by context window          | Full agent session per task       |
 | **Environment** | Inherits parent env                | Clean Terminal env                |
-| **Best for**    | Research, audit, small impl        | Large impl, multi-agent fleets    |
+| **Best for**    | Small bounded work, native fallback | Default choice; large or model-specific work |
+
+## Choice Rule
+
+Use this decision rule everywhere in VetCoders skills:
+
+1. `vetcoders-agents` is the default first choice.
+2. `vetcoders-delegate` is allowed only when the task is small or does not need model-specific-only features.
+3. If you want Codex purity, Claude's investigative nature, Gemini creativity, durable artifacts, or external robustness, choose `vetcoders-agents`.
 
 ## Standard Workflow
 
 ### 1. Prepare Pipeline Structure
 
-Same convention as `vetcoders-spawn`:
+Same convention as `vetcoders-agents`:
 
 ```bash
 ROOT="$(git rev-parse --show-toplevel)"
@@ -62,7 +83,7 @@ mkdir -p "$ROOT/.ai-agents/pipeline/$SLUG/reports"
 ### 2. Write Plans
 
 Write one plan per subagent to `.ai-agents/pipeline/<slug>/plans/`.
-Use the same plan template as `vetcoders-spawn`:
+Use the same plan template as `vetcoders-agents`:
 
 ```markdown
 # Task: <short title>
@@ -268,7 +289,7 @@ Task("Fix settings findings", prompt=<fix plan>)
 Task("Run gates", prompt="cd $ROOT && cargo clippy -- -D warnings")
 ```
 
-## Limitations (vs vetcoders-spawn)
+## Limitations (vs vetcoders-agents)
 
 Be honest about what you lose:
 
@@ -279,11 +300,11 @@ Be honest about what you lose:
 5. **No real parallelism** — concurrent Tasks, but single-threaded execution per agent
 6. **No stdin piping** — can't pipe plan files directly, must include in prompt
 
-**Mitigation**: For tasks exceeding these limits, escalate to `vetcoders-spawn`.
+**Mitigation**: For tasks exceeding these limits, escalate to `vetcoders-agents`.
 
-## When to Escalate to vetcoders-spawn
+## When to Escalate to vetcoders-agents
 
-Switch to `vetcoders-spawn` when:
+Switch to `vetcoders-agents` when:
 
 - Task requires >5000 tokens of output per agent
 - Need Codex agents (better for pure implementation)
@@ -295,7 +316,7 @@ Switch to `vetcoders-spawn` when:
 ## Integration with VetCoders Pipeline
 
 ```
-vetcoders-init → vetcoders-workflow → vetcoders-implement (or spawn) → vetcoders-followup
+vetcoders-init → vetcoders-workflow → vetcoders-delegate (or vetcoders-agents) → vetcoders-followup
                                               ↑                               ↓
                                               └─── loop if findings ──────────┘
                                                                               ↓
@@ -304,13 +325,14 @@ vetcoders-init → vetcoders-workflow → vetcoders-implement (or spawn) → vet
                                                                       vetcoders-hydrate
 ```
 
-`vetcoders-implement` and `vetcoders-spawn` are **interchangeable** in the pipeline.
-The pipeline doesn't care HOW agents were spawned — only that plans exist in
-`/plans/` and reports exist in `/reports/`.
+The pipeline accepts both skills, but they are not equal defaults.
+Use `vetcoders-agents` first. Reach for `vetcoders-delegate` only for small,
+model-agnostic, or environment-constrained work. The pipeline only requires
+that plans exist in `/plans/` and reports exist in `/reports/`.
 
 ## Output Convention
 
-Same as `vetcoders-spawn` — full compatibility:
+Same as `vetcoders-agents` — full compatibility:
 
 - Plans: `.ai-agents/pipeline/<slug>/plans/<N>_<task>_claude-task.md`
 - Reports: `.ai-agents/pipeline/<slug>/reports/<N>_<task>_claude-task.md`
@@ -327,7 +349,7 @@ Same as `vetcoders-spawn` — full compatibility:
 
 ## Safety Advantages
 
-Why this exists alongside `vetcoders-spawn`:
+Why this exists alongside `vetcoders-agents`:
 
 1. **No `--dangerously-skip-permissions`** — all actions go through standard permission model
 2. **No `--dangerously-bypass-approvals-and-sandbox`** — sandboxed by default

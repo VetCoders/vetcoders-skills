@@ -72,7 +72,7 @@ Read and execute `vetcoders-workflow/SKILL.md`.
 
 This runs the ERi pipeline: Examine (loctree deep scan) → Research
 (web/docs if needed) → Implement (delegate to subagents via
-implement or spawn).
+agents first, delegate only for small or model-agnostic work).
 
 The task description the user provided goes here. Workflow takes the
 context from init and turns it into code.

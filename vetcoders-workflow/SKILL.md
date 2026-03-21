@@ -159,7 +159,7 @@ Never edit code without mapping it first.
 
 ### Spawn Pattern
 
-Follow vetcoders-spawn skill for spawn commands (portable scripts preferred).
+Follow vetcoders-agents skill for spawn commands (portable scripts preferred).
 Plans go to `.ai-agents/pipeline/<slug>/plans/`.
 Reports go to `.ai-agents/pipeline/<slug>/reports/`.
 
@@ -178,7 +178,7 @@ After agents complete:
 |-----------|------------------------------------|--------------|
 | Examine   | loctree MCP                        | CONTEXT.md   |
 | Research  | brave-search + Context7 + WebFetch | RESEARCH.md  |
-| Implement | vetcoders-spawn (portable scripts) | reports/*.md |
+| Implement | vetcoders-agents (portable scripts) | reports/*.md |
 
 ## Phase Skipping
 

@@ -11,11 +11,11 @@ Sync canonical skill directories from this repo to another machine's tool homes:
   ~/.gemini/skills
 
 Examples:
-  bash vetcoders-spawn/scripts/skills_sync.sh mgbook16
-  bash vetcoders-spawn/scripts/skills_sync.sh mgbook16 --tool codex --tool claude
-  bash vetcoders-spawn/scripts/skills_sync.sh mgbook16 --dry-run
-  bash vetcoders-spawn/scripts/skills_sync.sh mgbook16 --mirror
-  bash vetcoders-spawn/scripts/skills_sync.sh mgbook16 --with-shell
+  bash vetcoders-agents/scripts/skills_sync.sh mgbook16
+  bash vetcoders-agents/scripts/skills_sync.sh mgbook16 --tool codex --tool claude
+  bash vetcoders-agents/scripts/skills_sync.sh mgbook16 --dry-run
+  bash vetcoders-agents/scripts/skills_sync.sh mgbook16 --mirror
+  bash vetcoders-agents/scripts/skills_sync.sh mgbook16 --with-shell
 EOF_USAGE
 }
 
@@ -153,7 +153,7 @@ for tool in "${tools[@]}"; do
 done
 
 if (( with_shell )); then
-  shell_source="$repo_root/vetcoders-spawn/shell/vetcoders.zsh"
+  shell_source="$repo_root/vetcoders-agents/shell/vetcoders.zsh"
   [[ -f "$shell_source" ]] || die "Shell helper file not found: $shell_source"
 
   remote_config_dir='${XDG_CONFIG_HOME:-$HOME/.config}/zsh'
@@ -180,10 +180,10 @@ fi
 
 printf 'Verifying portable spawn runtime on %s\n' "$host"
 ssh -n "$host" 'for f in \
-  ~/.codex/skills/vetcoders-spawn/scripts/codex_spawn.sh \
-  ~/.claude/skills/vetcoders-spawn/scripts/claude_spawn.sh \
-  ~/.gemini/skills/vetcoders-spawn/scripts/gemini_spawn.sh \
-  ~/.codex/skills/vetcoders-spawn/scripts/observe.sh; do
+  ~/.codex/skills/vetcoders-agents/scripts/codex_spawn.sh \
+  ~/.claude/skills/vetcoders-agents/scripts/claude_spawn.sh \
+  ~/.gemini/skills/vetcoders-agents/scripts/gemini_spawn.sh \
+  ~/.codex/skills/vetcoders-agents/scripts/observe.sh; do
   if [ -e "$f" ]; then
     echo "OK $f"
   else

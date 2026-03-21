@@ -1,4 +1,4 @@
 interface:
   display_name: "VetCoders Prune"
-  short_description: "Prune repos down to living runtime"
-  default_prompt: "Use $vetcoders-prune to map runtime-critical code, separate archive/tooling surface, and plan a safe cleanup."
+  short_description: "Prune repos to runtime or publish cone"
+  default_prompt: "Use $vetcoders-prune to classify runtime/build/publish surface, route non-trivial prune work through external VetCoders agents, and plan a proof-driven cleanup."

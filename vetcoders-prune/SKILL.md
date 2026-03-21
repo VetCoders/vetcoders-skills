@@ -1,43 +1,72 @@
 ---
 name: vetcoders-prune
+version: 2.0.0
 description: >
-  Repository pruning and runtime cone extraction skill. Use when the team wants
-  to strip a large AI-grown repo down to the code that actually participates in
-  runtime, separate product code from tooling, archives, experiments, agent
-  exhaust, reports, and stale surfaces, or run a radical "cut the dead limb"
-  cleanup without preserving zombies for sentiment. Trigger phrases:
-  "prune repo", "sprzatanie repo", "obierz repo", "strip non-runtime",
-  "remove cruft", "cleanup architecture", "runtime cone", "odchudz repo",
-  "co mozna usunac", "what can we delete", "safe repo cleanup",
-  "trim the tree", "living tree cleanup", "bez litosci", "radykalny prune".
+  Repository pruning and runtime or publish-cone extraction skill. Use when the
+  team wants to strip a repo to the code that truly participates in runtime,
+  shipping, or published API, separate product code from tooling, archives,
+  experiments, agent exhaust, and stale surfaces, and run ruthless cleanup with
+  proof instead of sentiment. External `vetcoders-agents` is the default first
+  move for non-trivial prune work.
 ---
 
-# vetcoders-prune - Runtime Cone Pruning
+# vetcoders-prune - Runtime / Publish Cone Pruning
 
 > A repo is a living tree.
-> Keep the trunk, cut the scaffolding, archive the fossils.
+> Keep the trunk. Cut the scaffolding. Export history out of the hot path.
 
-This skill answers a narrower and more useful question than "what looks messy?":
-what code, files, and directories are required for runtime truth, and what only
-exists because the repo kept absorbing tools, experiments, reports, and history.
+This skill asks a sharper question than "what looks messy?":
+what must survive for runtime truth, build truth, release truth, or publish
+truth, and what exists only because the repo kept absorbing tools, reports,
+experiments, migrations, and sentiment?
 
 The goal is not cosmetic cleanup.
-The goal is to reduce the product surface until runtime, build, and QA are
-explicit and defendable.
+The goal is to reduce the product surface until the surviving repo is explicit,
+defendable, and easier to ship.
 
 ## Core Contract
 
-- Use loctree as the first exploration layer.
-- Define the runtime cone before proposing deletes.
-- Use `loct dist` as the frontend pruning scoreboard when source maps exist.
-- Treat `loct dist` as a score, not a verdict.
+- For any non-trivial prune, external `vetcoders-agents` is the default first
+  move.
+- Define the cone before proposing deletes.
+- For apps, define a runtime cone.
+- For libraries, packages, crates, and workspaces, define a publish cone.
+- Use `loct` as the first structural map, but choose commands by repo shape
+  instead of forcing one favorite command everywhere.
+- `loct dist` is optional and only valid when a frontend bundle has usable
+  source maps.
 - Classify every candidate as `KEEP-RUNTIME`, `KEEP-BUILD`, `KEEP-QA`,
-  `MOVE-ARCHIVE`, `DELETE-NOW`, or `VERIFY-FIRST`.
+  `KEEP-PUBLISH`, `MOVE-ARCHIVE`, `DELETE-NOW`, or `VERIFY-FIRST`.
 - Prefer deleting whole dead vertical slices over trimming symbolic leaves.
-- Run gates after every pruning wave.
-- Tighten contracts immediately after each wave: re-exports, scripts, handler
-  registrations, policies, env flags, manifests, and docs.
-- Treat runtime leaks from dev-only code as high-priority cleanup.
+- Tighten contracts immediately after each pruning wave: manifests, handlers,
+  scripts, features, env flags, exports, docs, and CI.
+- Run gates after every wave and require one real smoke, install, import, or
+  publish proof for the surface you touched.
+
+## Delegation Doctrine
+
+Pruning mixes archaeology, exact surgery, and bold simplification.
+Do not default to native delegation unless the task is tiny and genuinely
+model-agnostic.
+
+Use `vetcoders-agents` first whenever the prune goes beyond obvious generated
+artifacts.
+
+| Dimension | Best model | Why |
+| --- | --- | --- |
+| Runtime or publish-cone discovery, hidden reachability, config archaeology, stale glue | Claude | Best at patient investigation, logic tracing, and proving whether a surface is truly live or merely looks live. |
+| Exact deletions, manifest tightening, registration cleanup, bounded refactors | Codex | Best at precise, low-noise implementation and keeping the cleanup mechanically correct. |
+| Radical simplification, archive taxonomy, "cut the whole subsystem" reframing | Gemini | Best when the repo needs a stronger new shape, not just a safer local trim. |
+
+Rules:
+
+- Use at least one external agent for any repo-wide prune beyond `dist/`,
+  caches, logs, and similar disposable output.
+- Good default split: Claude as archaeologist plus Codex as surgeon.
+- Add Gemini when the repo is bloated enough that the hardest part is deciding
+  what shape should survive.
+- Native `vetcoders-delegate` is only acceptable for tiny follow-up sweeps that
+  do not need model-specific strengths.
 
 ## Modes
 
@@ -48,7 +77,7 @@ Choose the mode from user intent.
   Default uncertain candidates to `VERIFY-FIRST` or `MOVE-ARCHIVE`.
 - `radical`
   Use when the user explicitly asks for ruthless cleanup, no mercy, aggressive
-  pruning, or says it is better to write fresh code than keep zombies.
+  pruning, or says it is cheaper to rebuild than preserve zombies.
   Once evidence clears the threshold, default to `DELETE-NOW`, not sentimental
   preservation.
 
@@ -56,119 +85,108 @@ If the user says "bez litosci", "radykalnie", or equivalent, use `radical`.
 
 ## The Pruning Classes
 
-| Class          | Meaning                                                                                   | Action                                                  |
-|----------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| `KEEP-RUNTIME` | Participates directly or transitively in app runtime                                      | Keep; refactor separately if ugly                       |
-| `KEEP-BUILD`   | Required to build, package, sign, bundle, or release                                      | Keep; do not delete with runtime cuts                   |
-| `KEEP-QA`      | Required to verify behavior, smoke flows, preview paths, or release confidence            | Keep; move later only with replacement proof            |
-| `MOVE-ARCHIVE` | Historical but still worth preserving outside main working tree                           | Move to archive branch, attic repo, or external archive |
-| `DELETE-NOW`   | Generated, disposable, reproducible, whole-dead, or clearly unreachable                   | Delete directly                                         |
-| `VERIFY-FIRST` | Suspicious, possibly dead, but dynamic imports, registries, or configs may still reach it | Prove with impact + grep + gates before removal         |
+| Class | Meaning | Action |
+| --- | --- | --- |
+| `KEEP-RUNTIME` | Participates directly or transitively in app or service runtime | Keep; refactor separately if ugly |
+| `KEEP-BUILD` | Required to build, package, sign, bundle, release, or ship | Keep; do not delete with runtime cuts |
+| `KEEP-QA` | Required to verify behavior, preview flows, smoke paths, or release confidence | Keep; move later only with replacement proof |
+| `KEEP-PUBLISH` | Required for published library/crate/package API, installability, docs examples, or release process | Keep; delete only with explicit publish-path proof |
+| `MOVE-ARCHIVE` | Historical but still intentionally worth preserving outside the hot repo surface | Move to archive branch, attic repo, or external archive |
+| `DELETE-NOW` | Generated, disposable, reproducible, whole-dead, or clearly unreachable | Delete directly |
+| `VERIFY-FIRST` | Suspicious and probably dead, but dynamic loading, registries, features, or configs may still reach it | Prove with structural evidence plus gates before removal |
 
 ## Workflow
 
-### Phase 1 - Establish Runtime Truth
+### Phase 1 - Define the Cone
 
-Start by declaring what "runtime" means for this repo:
+Start by naming what kind of repo you are pruning:
 
-- Desktop app, web app, CLI, library, or mixed surface
-- Primary entrypoints
-- Mandatory user flows that must still work after pruning
-- Packaging/build path that must stay intact
+- app or service
+- desktop app or mixed frontend/backend product
+- CLI
+- library, package, crate, or workspace
+- mixed product plus tooling monorepo
 
-For a Tauri + Vite repo, usually inspect:
+Then define what must survive.
 
-- Frontend entrypoints such as `src/main.tsx` and `src/App.tsx`
-- Backend entrypoints such as `src-tauri/src/main.rs` and `src-tauri/src/lib.rs`
-- Tauri command registration such as `tauri::generate_handler![...]`
-- Plugin setup, state injection, background jobs, and window/tray bootstrap
-- Backend resources such as migrations, bundled sidecars, capabilities, and
-  files copied through `tauri.conf.json`
-- Tauri config such as `src-tauri/tauri.conf.json`
-- Build scripts referenced by `beforeDevCommand`, `beforeBuildCommand`,
-  bundling resources, and package scripts
+For apps and services, capture:
 
-Use shell-level evidence for build truth:
+- real entrypoints
+- mandatory user flows that must still work after pruning
+- build, bundle, and release path
+- preview or smoke path that gives user-visible proof
+
+For libraries, packages, crates, and workspaces, capture:
+
+- importable or published public API
+- bins, examples, or docs paths that are part of the contract
+- workspace members that are intentionally shippable
+- release, package, or publish path
+
+Useful shell evidence by repo family:
 
 ```bash
-rg -n "before(Build|Dev)Command|frontendDist|resources|externalBin|capabilities" src-tauri/tauri.conf.json*
-rg -n '"(dev|build|test|lint|tauri:dev|tauri:build|preview)"\s*:' package.json
+# JS / TS
+rg -n '"(main|module|exports|bin|workspaces|scripts)"\s*:' package.json
+
+# Python
+rg -n "console_scripts|project.scripts|tool.poetry.scripts|entry-points" pyproject.toml setup.cfg setup.py
+
+# Rust
+rg -n '^\[workspace\]|^\[package\]|^\[lib\]|^\[\[bin\]\]|^members =|^default-members =|^publish =|^path =' -g 'Cargo.toml'
 ```
 
 Do not start with "unused exports".
-Start with "what must boot".
+Start with "what must boot, build, or publish".
 
-### Phase 2 - Map the Runtime Cone
+### Phase 2 - Map the Cone with `loct`
 
-Build the transitive runtime cone from the true entrypoints outward.
-
-Use loctree in this order:
-
-```text
-repo-view(project)
-slice(file="src/main.tsx", consumers=true)
-slice(file="src/App.tsx", consumers=true)
-slice(file="src-tauri/src/lib.rs", consumers=true)
-focus(directory="src")
-focus(directory="src-tauri/src")
-follow(scope="all") when cycles, hotspots, or twins look relevant
-impact(file=<candidate>) before deleting any non-obvious file
-find(mode="who-imports", name=<candidate>) for reverse dependency checks
-```
-
-Evidence that something is runtime-critical includes:
-
-- Imported from a real entrypoint
-- Registered in router, providers, command registries, plugin registries, event
-  bridges, state stores, background job setup, or global shell bootstrap
-- Registered in Tauri command handlers, plugin init, `manage(...)` state,
-  startup hooks, migrations, or backend schedulers
-- Referenced from build, bundle, preview, smoke, or packaging config
-- Required by smoke flows the product cannot lose
-
-Evidence that something is not runtime includes:
-
-- Generated artifacts
-- Reports, logs, review packs, or screenshots
-- Agent memory and session residue
-- Playground or prototype code not referenced by build or packaging
-- Archived docs or superseded experiments
-
-### Phase 2.5 - `loct dist` Doctrine
-
-When the frontend uses Vite source maps, `loct dist` becomes mandatory.
-
-Run it before and after every frontend pruning wave:
+Run the generic structural pass first:
 
 ```bash
-pnpm exec vite build --sourcemap
-loct dist --src src --source-map dist/assets --report .loctree/dist-report.json
+loct auto
+loct manifests
+loct health
+loct hotspots
 ```
 
-Rules:
+Then choose commands based on repo shape.
 
-- For Vite repos, prefer `dist/assets`, not bare `dist`, as the source map path.
-- Track deltas in:
-    - `dead_exports`
-    - `source_exports`
-    - `bundled_exports`
-    - source map count
-- Treat the delta as your scoreboard.
-- Never treat a symbol-level dead-export report as deletion proof by itself.
-- Use it to discover dead slices, stale public APIs, barrel bleed, and
-  dev-only runtime leakage.
+Use these in most repos:
 
-Good use of `loct dist`:
+```bash
+loct focus <dir>
+loct slice <file>
+loct impact <file>
+loct query who-imports <path-or-symbol>
+loct dead
+loct zombie
+loct twins
+loct coverage
+loct findings --summary
+```
 
-- find a dead service slice and remove the frontend file, test, types, Rust
-  command, policy seed, and handler registration together
-- identify a bootstrap import that only exists for diagnostics
-- tighten public API by removing dead re-exports after proving consumers are gone
+Framework-aware branches:
 
-Bad use of `loct dist`:
+- Web/API backends: `loct routes`
+- Tauri/event-driven desktop apps: `loct commands`, `loct events`,
+  `loct pipelines`, `loct trace <handler>`
+- Frontend bundles with source maps: `loct dist`
+- CSS-heavy frontends: `loct layoutmap`
+- Rust crates and workspaces: prioritize `loct manifests`, `loct hotspots`,
+  `loct zombie`, `loct health`, and `loct coverage` over `loct dist`
 
-- deleting a registry-backed symbol because it appears dead once
-- trimming ten type exports while ignoring a fully dead vertical slice nearby
+Doctrine:
+
+- `loct manifests` is mandatory early because it reveals the real build,
+  package, and workspace contract.
+- `loct hotspots` tells you which files are structural hubs and therefore high
+  blast-radius.
+- `loct coverage` helps explain why some surface still matters even when it is
+  not on the main runtime path.
+- `loct dist` is a specialist proof tool, not the universal first step.
+- Do not make prune methodology Vite-centric, Tauri-centric, or Visto-centric.
+  The repo decides which `loct` evidence matters.
 
 ### Phase 3 - Classify the Repo Surface
 
@@ -178,28 +196,35 @@ This prevents wasting time micro-pruning a subtree that should simply move out.
 Typical early classifications in AI-grown repos:
 
 - Usually `DELETE-NOW`:
-  `dist/`, `playwright-report/`, logs, cached outputs, generated proof artifacts
+  `dist/`, `build/`, coverage outputs, test reports, logs, caches, generated
+  screenshots, and reproducible proof artifacts
 - Usually `MOVE-ARCHIVE`:
   `.ai-*`, `.codex/`, `.claude/`, `.junie/`, `.trash/`, `.attic/`,
-  `docs/archive/`, prototype folders, abandoned landing experiments
+  `docs/archive/`, abandoned prototypes, superseded landing experiments
 - Usually `KEEP-BUILD`:
-  `.github/workflows/`, packaging scripts, release scripts, bundle resources
+  `.github/workflows/`, release scripts, bundling resources, packaging helpers,
+  `build.rs`, `xtask/`, installer scripts
 - Usually `KEEP-QA`:
-  `e2e/`, `tests/`, smoke scripts, fixtures, test harnesses
+  `tests/`, `e2e/`, smoke harnesses, fixtures, test snapshots, integration
+  scripts
+- Usually `KEEP-PUBLISH`:
+  `examples/`, `benches/`, docs examples, crate/package metadata, publish
+  scripts, public API shims that are intentionally shipped
 - Usually `VERIFY-FIRST`:
-  Storybook hooks, preview shims, alternate app shells, duplicate engines,
-  legacy adapters, vendor folders, manifest generators
+  alternate app shells, preview shims, duplicate engines, workspace members,
+  feature-gated modules, vendor folders, macro helpers, manifest generators
 
-Special handling for `devtools/`:
+Special handling:
 
-- `KEEP-QA` if the file is wired into preview, browser-only flows, smoke flows,
-  or explicit dev scripts the team still uses
-- `DELETE-NOW` if it is boot-time diagnostics or debug exposure code with no
-  transitive consumers beyond the app bootstrap
-- `VERIFY-FIRST` if it alters boot behavior under env gates or mock routing
-
-Do not assume `scripts/` is trash.
-In messy repos, `scripts/` often contains half the actual build contract.
+- Do not assume `scripts/` is trash.
+  In messy repos, `scripts/` often contains half the actual build contract.
+- Do not assume `examples/`, `benches/`, `fuzz/`, or `xtask/` are disposable in
+  Rust repos.
+  They often encode publish, test, or operational truth.
+- Do not assume docs-site glue is dead just because the product runtime does
+  not import it.
+  If it supports installability, onboarding, or publish proof, classify it
+  intentionally.
 
 ### Phase 4 - Prune in Waves
 
@@ -216,7 +241,7 @@ Remove generated and reproducible output first:
 - cached artifacts
 - stale screenshots and preview outputs
 
-This wave should not change runtime at all.
+This wave should not change runtime or publish truth at all.
 
 #### Wave 1 - Agent Exhaust and Archaeology
 
@@ -228,18 +253,20 @@ Move or remove:
 - attic/trash buckets inside the repo
 - archived docs that are no longer part of the working product surface
 
-This wave reduces noise for all later analysis.
+This wave reduces noise for every later analysis.
 
-#### Wave 2 - Dev-Only Bleed Into Runtime
+#### Wave 2 - Dev-Only Bleed Into Boot or Publish
 
-Look for code that exists only for local hacking but leaks into the main app path:
+Look for code that exists only for local hacking but leaks into the main app,
+package, or release path:
 
 - browser mocks imported by default
-- preview-only providers in app entrypoints
+- preview-only providers in real entrypoints
 - dual shells and duplicate startup paths
 - env-gated branches with broad permanent imports
-- diagnostics exposed on `window` only for local inspection
-- debug scripts or env vars that still shape boot-time behavior
+- diagnostics exposed only for local inspection
+- dead feature flags or compatibility adapters retained after migration
+- docs/demo crates or packages that no release, CI, or docs path still uses
 
 These are high-value cuts because they sharpen the boundary between product and
 debug scaffolding.
@@ -251,31 +278,31 @@ Before trimming leaves, ask whether an entire feature strand is already dead.
 Good candidates:
 
 - frontend service with no runtime consumers
-- companion types used only by that service
-- test file covering only that service
-- backend Rust command module serving only that service
-- `generate_handler!` entries for those commands
-- policy or permission seeds for those commands
-- barrel exports that keep pretending the slice exists
+- companion types or DTOs used only by that service
+- test file covering only that dead slice
+- backend command or module serving only that slice
+- workspace member or crate serving only a dead feature
+- examples, benches, or docs glue kept alive only by that dead member
+- barrel exports or public shims that keep pretending the slice exists
 
-If the answer is "only tests and registries remain", cut the whole slice.
+If the answer is "only tests, registries, or docs glue remain", cut the whole
+slice.
 
-This wave is usually higher ROI than symbol-chasing.
+#### Wave 4 - Unreachable Product or Publish Surface
 
-#### Wave 4 - Unreachable Product Surface
-
-Now prune inside `src/` and `src-tauri/src/`:
+Now prune inside the surviving code surface:
 
 - unmounted routes
-- unregistered commands
-- unregistered Tauri handlers and plugin surfaces
-- panels no live route reaches
-- duplicate services
-- duplicate Rust engines, background workers, or stale migration paths
+- unregistered commands and handlers
+- dead event bridges
+- panels or pages no live route reaches
+- duplicate services or engines
 - stale fallback systems retained after migration
 - feature folders that survive only through legacy glue
+- crate modules behind dead feature flags
+- examples and benches nobody runs and no docs or CI path references
 
-Use the dead parrots rule here:
+Use the dead-subtree rule here:
 if a subtree exists only to support a removed path, delete the whole subtree
 instead of trimming leaves forever.
 
@@ -285,47 +312,68 @@ After every removal wave, immediately clean the references that still point at
 deleted surface:
 
 - package scripts
-- env vars and vite env typings
+- Python entrypoints and tool config
+- Cargo workspace members, features, and bins
+- env vars and typings
 - CI workflows
 - manifests
 - docs indexes
 - test matrices
 - import aliases
 - re-export barrels
-- Tauri handler registration
-- policy seeds and permission tables
+- handler and route registration
 - release and setup scripts
 
 If you skip this wave, the repo still behaves as if dead code is alive.
 
 API narrowing belongs here too:
-do not only delete files; also shrink public module surfaces when runtime only
-needs a smaller contract.
+do not only delete files; also shrink public module surfaces when runtime or
+publish truth needs a smaller contract.
 
-### Phase 5 - Verify
+### Phase 5 - Verify Reality
 
 After each wave, run the closest safe gates for the repo in this order.
 
-For mixed TypeScript + Rust desktop repos, prefer:
+TypeScript / JavaScript repos:
 
 ```bash
-pnpm exec tsc --noEmit
-cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
-scripts/run-semgrep.sh --config=p/security-audit <touched-files>
-pnpm exec vite build --sourcemap
-loct dist --src src --source-map dist/assets --report .loctree/dist-report-next.json
-pnpm test:e2e:ts
+<package-manager> lint
+<package-manager> typecheck
+<package-manager> test
+<package-manager> build
 ```
 
-For Tauri-heavy repos, also verify:
+Python repos:
 
 ```bash
-rg -n "generate_handler!|plugin\(|manage\(|Builder::default|setup\(" src-tauri/src
-rg -n "resources|externalBin|capabilities|frontendDist" src-tauri/tauri.conf.json*
+uv run ruff check .
+uv run mypy .            # when configured
+uv run pytest
 ```
 
-Add targeted tests for the surfaces touched in the wave.
-Run at least one real smoke flow after any structural pruning.
+Rust crates and workspaces:
+
+```bash
+cargo fmt --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo publish --dry-run -p <crate>   # when publish truth matters
+```
+
+Mixed repos:
+
+- combine the relevant gates from each runtime slice
+- add semgrep when available
+- run `loct dist` only when a source-map-backed frontend bundle exists
+
+Always add one real proof path after structural pruning:
+
+- smoke the live app
+- run the CLI for a meaningful command
+- import the library from a real sample
+- dry-run the package or publish path
+
+Green static gates are necessary, not sufficient.
 
 ## False Positive Families
 
@@ -335,48 +383,54 @@ Treat these as suspicious until proven dead:
 - barrel re-exports that mirror live internal types
 - context modules that re-export convenience types
 - event hub alias wrappers
-- dynamic tool registries and slash-command registries
+- dynamic registries and plugin systems
+- feature-gated modules
+- proc-macro or macro-generated helper surfaces
 - huge DTO/type files where only some exports are dead
-- test-only helpers that appear in the same report as runtime code
+- workspace glue crates and examples tied to docs or CI
 - env-gated imports in boot files
 
 Rule:
 when a file belongs to a false-positive family, do not trim by symbol first.
-Use `impact`, `who-imports`, `rg`, and contract checks to decide whether the
-whole file is dead, only the public API is stale, or the report is noisy.
+Use `loct impact`, `loct query who-imports`, `rg`, manifest checks, and gates
+to decide whether the whole file is dead, only the public API is stale, or the
+report is noisy.
 
 ## Evidence Rules
 
 Use this hierarchy when deciding whether a candidate can go:
 
-1. `impact(file)` and `who-imports` say nothing consumes it
-2. `rg` finds no config, script, glob, manifest, handler, or policy reference
-3. No dynamic import, registry, env gate, or preview path points to it
+1. `loct impact` and `loct query who-imports` say nothing consumes it
+2. `loct manifests` plus `rg` find no config, script, manifest, route,
+   handler, workspace, feature, or publish reference
+3. No dynamic import, registry, env gate, macro expansion, plugin init, or
+   `build.rs` path still reaches it
 4. Build and compile gates still pass
-5. `loct dist` delta improves or stays clean
-6. One real smoke flow still passes
+5. `loct dist` delta improves or stays clean when `loct dist` is applicable
+6. One real smoke, import, install, or publish proof still passes
 
 If only rules 1-2 are true, classify as `VERIFY-FIRST`.
 If rules 1-5 are true in `radical` mode, deletion is usually safe.
 If all six are true, deletion is strongly justified.
 
 Static tools are hints, not verdicts.
-`knip`, `madge`, dead-export scanners, and "unused file" heuristics help, but
-they do not understand runtime registries, Tauri commands, dynamic imports, or
-preview/dev contracts by themselves.
+Dead-export scanners, unused-file detectors, and generic lints do not
+understand registries, feature flags, publish contracts, or dynamic loading by
+themselves.
 
 ## Prioritization Heuristic
 
 When multiple candidates are available, prefer this order:
 
 1. whole dead vertical slice
-2. dev-only bleed from runtime boot
-3. dead public API or stale barrel re-export
-4. isolated dead helper with zero blast radius
-5. cosmetic symbol trimming
+2. dev-only bleed from boot or publish path
+3. dead workspace member or duplicate subsystem
+4. dead public API or stale barrel re-export
+5. isolated dead helper with zero blast radius
+6. cosmetic symbol trimming
 
-If you are spending time trimming leaf exports while a dead service/backend
-slice is still present, you are pruning in the wrong order.
+If you are spending time trimming leaf exports while a dead subsystem or stale
+workspace member is still present, you are pruning in the wrong order.
 
 ## Output Format
 
@@ -391,10 +445,10 @@ Quick win: <one immediate high-impact cleanup>
 
 Then include:
 
-- Runtime cone summary
+- Runtime or publish cone summary
 - `KEEP/MOVE/DELETE/VERIFY` classification list
 - Wave plan with blast radius
-- `loct dist` delta summary when applicable
+- `loct` evidence summary, including `loct dist` only when applicable
 - Gate results
 - Open risks and what still needs proof
 
@@ -403,26 +457,33 @@ Then include:
 Use this flow for major cleanup:
 
 ```text
-vetcoders-init -> vetcoders-prune -> vetcoders-followup -> vetcoders-marbles
+vetcoders-init -> vetcoders-agents -> vetcoders-prune -> vetcoders-followup -> vetcoders-marbles
 ```
 
 - `vetcoders-init` gives memory plus structure
-- `vetcoders-prune` defines the cone and removes non-runtime surface
-- `vetcoders-followup` verifies runtime truth after the cuts
+- `vetcoders-agents` is the default first move for non-trivial prune work
+- `vetcoders-prune` defines the cone and removes non-runtime or non-publish
+  surface
+- `vetcoders-followup` verifies truth after the cuts
 - `vetcoders-marbles` loops if residual P1/P2 chaos remains
 
 ## Anti-Patterns
 
-- Deleting by folder name intuition alone
-- Treating docs, tests, and build scripts as equally disposable
+- Making prune methodology Vite-centric, Tauri-centric, or Visto-centric
+- Centering the whole skill around `loct dist`
+- Using native delegation first when the cleanup clearly wants model-specific
+  strengths
+- Deleting by folder-name intuition alone
+- Treating docs, tests, build scripts, and publish scaffolding as equally
+  disposable
 - Running one giant cleanup PR across runtime, QA, docs, CI, and packaging
-- Trusting "unused" reports without checking dynamic loading paths
-- Trusting `loct dist` without understanding false-positive families
-- Keeping dev-only imports inside real app entrypoints
+- Trusting "unused" reports without checking registries, dynamic loading, or
+  feature gates
 - Preserving fossils because deleting them feels emotionally risky
 - Archiving everything inside the same repo forever instead of moving it out
 - Trimming ten dead symbols while a whole dead subsystem is still standing
-- Cleaning code but leaving handlers, policies, scripts, or env flags behind
+- Cleaning code but leaving handlers, manifests, features, scripts, or env
+  flags behind
 
 ## The Pruning Principle
 
@@ -433,8 +494,9 @@ If a file, folder, or subsystem cannot clearly answer one of these questions,
 it is a pruning candidate:
 
 - Does runtime load it?
-- Does build or packaging require it?
-- Does QA or preview require it?
+- Does build, release, or packaging require it?
+- Does QA, preview, docs, or onboarding intentionally require it?
+- Does publish or install truth require it?
 - Does the team intentionally preserve it as archive?
 
 If the answer is no, cut it.

@@ -241,9 +241,9 @@ Preserve chronology, corrections, and reversals of interpretation.
 Run the same plan through independent planners using the portable spawn scripts:
 
 ```bash
-bash ~/.codex/skills/vetcoders-spawn/scripts/codex_spawn.sh .ai-agents/plans/<plan>.md --mode plan
-bash ~/.claude/skills/vetcoders-spawn/scripts/claude_spawn.sh .ai-agents/plans/<plan>.md --mode plan
-bash ~/.gemini/skills/vetcoders-spawn/scripts/gemini_spawn.sh .ai-agents/plans/<plan>.md --mode plan
+bash ~/.codex/skills/vetcoders-agents/scripts/codex_spawn.sh .ai-agents/plans/<plan>.md --mode plan
+bash ~/.claude/skills/vetcoders-agents/scripts/claude_spawn.sh .ai-agents/plans/<plan>.md --mode plan
+bash ~/.gemini/skills/vetcoders-agents/scripts/gemini_spawn.sh .ai-agents/plans/<plan>.md --mode plan
 ```
 
 > **Note**: If your environment has `codex-plan`, `claude-plan`, `gemini-plan`
@@ -275,7 +275,7 @@ zsh -ic 'codex-resume <session-uuid> "<continuation prompt>"'
 zsh -ic 'gemini-resume <session-uuid> "<continuation prompt>"'
 
 # If not, use portable scripts with the synthesis as the new plan:
-bash ~/.codex/skills/vetcoders-spawn/scripts/codex_spawn.sh .ai-agents/plans/<implementation-plan>.md --mode implement
+bash ~/.codex/skills/vetcoders-agents/scripts/codex_spawn.sh .ai-agents/plans/<implementation-plan>.md --mode implement
 ```
 
 Do not pretend continuity exists if the resume helper does not exist.
@@ -283,7 +283,7 @@ Do not pretend continuity exists if the resume helper does not exist.
 ### Controlled sub-spawn during implementation
 
 When a resumed implementation agent hits a **real, bounded blocker**, it may
-spawn **exactly one** additional agent through `vetcoders-spawn` to isolate
+spawn **exactly one** additional agent through `vetcoders-agents` to isolate
 that subproblem.
 
 Rules:

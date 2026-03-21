@@ -11,11 +11,11 @@ Install the canonical skill directories from this repo into local tool homes:
   ~/.gemini/skills
 
 Examples:
-  bash vetcoders-spawn/scripts/install.sh
-  bash vetcoders-spawn/scripts/install.sh --tool codex --tool claude
-  bash vetcoders-spawn/scripts/install.sh --dry-run
-  bash vetcoders-spawn/scripts/install.sh --mirror
-  bash vetcoders-spawn/scripts/install.sh --with-shell
+  bash vetcoders-agents/scripts/install.sh
+  bash vetcoders-agents/scripts/install.sh --tool codex --tool claude
+  bash vetcoders-agents/scripts/install.sh --dry-run
+  bash vetcoders-agents/scripts/install.sh --mirror
+  bash vetcoders-agents/scripts/install.sh --with-shell
 EOF_USAGE
 }
 
@@ -211,5 +211,5 @@ if (( with_shell )); then
     shell_args+=(--no-zshrc)
   fi
   printf '\nInstalling optional zsh helper layer...\n'
-  bash "$repo_root/vetcoders-spawn/scripts/install-shell.sh" "${shell_args[@]}"
+  bash "$repo_root/vetcoders-agents/scripts/install-shell.sh" "${shell_args[@]}"
 fi

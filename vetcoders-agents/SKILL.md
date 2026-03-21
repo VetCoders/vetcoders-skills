@@ -1,16 +1,16 @@
 ---
-name: vetcoders-spawn
-version: 1.3.0
+name: vetcoders-agents
+version: 1.4.1
 description: >
   Spawn external subagents via the VetCoders method using the operator-facing
   helper launchers in an interactive `zsh -ic` shell. Use when the user wants
   full isolation, visible Terminal agents, durable artifacts in `.ai-agents/`,
   and real delegated implementation instead of in-thread analysis. Trigger
-  phrases: "spawn agents", "terminal agents", "spawn fleet", "odpal agentow",
-  "deleguj przez terminal", "codex agents", "power spawn".
+  phrases: "spawn agents", "terminal agents", "agent fleet", "odpal agentow",
+  "deleguj przez terminal", "codex agents", "power agents".
 ---
 
-# VetCoders Spawn
+# VetCoders Agents
 
 ## When to use
 
@@ -20,13 +20,26 @@ Trigger when the user asks to delegate work, especially phrases like:
 - Any request that implies parallelization or multi-track execution
 - Any request that wants visible Terminal agents or long-running isolated work
 
-## Why use spawn
+## Why use agents
 
 - Your context is precious and built through many sessions, so you should delegate precisely and minimize context bloat.
 - Spawning through the VetCoders method requires a strict execution pattern.
 - The command shape is canonical and obligatory without exceptions. If you hesitate to use it as provided, do not use this skill.
 - Agents are copies of yourself: same smart, same capable, just lighter and more agile because they do not carry your full context window.
 - Spawn exists so field teams can implement, research, review, and converge outside the main thread while still leaving durable artifacts in `.ai-agents/`.
+
+## Why-matrix
+
+Use `vetcoders-agents` as the default first choice whenever the task benefits from model-specific strengths.
+Reach for native `vetcoders-delegate` only when the task is small, bounded, and model-agnostic.
+
+| Model | Why choose it | Best for | Avoid when |
+| --- | --- | --- | --- |
+| Codex | Precision, implementation purity, and highly reliable code surgery. | Critical implementations, exact refactors, test-gated fixes, and bounded engineering execution. | The repo is dirty, the brief is vague, or you are really asking someone to explore and clean up chaos first. |
+| Claude | Investigative depth, stubborn logic tracing, and exhaustive research instincts. | Bug hunts, codebase forensics, audits, architecture research, and SoTA framework evaluation. | The work is mostly straightforward code surgery and does not need a full investigative pass. |
+| Gemini | Bold reframing, creative system redesign, and fearless simplification. | Architecture leaps, radical cleanup ideas, product reframing, and high-variance creative exploration. | The task only needs predictable, surgical implementation and low-variance execution. |
+
+If the task wants one of these strengths, external agents win by default because you can route work to the right mind instead of forcing a generic in-thread delegation path.
 
 ## Goal
 
@@ -80,6 +93,21 @@ Run required checks. If something is blocked, report the exact blocker and run t
 
 Keep this preamble repo-agnostic.
 
+Add this living-tree coordination note below the preamble whenever the plan
+needs it:
+
+- State explicitly whether the agent is working solo at that stage or alongside
+  other agents in parallel.
+- The agent needs to know whether the stage is solo or shared, but does not
+  need to read other agents' plan files unless the plan explicitly requires it.
+- If the original plan clearly calls for a stabilization checkpoint, the agent
+  must preserve its tranche of work with a local commit, without push.
+- Never change branches during active work. The intent is to stay on the
+  current working branch and keep building inside that living tree.
+- Plans may explicitly instruct the agent to finish and harden one seam, spawn
+  another `vetcoders-agents` worker for the next plan, commit locally for
+  preservation, and continue.
+
 ## Vibecraft doctrine
 
 - Do not treat agents like couriers or report printers. Treat them like artists and implementers.
@@ -119,6 +147,9 @@ Living tree note:
 - You work on a living tree with Vibecrafting methodology, so concurrent changes are expected.
 - Adapt proactively and continue, but this is never permission to skip quality, security, or test gates.
 - Run required checks. If something is blocked, report the exact blocker and run the closest safe equivalent.
+- Coordination mode: <solo on this stage / parallel with other agents on this stage>
+- You do not need to inspect other agents' plans unless this plan explicitly tells you to.
+- If this plan explicitly calls for a stabilization checkpoint, commit your own changes locally without push and continue on the current branch.
 ```
 
 ## Spawn commands
@@ -160,7 +191,7 @@ Observe progress through durable artifacts in `.ai-agents/reports/`.
 If your environment exposes the observer helper, the standard check is:
 
 ```bash
-bash ~/.codex/skills/vetcoders-spawn/scripts/observe.sh codex --last
+bash ~/.codex/skills/vetcoders-agents/scripts/observe.sh codex --last
 ```
 
 Use the equivalent agent observer when needed.

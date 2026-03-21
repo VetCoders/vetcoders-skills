@@ -120,7 +120,7 @@ Split implementation into independent, parallel-safe units:
 
 ## Spawn Commands
 
-Use the portable scripts from `vetcoders-spawn/scripts/`. These handle artifact
+Use the portable scripts from `vetcoders-agents/scripts/`. These handle artifact
 generation, launch mode selection (visible Terminal or headless), and `zsh -ic`
 environment setup automatically.
 
@@ -130,19 +130,19 @@ environment setup automatically.
 SLUG="<pipeline-slug>"
 PLAN=".ai-agents/pipeline/$SLUG/plans/01_task.md"
 
-bash vetcoders-spawn/scripts/codex_spawn.sh "$PLAN" --mode implement --runtime terminal
+bash vetcoders-agents/scripts/codex_spawn.sh "$PLAN" --mode implement --runtime terminal
 ```
 
 ### Claude (for complex reasoning tasks)
 
 ```bash
-bash vetcoders-spawn/scripts/claude_spawn.sh "$PLAN" --mode review --runtime terminal
+bash vetcoders-agents/scripts/claude_spawn.sh "$PLAN" --mode review --runtime terminal
 ```
 
 ### Gemini
 
 ```bash
-bash vetcoders-spawn/scripts/gemini_spawn.sh "$PLAN" --mode implement --runtime terminal
+bash vetcoders-agents/scripts/gemini_spawn.sh "$PLAN" --mode implement --runtime terminal
 ```
 
 > The scripts default to visible Terminal mode on macOS and fall back to headless

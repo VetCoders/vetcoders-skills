@@ -44,7 +44,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-source_file="$repo_root/vetcoders-spawn/shell/vetcoders.zsh"
+source_file="$repo_root/vetcoders-agents/shell/vetcoders.zsh"
 [[ -f "$source_file" ]] || die "Helper file not found: $source_file"
 
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"

@@ -58,7 +58,7 @@ That includes, when justified by the task and available in the environment:
 - improving UX and visual quality
 - running local servers and smoke tests
 - steering browser or desktop interactions through available tooling
-- orchestrating agent swarms through `[$vetcoders-spawn](/Users/polyversai/.codex/skills/vetcoders-spawn/SKILL.md)`
+- orchestrating agent swarms through `[$vetcoders-agents](/Users/polyversai/.codex/skills/vetcoders-agents/SKILL.md)`
 - converging through `[$vetcoders-marbles](/Users/polyversai/.codex/skills/vetcoders-marbles/SKILL.md)`
 
 The goal is not just correctness.
@@ -158,7 +158,7 @@ Decide whether this is:
 Preferred compositions:
 
 - `[$vetcoders-partner](/Users/polyversai/.codex/skills/vetcoders-partner/SKILL.md)` for hard architecture truth
-- `[$vetcoders-spawn](/Users/polyversai/.codex/skills/vetcoders-spawn/SKILL.md)` for external field teams
+- `[$vetcoders-agents](/Users/polyversai/.codex/skills/vetcoders-agents/SKILL.md)` for external field teams
 - `[$vetcoders-marbles](/Users/polyversai/.codex/skills/vetcoders-marbles/SKILL.md)` for convergence loops
 - `[$vetcoders-dou](/Users/polyversai/.codex/skills/vetcoders-dou/SKILL.md)` when the code works but the product still
   feels unfinished

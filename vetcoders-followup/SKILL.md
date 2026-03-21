@@ -3,7 +3,7 @@ name: vetcoders-followup
 version: 1.0.0
 description: >
   Production follow-up audit skill for VetCoders. Runs a strict chain:
-  vetcoders-init -> vetcoders-workflow -> vetcoders-spawn, then synthesizes
+  vetcoders-init -> vetcoders-workflow -> vetcoders-agents, then synthesizes
   implementation gaps, readiness risks, quality gate outcomes, and next actions
   before hands-on build/testing.
 ---
@@ -20,7 +20,7 @@ Always run this sequence:
 
 1. `vetcoders-init` (memory + structure baseline)
 2. `vetcoders-workflow` (Examine -> optional Research -> Implement context)
-3. `vetcoders-spawn` or `vetcoders-implement` (parallel delegated audits)
+3. `vetcoders-agents` first; use `vetcoders-delegate` only for small or model-agnostic delegated audits
 4. Final synthesis by primary agent (you)
 
 Do not skip sequence unless user explicitly opts out.
@@ -81,7 +81,7 @@ Create pipeline artifacts:
 `RESEARCH.md` should be concise and only cover unknowns that affect architecture,
 runtime behavior, or production readiness.
 
-## Phase C - Delegation (vetcoders-spawn)
+## Phase C - Delegation (vetcoders-agents)
 
 Prepare at least 2 audit tracks:
 
@@ -124,7 +124,7 @@ Context:
 
 ### Spawn method
 
-Use the portable scripts from `vetcoders-spawn` (see `vetcoders-spawn` SKILL.md for commands).
+Use the portable scripts from `vetcoders-agents` (see `vetcoders-agents` SKILL.md for commands).
 Write plans to `.ai-agents/.../plans/` and reports to `.ai-agents/.../reports/`.
 
 ## Phase D - Follow-up Synthesis (Primary Agent)

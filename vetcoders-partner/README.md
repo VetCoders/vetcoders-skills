@@ -57,7 +57,7 @@ reasoning in the center.
 ## Spawn and Resume
 
 `vetcoders-partner` is designed to pair naturally with
-`vetcoders-spawn`:
+`vetcoders-agents`:
 
 - planner swarms go out through the portable spawn scripts with `--mode plan`
 - chosen tracks continue via `*-resume` helpers or fresh implementation agents
@@ -65,7 +65,7 @@ reasoning in the center.
 > **Note**: `codex-plan`, `claude-plan`, `gemini-plan`, `*-resume` are
 > convenience aliases from private dotfiles. The canonical, machine-portable
 > equivalent is the repo-owned spawn scripts:
-> `bash ~/.codex/skills/vetcoders-spawn/scripts/codex_spawn.sh <plan>.md --mode plan`
+> `bash ~/.codex/skills/vetcoders-agents/scripts/codex_spawn.sh <plan>.md --mode plan`
 > See `vetcoders-partner/SKILL.md` Spawn Playbook for full details.
 
 During resumed implementation, one important rule now applies:
@@ -84,7 +84,7 @@ That keeps the method sharp without turning it into uncontrolled fleet sprawl.
 
 `vetcoders-partner` sits above the lower-level tools:
 
-- `vetcoders-spawn` for external agent execution
+- `vetcoders-agents` for external agent execution
 - `vetcoders-workflow` for structured examine/research/implement flows
 - `vetcoders-marbles` for convergence once the shape is chosen
 

@@ -343,7 +343,7 @@ Agent 3: Discoverability Hydration (SEO, meta tags, pre-rendering)
 Agent 4: Commercial Hydration (landing copy, marketplace listings)
 ```
 
-Use `vetcoders-spawn` spawn pattern. Each agent gets:
+Use `vetcoders-agents` spawn pattern. Each agent gets:
 
 - DoU findings for their domain
 - Template artifacts from this skill

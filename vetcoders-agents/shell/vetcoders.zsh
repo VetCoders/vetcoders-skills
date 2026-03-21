@@ -4,7 +4,7 @@
 
 _vetcoders_spawn_home() {
   local tool="$1"
-  printf '%s/.%s/skills/vetcoders-spawn' "$HOME" "$tool"
+  printf '%s/.%s/skills/vetcoders-agents' "$HOME" "$tool"
 }
 
 _vetcoders_spawn_script() {
