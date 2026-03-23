@@ -74,6 +74,26 @@
             padding: 0 0 24px
         }
 
+        .skip-link {
+            position: fixed;
+            top: -48px;
+            left: 16px;
+            z-index: 300;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: var(--orange);
+            color: var(--dark);
+            font-family: var(--font-head);
+            font-size: .8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: top .2s ease
+        }
+
+        .skip-link:focus {
+            top: 16px
+        }
+
         /* NAV */
         .topbar {
             position: fixed;
@@ -107,6 +127,10 @@
             letter-spacing: .02em;
             color: var(--light);
             text-decoration: none
+        }
+
+        .brand-logo {
+            border-radius: 5px
         }
 
         .brand-mark {
@@ -151,14 +175,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px
+            gap: 16px;
+            flex-wrap: wrap
         }
 
         .curl-banner code {
             font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
             font-size: .76rem;
             color: rgba(250, 249, 245, .7);
-            white-space: nowrap
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-align: center;
+            line-height: 1.45
         }
 
         .curl-banner .cb-g {
@@ -185,6 +213,20 @@
         .curl-banner .cb-copy:hover {
             background: var(--orange);
             color: var(--dark)
+        }
+
+        .curl-banner .cb-copy.is-copied,
+        .code-block .copy-btn.is-copied {
+            background: #83d86c;
+            border-color: #83d86c;
+            color: var(--dark)
+        }
+
+        .curl-banner .cb-copy.is-error,
+        .code-block .copy-btn.is-error {
+            background: #d46f4b;
+            border-color: #d46f4b;
+            color: var(--light)
         }
 
         @media (max-width: 900px) {
@@ -306,6 +348,23 @@
             background: rgba(255, 255, 255, .04)
         }
 
+        .hterm-prompt:focus-visible,
+        .hterm-row:focus-visible,
+        .curl-banner .cb-copy:focus-visible,
+        .code-block .copy-btn:focus-visible,
+        .brand:focus-visible,
+        .nav-links a:focus-visible,
+        footer .credits a:focus-visible,
+        .credits-email:focus-visible {
+            outline: 2px solid var(--orange);
+            outline-offset: 3px
+        }
+
+        .hterm-prompt:focus-visible,
+        .hterm-row:focus-visible {
+            background: rgba(255, 255, 255, .06)
+        }
+
         .hterm-prompt .g {
             color: var(--mid);
             margin-right: 8px
@@ -408,6 +467,11 @@
 
         .hterm-tip.ok {
             background: #83d86c
+        }
+
+        .hterm-tip.err {
+            background: #d46f4b;
+            color: var(--light)
         }
 
         @media (max-width: 900px) {
@@ -662,6 +726,34 @@
             opacity: .7
         }
 
+        .card--featured {
+            border-color: var(--light);
+            grid-column: 1 / -1
+        }
+
+        .card--accent-orange {
+            border-color: var(--orange)
+        }
+
+        .card--accent-blue {
+            border-color: var(--blue)
+        }
+
+        .card-phase--light {
+            background: rgba(250, 249, 245, .12);
+            color: var(--light)
+        }
+
+        .card-phase--muted {
+            background: rgba(176, 174, 165, .12);
+            color: var(--mid)
+        }
+
+        .card-phase--orange {
+            background: rgba(217, 119, 87, .14);
+            color: var(--orange)
+        }
+
         /* DIFFUSION */
         .diffusion-section {
             background: linear-gradient(180deg, var(--dark) 0%, #1a1a19 100%)
@@ -793,6 +885,33 @@
             color: var(--green)
         }
 
+        .transition-caption {
+            font-family: var(--font-head);
+            font-size: .85rem;
+            color: var(--mid);
+            margin-bottom: 1rem
+        }
+
+        .transition-scoreline {
+            font-family: var(--font-head);
+            font-size: .75rem;
+            color: var(--mid);
+            margin-top: .8rem
+        }
+
+        .transition-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem
+        }
+
+        .transition-status .dou {
+            text-decoration: line-through;
+            color: var(--mid)
+        }
+
         /* MANIFESTO */
         .manifesto-section {
             background: #1a1a19
@@ -829,6 +948,28 @@
 
         .manifesto-block .plague-list .cross {
             color: var(--orange)
+        }
+
+        .manifesto-lead,
+        .manifesto-summary,
+        .install-copy,
+        .install-note {
+            color: var(--mid);
+            line-height: 1.7
+        }
+
+        .manifesto-lead {
+            margin-bottom: 1.5rem
+        }
+
+        .manifesto-diagnostic-label {
+            font-family: var(--font-head);
+            font-weight: 600;
+            margin-bottom: .8rem
+        }
+
+        .manifesto-summary {
+            margin-top: 1.5rem
         }
 
         /* INSTALL */
@@ -886,6 +1027,29 @@
             border-color: var(--orange)
         }
 
+        .install-heading {
+            font-size: 1rem;
+            margin: 2rem 0 .5rem;
+            color: var(--light)
+        }
+
+        .install-heading--first {
+            margin-top: 0
+        }
+
+        .install-copy--top {
+            margin: 1rem 0 0
+        }
+
+        .install-copy--tight {
+            margin: 0 0 .9rem
+        }
+
+        .install-note {
+            margin-top: .85rem;
+            font-size: .9rem
+        }
+
         /* FOOTER */
         footer {
             padding: 3rem 2rem;
@@ -897,7 +1061,8 @@
             font-family: var(--font-head);
             font-size: .8rem;
             color: var(--mid);
-            margin-bottom: .5rem
+            margin: .35rem 0;
+            text-align: center
         }
 
         footer .credits a {
@@ -905,10 +1070,21 @@
             text-decoration: none
         }
 
+        .credits-email {
+            display: block;
+            color: var(--mid);
+            text-decoration: none
+        }
+
+        .credits-email:hover {
+            color: var(--light)
+        }
+
         footer .tagline-footer {
             font-size: .75rem;
             color: rgba(176, 174, 165, .5);
-            font-style: italic
+            font-style: italic;
+            margin-top: .8rem
         }
 
         /* CONVERGENCE TRAJECTORY */
@@ -923,9 +1099,22 @@
 
         .trajectory .bar {
             width: 40px;
+            height: 0;
             border-radius: 4px 4px 0 0;
             position: relative;
             transition: height .8s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        .trajectory .bar--orange {
+            background: var(--orange)
+        }
+
+        .trajectory .bar--blue {
+            background: var(--blue)
+        }
+
+        .trajectory .bar--green {
+            background: var(--green)
         }
 
         .trajectory .bar .bar-label {
@@ -961,14 +1150,53 @@
             opacity: 1;
             transform: translateY(0)
         }
-    </style>
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto
+            }
+
+            .fade-up {
+                opacity: 1;
+                transform: none;
+                transition: none
+            }
+
+            .card,
+            .hterm-prompt,
+            .hterm-row,
+            .trajectory .bar,
+            .code-block .copy-btn,
+            .curl-banner .cb-copy,
+            .skip-link {
+                transition: none
+            }
+
+            .card {
+                transform: none !important
+            }
+        }
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <div class="topbar">
     <header class="nav-shell">
-        <a class="brand" href="#">
-            <img alt="" height="24" src="logo-32.png" style="border-radius:5px" width="24">
+        <a class="brand" href="#main-content">
+            <img alt="" aria-hidden="true" class="brand-logo" height="24" src="logo-32.png" width="24">
             <span>VetCoders Skills</span>
         </a>
         <nav aria-label="Primary" class="nav-links">
@@ -983,15 +1211,16 @@
 </div>
 
 <div class="curl-banner">
-    <code><span class="cb-g">$</span> curl -fsSL
-        https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh | bash</code>
+    <code><span class="cb-g">$</span> curl -fsSLO
+        https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh && bash install.sh</code>
     <button class="cb-copy"
-            data-copy="curl -fsSL https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh | bash">
+            data-copy="curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh && bash install.sh"
+            type="button">
         Copy
     </button>
 </div>
 
-<div class="shell">
+<main class="shell" id="main-content">
     <!-- HERO -->
     <section class="hero">
         <div class="hero-copy fade-up">
@@ -1010,42 +1239,37 @@
                 </div>
             </div>
         </div>
-        <div class="hterm fade-up">
-            <div class="hterm-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
-            <div class="hterm-prompt" data-copy="git clone https://github.com/VetCoders/vetcoders-skills.git"><span
-                    class="g">&#x276f;</span> git clone &hellip;/vetcoders-skills.git
+        <div class="hero-science fade-up" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; flex: 1; min-width: 320px;">
+        <h3 style="color: var(--light); margin-bottom: 1rem; font-size: 1.1rem; font-family: var(--font-head);">It's Not Magic. It's Computer Science.</h3>
+        <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; color: var(--mid); font-size: 0.85rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--card-border);">
+                            <th style="padding: 0.75rem; color: var(--light); font-weight: 500;">VetCoders Term</th>
+                            <th style="padding: 0.75rem; color: var(--light); font-weight: 500;">Formal CS / SDLC Equivalent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--card-border);">
+                            <td style="padding: 0.75rem; color: var(--orange);">Vibecrafting</td>
+                            <td style="padding: 0.75rem;"><b>Structured Human-AI Collaborative Engineering (SHACE).</b> A mixed-initiative SDLC enforcing deterministic checkpoints around stochastic generation.</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--card-border);">
+                            <td style="padding: 0.75rem; color: var(--blue);">Marbles Loop</td>
+                            <td style="padding: 0.75rem;"><b>Counterexample-Guided Stochastic Convergence.</b> Iterative variance reduction through priority-weighted denoising.</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--card-border);">
+                            <td style="padding: 0.75rem; color: var(--green);">Loctree Mapping</td>
+                            <td style="padding: 0.75rem;"><b>AST-Augmented Context Engineering.</b> An external architectural memory combating the "Lost in the Middle" attention degradation of LLMs.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; color: var(--light);">Definition of Undone (DoU)</td>
+                            <td style="padding: 0.75rem;"><b>Product-Surface Completeness Deficit (PSCD).</b> Extending Ward Cunningham's Technical Debt beyond the codebase into the product-external gap.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="hterm-prompt" data-copy="cd vetcoders-skills"><span class="g">&#x276f;</span> cd
-                vetcoders-skills
-            </div>
-            <div class="hterm-prompt" data-copy="make help"><span class="g">&#x276f;</span> make help</div>
-            <div class="hterm-sep"></div>
-            <div class="hterm-title">VetCoders Skills</div>
-            <div class="hterm-row y" data-copy="make install"><span class="ic">&#x25c6;</span><span class="cmd">make install</span><span
-                    class="dsc">Skills + shell helpers</span></div>
-            <div class="hterm-row y" data-copy="make skills"><span class="ic">&#x25c7;</span><span class="cmd">make skills</span><span
-                    class="dsc">Skills only</span></div>
-            <div class="hterm-row y" data-copy="make helpers"><span class="ic">&#x25c7;</span><span class="cmd">make helpers</span><span
-                    class="dsc">Shell helpers only</span></div>
-            <div class="hterm-gap"></div>
-            <div class="hterm-row c" data-copy="make setup-dev"><span class="ic">&#x25b8;</span><span class="cmd">make setup-dev</span><span
-                    class="dsc">Selective install</span></div>
-            <div class="hterm-row c" data-copy="make dry-run"><span class="ic">&#x25b8;</span><span class="cmd">make dry-run</span><span
-                    class="dsc">Preview actions</span></div>
-            <div class="hterm-gap"></div>
-            <div class="hterm-row g" data-copy="make doctor"><span class="ic">&#x2713;</span><span class="cmd">make doctor</span><span
-                    class="dsc">Verify health</span></div>
-            <div class="hterm-row g" data-copy="make update"><span class="ic">&#x21bb;</span><span class="cmd">make update</span><span
-                    class="dsc">Pull + re-install</span></div>
-            <div class="hterm-row g" data-copy="make list"><span class="ic">&#x25c7;</span><span
-                    class="cmd">make list</span><span class="dsc">Bundle + runtime foundations</span></div>
-            <div class="hterm-gap"></div>
-            <div class="hterm-row r" data-copy="make uninstall"><span class="ic">&#x2715;</span><span class="cmd">make uninstall</span><span
-                    class="dsc">Remove all</span></div>
-            <div class="hterm-row r" data-copy="make restore"><span class="ic">&#x21ba;</span><span class="cmd">make restore</span><span
-                    class="dsc">Undo last</span></div>
-            <div class="hterm-foot">Vibecrafted with AI Agents by VetCoders</div>
-        </div>
+    </div>
     </section>
 
     <!-- PIPELINE -->
@@ -1121,8 +1345,8 @@ flowchart LR
 
             <div class="cards-grid">
 
-                <div class="card" style="border-color:var(--light);grid-column:1/-1">
-                    <div class="card-phase build" style="background:rgba(250,249,245,.12);color:var(--light)">
+                <div class="card card--featured">
+                    <div class="card-phase build card-phase--light">
                         Orchestrator
                     </div>
                     <h3>vetcoders-ship</h3>
@@ -1156,7 +1380,7 @@ flowchart LR
                 </div>
 
                 <div class="card">
-                    <div class="card-phase build" style="background:rgba(176,174,165,.12);color:var(--mid)">Fallback
+                    <div class="card-phase build card-phase--muted">Fallback
                         Path
                     </div>
                     <h3>vetcoders-delegate</h3>
@@ -1169,8 +1393,8 @@ flowchart LR
                     </div>
                 </div>
 
-                <div class="card" style="border-color:var(--orange)">
-                    <div class="card-phase build" style="background:rgba(217,119,87,.14);color:var(--orange)">Frontier
+                <div class="card card--accent-orange">
+                    <div class="card-phase build card-phase--orange">Frontier
                         Fleet
                     </div>
                     <h3>vetcoders-agents</h3>
@@ -1224,7 +1448,7 @@ flowchart LR
                     <div class="card-trigger">"Follow-up check" &middot; "Czy s&#261; jeszcze luki?"</div>
                 </div>
 
-                <div class="card" style="border-color:var(--orange)">
+                <div class="card card--accent-orange">
                     <div class="card-phase loop-phase">Phase 2 &middot; Converge</div>
                     <h3>vetcoders-marbles</h3>
                     <p class="card-desc">Iterative convergence through brute force. Throw the prompt at the wall until
@@ -1281,7 +1505,7 @@ flowchart LR
                     <div class="card-trigger">"DoU audit" &middot; "Co brakuje do launchu?"</div>
                 </div>
 
-                <div class="card" style="border-color:var(--blue)">
+                <div class="card card--accent-blue">
                     <div class="card-phase ship">Phase 3 &middot; Ship</div>
                     <h3>vetcoders-decorate</h3>
                     <p class="card-desc">Make it look like you actually care. Detects your existing tokens (colors,
@@ -1342,25 +1566,25 @@ flowchart LR
             </div>
 
             <div class="transition-visual">
-                <p style="font-family:var(--font-head);font-size:.85rem;color:var(--mid);margin-bottom:1rem">Convergence
+                <p class="transition-caption">Convergence
                     Trajectory &mdash; loop until the circle is full</p>
                 <div class="trajectory" id="trajectoryBars">
-                    <div class="bar" data-h="15" style="height:0;background:var(--orange)"><span
+                    <div class="bar bar--orange" data-h="15"><span
                             class="bar-label">Loop 1</span><span class="bar-score">15</span></div>
-                    <div class="bar" data-h="40" style="height:0;background:var(--orange)"><span
+                    <div class="bar bar--orange" data-h="40"><span
                             class="bar-label">Loop 2</span><span class="bar-score">40</span></div>
-                    <div class="bar" data-h="65" style="height:0;background:var(--blue)"><span
+                    <div class="bar bar--blue" data-h="65"><span
                             class="bar-label">Loop 3</span><span class="bar-score">65</span></div>
-                    <div class="bar" data-h="85" style="height:0;background:var(--blue)"><span
+                    <div class="bar bar--blue" data-h="85"><span
                             class="bar-label">Loop 4</span><span class="bar-score">85</span></div>
-                    <div class="bar" data-h="100" style="height:0;background:var(--green)"><span
+                    <div class="bar bar--green" data-h="100"><span
                             class="bar-label">Loop 5</span><span class="bar-score">100</span></div>
                 </div>
-                <p style="font-family:var(--font-head);font-size:.75rem;color:var(--mid);margin-top:.8rem">Score: 15
+                <p class="transition-scoreline">Score: 15
                     &rarr;
                     40 &rarr; 65 &rarr; 85 &rarr; 100</p>
-                <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1.5rem">
-                    <span class="dou" style="text-decoration:line-through;color:var(--mid)">DoU</span>
+                <div class="transition-status">
+                    <span class="dou">DoU</span>
                     <span class="arrow-anim">&rarr;</span>
                     <span class="dod"><strong>DoD</strong></span>
                 </div>
@@ -1378,11 +1602,11 @@ flowchart LR
                     have
                     not yet solved the second hardest part: making the thing reachable.
                 </blockquote>
-                <p style="color:var(--mid);margin-bottom:1.5rem">The Always-in-Production Plague &mdash; technically
+                <p class="manifesto-lead">The Always-in-Production Plague &mdash; technically
                     excellent software that never ships to users. The cause is not bad code. It's the systematic gap
                     between
                     "it works" and "someone can find, install, and pay for it."</p>
-                <p style="font-family:var(--font-head);font-weight:600;margin-bottom:.8rem">The Plague Diagnostic:</p>
+                <p class="manifesto-diagnostic-label">The Plague Diagnostic:</p>
                 <ul class="plague-list">
                     <li><span class="check">+</span> Tests pass</li>
                     <li><span class="check">+</span> Architecture is sound</li>
@@ -1391,82 +1615,83 @@ flowchart LR
                     <li><span class="cross">&ndash;</span> Nobody can install it without a toolchain</li>
                     <li><span class="cross">&ndash;</span> Nobody can pay for it</li>
                 </ul>
-                <p style="color:var(--mid);margin-top:1.5rem">Items 4&ndash;6 are the Definition of Undone. Phase 1
+                <p class="manifesto-summary">Items 4&ndash;6 are the Definition of Undone. Phase 1
                     crafts
                     the system into shape. Phase 2 converges it. Phase 3 ships it complete.</p>
             </div>
         </div>
     </section>
 
-    <!-- SCIENTIFIC GROUNDING -->
-    <section class="install-section" style="padding-top: 2rem;">
-        <div class="container fade-up">
-            <div class="section-label">The Science</div>
-            <h2 class="section-title">It's Not Magic. It's Computer Science.</h2>
-            <p class="section-sub" style="margin-bottom: 2rem;">Our terminology sounds gritty because it was forged in the trenches of shipping software as solo founders. But underneath the hood, the VetCoders framework is supported by established theoretical principles.</p>
-            
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; color: var(--mid);">
-                    <thead>
-                        <tr style="border-bottom: 1px solid var(--card-border);">
-                            <th style="padding: 1rem; color: var(--light); font-weight: 500;">VetCoders Term</th>
-                            <th style="padding: 1rem; color: var(--light); font-weight: 500;">Formal CS / SDLC Equivalent</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid var(--card-border);">
-                            <td style="padding: 1rem; color: var(--orange);">Vibecrafting</td>
-                            <td style="padding: 1rem;"><b>Structured Human-AI Collaborative Engineering (SHACE).</b> A mixed-initiative SDLC enforcing deterministic checkpoints around stochastic generation.</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--card-border);">
-                            <td style="padding: 1rem; color: var(--blue);">Marbles Loop</td>
-                            <td style="padding: 1rem;"><b>Counterexample-Guided Stochastic Convergence.</b> Iterative variance reduction through priority-weighted denoising.</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--card-border);">
-                            <td style="padding: 1rem; color: var(--green);">Loctree Mapping</td>
-                            <td style="padding: 1rem;"><b>AST-Augmented Context Engineering.</b> An external architectural memory combating the "Lost in the Middle" attention degradation of LLMs.</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 1rem; color: var(--light);">Definition of Undone (DoU)</td>
-                            <td style="padding: 1rem;"><b>Product-Surface Completeness Deficit (PSCD).</b> Extending Ward Cunningham's Technical Debt beyond the codebase into the product-external gap.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- INSTALL -->
+        <!-- INSTALL -->
     <section class="install-section" id="get">
         <div class="container fade-up">
             <div class="section-label">Get</div>
             <h2 class="section-title">Installation</h2>
             <div class="install-block">
-                <h4 style="font-size:1rem;margin-bottom:.5rem;color:var(--light)">One-Line Install</h4>
+                <h3 class="install-heading install-heading--first">Quick Install</h3>
                 <div class="code-block">
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                    <pre><code>curl -fsSL https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh | bash</code></pre>
+                    <button class="copy-btn" type="button">Copy</button>
+                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh && bash install.sh</code></pre>
                 </div>
 
-                <p style="color:var(--mid);margin:1rem 0 0;line-height:1.7">
-                    This grabs the suite and runs the Smart Installer. It sets up the central store in <code>~/.agents/skills</code>
-                    and wires up the aliases. Want the Zsh helpers so you can type <code>codex-implement</code> instead
-                    of raw shell scripts? Add <code>--with-shell</code>.
+                <p class="install-copy install-copy--top">
+                    Fast path: download the installer first, then execute it locally. It sets up the central store in
+                    <code>~/.agents/skills</code> and wires up the aliases. Want the Zsh helpers so you can type
+                    <code>codex-implement</code> instead of raw shell scripts? Add <code>--with-shell</code>.
                 </p>
 
-                <h4 style="font-size:1rem;margin:2rem 0 .5rem;color:var(--light)">Local / Repo Path</h4>
+                <h3 class="install-heading">Verified Install</h3>
                 <div class="code-block">
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                    <pre><code><span class="comment"># From a checkout of vetcoders-skills:</span>
-make install     <span class="comment"># skills + shell helpers (canonical)</span>
-make skills      <span class="comment"># skills only</span>
-make helpers     <span class="comment"># shell helpers only</span>
-make doctor      <span class="comment"># verify installation health</span>
-make update      <span class="comment"># pull latest + re-install</span></code></pre>
+                    <button class="copy-btn" type="button">Copy</button>
+                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh
+curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh.sha256
+shasum -a 256 -c install.sh.sha256
+bash install.sh</code></pre>
+                </div>
+                <p class="install-note">On Linux with GNU coreutils, use <code>sha256sum -c install.sh.sha256</code> instead of <code>shasum -a 256 -c</code>.</p>
+
+                <h3 class="install-heading">Local / Repo Path</h3>
+                <div style="position: relative; max-width: 600px; font-size: 0.85rem; margin-bottom: 2rem;">
+                    <div class="hterm ">
+            <div class="hterm-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+            <div class="hterm-prompt" data-copy="git clone https://github.com/VetCoders/vetcoders-skills.git"><span
+                    class="g">&#x276f;</span> git clone &hellip;/vetcoders-skills.git
+            </div>
+            <div class="hterm-prompt" data-copy="cd vetcoders-skills"><span class="g">&#x276f;</span> cd
+                vetcoders-skills
+            </div>
+            <div class="hterm-prompt" data-copy="make help"><span class="g">&#x276f;</span> make help</div>
+            <div class="hterm-sep"></div>
+            <div class="hterm-title">VetCoders Skills</div>
+            <div class="hterm-row y" data-copy="make install"><span class="ic">&#x25c6;</span><span class="cmd">make install</span><span
+                    class="dsc">Skills + shell helpers</span></div>
+            <div class="hterm-row y" data-copy="make skills"><span class="ic">&#x25c7;</span><span class="cmd">make skills</span><span
+                    class="dsc">Skills only</span></div>
+            <div class="hterm-row y" data-copy="make helpers"><span class="ic">&#x25c7;</span><span class="cmd">make helpers</span><span
+                    class="dsc">Shell helpers only</span></div>
+            <div class="hterm-gap"></div>
+            <div class="hterm-row c" data-copy="make setup-dev"><span class="ic">&#x25b8;</span><span class="cmd">make setup-dev</span><span
+                    class="dsc">Selective install</span></div>
+            <div class="hterm-row c" data-copy="make dry-run"><span class="ic">&#x25b8;</span><span class="cmd">make dry-run</span><span
+                    class="dsc">Preview actions</span></div>
+            <div class="hterm-gap"></div>
+            <div class="hterm-row g" data-copy="make doctor"><span class="ic">&#x2713;</span><span class="cmd">make doctor</span><span
+                    class="dsc">Verify health</span></div>
+            <div class="hterm-row g" data-copy="make update"><span class="ic">&#x21bb;</span><span class="cmd">make update</span><span
+                    class="dsc">Pull + re-install</span></div>
+            <div class="hterm-row g" data-copy="make list"><span class="ic">&#x25c7;</span><span
+                    class="cmd">make list</span><span class="dsc">Bundle + runtime foundations</span></div>
+            <div class="hterm-gap"></div>
+            <div class="hterm-row r" data-copy="make uninstall"><span class="ic">&#x2715;</span><span class="cmd">make uninstall</span><span
+                    class="dsc">Remove all</span></div>
+            <div class="hterm-row r" data-copy="make restore"><span class="ic">&#x21ba;</span><span class="cmd">make restore</span><span
+                    class="dsc">Undo last</span></div>
+            <div class="hterm-foot">Vibecrafted with AI Agents by VetCoders</div>
+        </div>
                 </div>
 
-                <h4 style="font-size:1rem;margin:2rem 0 .5rem;color:var(--light)">Runtime Foundations</h4>
-                <p style="color:var(--mid);margin:0 0 .9rem;line-height:1.7">
+                <h3 class="install-heading">Runtime Foundations</h3>
+                <p class="install-copy install-copy--tight">
                     The suite runs without them, but you're flying blind.
                     <code>aicx-mcp</code> gives your agents indexed memory of what happened yesterday.
                     <code>loctree-mcp</code> forces them to read the architecture before breaking it.
@@ -1479,7 +1704,7 @@ cargo install ai-contexters loctree-mcp
 cargo install prview</code></pre>
                 </div>
 
-                <h4 style="font-size:1rem;margin:2rem 0 .5rem;color:var(--light)">Quick Start</h4>
+                <h3 class="install-heading">Quick Start</h3>
                 <div class="code-block">
                 <pre><code><span class="comment"># The one-liner — full pipeline</span>
 &gt; "Ship: add auth module with JWT"
@@ -1508,27 +1733,99 @@ cargo install prview</code></pre>
         </div>
     </section>
 
-    </div>
+    </main>
 
     <!-- FOOTER -->
     <footer>
-        <p class="credits" style="margin: .35rem 0; text-align: center">
+        <p class="credits">
             <a href="https://div0.space">Maciej Gad</a> - a veterinarian who got tired of fragile software and chose
             violence.
         </p>
-        <p class="credits" style="margin: .35rem 0; text-align: center">
+        <p class="credits">
             <a href="https://vetcoders.io">Monika Szymanska</a> - a veterinarian who got tired of him, and started
             to do the same.
-            <span style="display:block">hello@vetcoders.io</span>
+            <a class="credits-email" href="mailto:hello@vetcoders.io">hello@vetcoders.io</a>
         </p>
-        <p class="credits" style="margin: .35rem 0; text-align: center">
+        <p class="credits">
             <a href="https://github.com/VetCoders">Hundreds of Anonymous AIs</a> - who had to build the tools to
             survive them both.
         </p>
-        <p class="tagline-footer" style="margin-top: .8rem">Vibecrafted through stochastic pain by VetCoders &copy; 2026</p>
+        <p class="tagline-footer">Vibecrafted through stochastic pain by VetCoders &copy; 2026</p>
     </footer>
 
     <script>
+        var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var supportsIntersectionObserver = 'IntersectionObserver' in window;
+        var liveRegion;
+        var liveRegionTimer;
+
+        function getLiveRegion() {
+            if (liveRegion) return liveRegion;
+            liveRegion = document.createElement('div');
+            liveRegion.className = 'sr-only';
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            document.body.appendChild(liveRegion);
+            return liveRegion;
+        }
+
+        function announceUiMessage(message) {
+            if (!message) return;
+            var region = getLiveRegion();
+            clearTimeout(liveRegionTimer);
+            region.textContent = '';
+            liveRegionTimer = setTimeout(function () {
+                region.textContent = message;
+            }, 40);
+        }
+
+        function fallbackCopyText(text) {
+            if (!text) return false;
+            var area = document.createElement('textarea');
+            area.value = text;
+            area.setAttribute('readonly', '');
+            area.style.position = 'fixed';
+            area.style.top = '-9999px';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.focus();
+            area.select();
+            area.setSelectionRange(0, area.value.length);
+            var copied = false;
+            try {
+                copied = document.execCommand('copy');
+            } catch (err) {
+                copied = false;
+            }
+            document.body.removeChild(area);
+            return copied;
+        }
+
+        function copyText(text) {
+            if (!text) return Promise.resolve(false);
+            if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+                return navigator.clipboard.writeText(text).then(function () {
+                    return true;
+                }).catch(function () {
+                    return fallbackCopyText(text);
+                });
+            }
+            return Promise.resolve(fallbackCopyText(text));
+        }
+
+        function flashCopyButton(btn, copied) {
+            if (!btn) return;
+            var defaultText = btn.getAttribute('data-default-label') || btn.textContent.trim() || 'Copy';
+            btn.textContent = copied ? 'Copied' : 'Copy failed';
+            btn.classList.toggle('is-copied', copied);
+            btn.classList.toggle('is-error', !copied);
+            clearTimeout(btn._copyTimer);
+            btn._copyTimer = setTimeout(function () {
+                btn.textContent = defaultText;
+                btn.classList.remove('is-copied', 'is-error');
+            }, copied ? 1400 : 1800);
+        }
+
         // ============ GLASS MARBLE RENDERER (shared) ============
         var MarbleFactory = (function () {
             // Color helpers
@@ -1792,7 +2089,9 @@ cargo install prview</code></pre>
         // ============ DIFFUSION CANVAS (solitaire convergence, dimmed + hover spotlight) ============
         (function () {
             var c = document.getElementById('diffusionCanvas');
+            if (!c || !c.getContext) return;
             var ctx = c.getContext('2d');
+            if (!ctx) return;
             var DPR = Math.min(window.devicePixelRatio || 1, 2);
             var cw, slots = [], MR, HOVER_R, currentLoop = 0, totalSlots = 0;
             var loopFill = [0, 0.15, 0.40, 0.65, 0.85, 1.0];
@@ -1835,6 +2134,14 @@ cargo install prview</code></pre>
                 filled = {};
                 noise = {};
                 currentLoop = 0;
+            }
+
+            function fillBoardFully() {
+                for (var i = 0; i < slots.length; i++) {
+                    slots[i].marble = makeMarble(5);
+                    filled[i] = true;
+                }
+                currentLoop = 5;
             }
 
             function makeMarble(loop) {
@@ -1956,15 +2263,24 @@ cargo install prview</code></pre>
                 ctx.font = (cw * 0.038) + 'px Poppins,Arial';
                 ctx.fillStyle = '#b0aea5';
                 ctx.fillText(currentLoop > 0 ? 'Loop ' + currentLoop : 'Board', cw / 2, cw / 2 + cw * 0.07);
-                requestAnimationFrame(render);
+                if (!prefersReducedMotion) requestAnimationFrame(render);
             }
 
             window.addEventListener('resize', function () {
                 resize();
                 buildBoard();
+                if (prefersReducedMotion) {
+                    fillBoardFully();
+                    render();
+                }
             });
             resize();
             buildBoard();
+            if (prefersReducedMotion) {
+                fillBoardFully();
+                render();
+                return;
+            }
             render();
             setTimeout(advanceLoop, 800);
         })();
@@ -1972,17 +2288,25 @@ cargo install prview</code></pre>
         // ============ TRAJECTORY BAR ANIMATION ============
         (function () {
             var target = document.getElementById('trajectoryBars');
+            if (!target) return;
+            function animateBars() {
+                var bars = target.querySelectorAll('.bar');
+                bars.forEach(function (bar, i) {
+                    setTimeout(function () {
+                        bar.style.height = bar.getAttribute('data-h') + '%';
+                    }, prefersReducedMotion ? 0 : i * 300);
+                });
+            }
+            if (prefersReducedMotion || !supportsIntersectionObserver) {
+                animateBars();
+                return;
+            }
             var animated = false;
             var obs = new IntersectionObserver(function (entries) {
                 entries.forEach(function (e) {
                     if (e.isIntersecting && !animated) {
                         animated = true;
-                        var bars = target.querySelectorAll('.bar');
-                        bars.forEach(function (bar, i) {
-                            setTimeout(function () {
-                                bar.style.height = bar.getAttribute('data-h') + '%';
-                            }, i * 300);
-                        });
+                        animateBars();
                     }
                 });
             }, {threshold: 0.3});
@@ -1991,45 +2315,50 @@ cargo install prview</code></pre>
 
         // ============ SCROLL ANIMATIONS ============
         (function () {
+            var items = document.querySelectorAll('.fade-up');
+            if (!items.length) return;
+            if (prefersReducedMotion || !supportsIntersectionObserver) {
+                items.forEach(function (el) {
+                    el.classList.add('visible');
+                });
+                return;
+            }
             var obs = new IntersectionObserver(function (entries) {
                 entries.forEach(function (e) {
                     if (e.isIntersecting) e.target.classList.add('visible');
                 });
             }, {threshold: 0.12});
-            document.querySelectorAll('.fade-up').forEach(function (el) {
+            items.forEach(function (el) {
                 obs.observe(el);
             });
         })();
 
         // ============ COPY CODE ============
-        function copyCode(btn) {
-            var code = btn.parentElement.querySelector('code').innerText;
-            navigator.clipboard.writeText(code).then(function () {
-                btn.textContent = 'Copied!';
-                setTimeout(function () {
-                    btn.textContent = 'Copy';
-                }, 1500);
+        (function () {
+            var buttons = document.querySelectorAll('.copy-btn');
+            buttons.forEach(function (btn) {
+                btn.setAttribute('data-default-label', btn.textContent.trim() || 'Copy');
+                btn.addEventListener('click', function () {
+                    var code = btn.parentElement && btn.parentElement.querySelector('code');
+                    var text = code ? code.innerText : '';
+                    copyText(text).then(function (copied) {
+                        flashCopyButton(btn, copied);
+                        announceUiMessage(copied ? 'Code block copied to clipboard.' : 'Copy failed. Select the command and copy it manually.');
+                    });
+                });
             });
-        }
+        })();
 
         // ============ CURL BANNER COPY ============
         (function () {
             var btn = document.querySelector('.cb-copy');
             if (!btn) return;
+            btn.setAttribute('data-default-label', btn.textContent.trim() || 'Copy');
             btn.addEventListener('click', function () {
                 var cmd = btn.getAttribute('data-copy');
-                if (!cmd || !navigator.clipboard) return;
-                navigator.clipboard.writeText(cmd).then(function () {
-                    btn.textContent = 'Copied';
-                    btn.style.background = '#83d86c';
-                    btn.style.borderColor = '#83d86c';
-                    btn.style.color = '#141413';
-                    setTimeout(function () {
-                        btn.textContent = 'Copy';
-                        btn.style.background = '';
-                        btn.style.borderColor = '';
-                        btn.style.color = '';
-                    }, 1400);
+                copyText(cmd).then(function (copied) {
+                    flashCopyButton(btn, copied);
+                    announceUiMessage(copied ? 'Install command copied to clipboard.' : 'Copy failed. Select the install command and copy it manually.');
                 });
             });
         })();
@@ -2037,43 +2366,58 @@ cargo install prview</code></pre>
         // ============ HERO TERMINAL COPY (pointer tooltip) ============
         (function () {
             var copyables = document.querySelectorAll('.hterm-prompt[data-copy], .hterm-row[data-copy]');
+            if (!copyables.length) return;
             var tip = document.createElement('div');
             tip.className = 'hterm-tip';
             tip.textContent = 'Copy';
+            tip.setAttribute('aria-hidden', 'true');
             document.body.appendChild(tip);
             var hideTimer;
 
-            function showTip(x, y, text, isCopied) {
+            function showTip(x, y, text, state) {
                 tip.textContent = text;
-                tip.classList.toggle('ok', !!isCopied);
+                tip.classList.toggle('ok', state === 'ok');
+                tip.classList.toggle('err', state === 'err');
                 tip.style.left = x + 'px';
                 tip.style.top = y + 'px';
                 tip.classList.add('on');
             }
 
             function hideTip() {
-                tip.classList.remove('on', 'ok');
+                tip.classList.remove('on', 'ok', 'err');
             }
 
             function copyFromElement(el, x, y) {
                 var value = el.getAttribute('data-copy');
-                if (!value || !navigator.clipboard || !navigator.clipboard.writeText) return;
-                navigator.clipboard.writeText(value).then(function () {
-                    showTip(x, y, 'Copied', true);
+                copyText(value).then(function (copied) {
+                    showTip(x, y, copied ? 'Copied' : 'Copy failed', copied ? 'ok' : 'err');
+                    announceUiMessage(copied ? 'Command copied to clipboard.' : 'Copy failed. Select the command and copy it manually.');
                     clearTimeout(hideTimer);
-                    hideTimer = setTimeout(hideTip, 1200);
+                    hideTimer = setTimeout(hideTip, copied ? 1200 : 1600);
                 });
             }
 
             copyables.forEach(function (el) {
+                var value = el.getAttribute('data-copy') || '';
+                el.setAttribute('role', 'button');
+                el.setAttribute('tabindex', '0');
+                el.setAttribute('aria-label', 'Copy command: ' + value);
                 el.addEventListener('mouseenter', function (e) {
                     clearTimeout(hideTimer);
-                    showTip(e.clientX, e.clientY, 'Copy', false);
+                    showTip(e.clientX, e.clientY, 'Copy');
                 });
                 el.addEventListener('mousemove', function (e) {
-                    if (tip.classList.contains('ok')) return;
+                    if (tip.classList.contains('ok') || tip.classList.contains('err')) return;
                     tip.style.left = e.clientX + 'px';
                     tip.style.top = e.clientY + 'px';
+                });
+                el.addEventListener('focus', function () {
+                    var r = el.getBoundingClientRect();
+                    showTip(r.left + r.width / 2, r.top, 'Copy');
+                });
+                el.addEventListener('blur', function () {
+                    clearTimeout(hideTimer);
+                    hideTip();
                 });
                 el.addEventListener('mouseleave', function () {
                     clearTimeout(hideTimer);
@@ -2105,16 +2449,28 @@ cargo install prview</code></pre>
 
         // ============ 3D CARD TILT ON HOVER ============
         (function () {
+            var finePointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+            if (prefersReducedMotion || !finePointer) return;
             var cards = document.querySelectorAll('.card');
             cards.forEach(function (card) {
+                var rafId = 0;
+                var nextTransform = 'perspective(700px) rotateY(0) rotateX(0) scale(1)';
+
+                function applyTransform() {
+                    rafId = 0;
+                    card.style.transform = nextTransform;
+                }
+
                 card.addEventListener('mousemove', function (e) {
                     var r = card.getBoundingClientRect();
                     var x = (e.clientX - r.left) / r.width - 0.5;
                     var y = (e.clientY - r.top) / r.height - 0.5;
-                    card.style.transform = 'perspective(700px) rotateY(' + x * 6 + 'deg) rotateX(' + (-y * 6) + 'deg) scale(1.01)';
+                    nextTransform = 'perspective(700px) rotateY(' + x * 6 + 'deg) rotateX(' + (-y * 6) + 'deg) scale(1.01)';
+                    if (!rafId) rafId = requestAnimationFrame(applyTransform);
                 });
                 card.addEventListener('mouseleave', function () {
-                    card.style.transform = 'perspective(700px) rotateY(0) rotateX(0) scale(1)';
+                    nextTransform = 'perspective(700px) rotateY(0) rotateX(0) scale(1)';
+                    if (!rafId) rafId = requestAnimationFrame(applyTransform);
                 });
             });
         })();
