@@ -13,3 +13,5 @@
 !.ai-context/share/artifacts/prompts/*.md
 /.claude
 *.png
+/__pycache__
+/scripts/__pycache__
