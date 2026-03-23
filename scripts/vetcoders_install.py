@@ -310,52 +310,196 @@ def ask_yn(prompt: str, default: bool = True) -> bool:
     return answer.startswith("y")
 
 
+def _read_key() -> str:
+    """Reads a single keypress or escape sequence from stdin."""
+    import select
+    char = sys.stdin.read(1)
+    if char == '\x1b':
+        r, _, _ = select.select([sys.stdin], [], [], 0.05)
+        if r:
+            char += sys.stdin.read(2)
+    return char
+
+
 def ask_choice(prompt: str, options: List[str], default: int = 0) -> int:
-    """Ask user to pick from a list. Returns index."""
+    """Ask user to pick from a list interactively."""
     if not _IS_TTY:
         return default
+
+    try:
+        import termios
+        import tty
+    except ImportError:
+        print(bold(prompt))
+        for i, opt in enumerate(options):
+            marker = cyan(">") if i == default else " "
+            print(f"  {marker} {i + 1}. {opt}")
+        try:
+            answer = input(dim(f"  Choice [1-{len(options)}, default {default + 1}]: ")).strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return default
+        if not answer:
+            return default
+        try:
+            idx = int(answer) - 1
+            if 0 <= idx < len(options):
+                return idx
+        except ValueError:
+            pass
+        return default
+
+    # Interactive mode
+    import termios
+    import tty
+    
+    current_idx = default
     print(bold(prompt))
-    for i, opt in enumerate(options):
-        marker = cyan(">") if i == default else " "
-        print(f"  {marker} {i + 1}. {opt}")
-    try:
-        answer = input(dim(f"  Choice [1-{len(options)}, default {default + 1}]: ")).strip()
-    except (EOFError, KeyboardInterrupt):
+    print(dim("  (Use UP/DOWN to navigate, ENTER to confirm, or type number)"))
+    
+    for _ in options:
         print()
-        return default
-    if not answer:
-        return default
+        
+    def render():
+        sys.stdout.write(f"\033[{len(options)}A")
+        for i, opt in enumerate(options):
+            marker = cyan(">") if i == current_idx else " "
+            sys.stdout.write(f"\033[2K\r  {marker} {i + 1}. {opt}\n")
+        sys.stdout.flush()
+        
+    render()
+    
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
     try:
-        idx = int(answer) - 1
-        if 0 <= idx < len(options):
-            return idx
-    except ValueError:
-        pass
-    return default
+        tty.setcbreak(fd)
+        while True:
+            char = _read_key()
+            if char in ('\n', '\r'):
+                break
+            elif char in '123456789':
+                idx = int(char) - 1
+                if 0 <= idx < len(options):
+                    current_idx = idx
+                    break
+            elif char == '\x1b[A': # Up
+                current_idx = max(0, current_idx - 1)
+                render()
+            elif char == '\x1b[B': # Down
+                current_idx = min(len(options) - 1, current_idx + 1)
+                render()
+            elif char == '\x03': # Ctrl+C
+                raise KeyboardInterrupt
+    except KeyboardInterrupt:
+        sys.stdout.write("\n")
+        return default
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        
+    return current_idx
 
 
 def ask_multi(prompt: str, options: List[str], defaults: List[bool]) -> List[bool]:
-    """Ask user to toggle multiple options. Returns list of booleans."""
+    """Ask user to toggle or select multiple options interactively."""
     if not _IS_TTY:
         return defaults
-    print(bold(prompt))
-    selected = list(defaults)
-    for i, opt in enumerate(options):
-        marker = green("[x]") if selected[i] else dim("[ ]")
-        print(f"  {marker} {i + 1}. {opt}")
+
     try:
-        answer = input(dim("  Toggle numbers (space-separated), Enter to confirm: ")).strip()
-    except (EOFError, KeyboardInterrupt):
+        import termios
+        import tty
+    except ImportError:
+        print(bold(prompt))
+        selected = list(defaults)
+        for i, opt in enumerate(options):
+            marker = green("[x]") if selected[i] else dim("[ ]")
+            print(f"  {marker} {i + 1}. {opt}")
+        try:
+            print(dim("  (Type numbers space-separated. E.g. '1 2' to select exactly those, or '+3' / '-1' to toggle)"))
+            answer = input(dim("  Selection: ")).strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return defaults
+
+        if answer:
+            tokens = answer.split()
+            if all(tok.isdigit() for tok in tokens):
+                selected = [False] * len(options)
+                for tok in tokens:
+                    idx = int(tok) - 1
+                    if 0 <= idx < len(options):
+                        selected[idx] = True
+            else:
+                for tok in tokens:
+                    is_add = tok.startswith('+')
+                    is_sub = tok.startswith('-')
+                    clean_tok = tok.lstrip('+-')
+                    try:
+                        idx = int(clean_tok) - 1
+                        if 0 <= idx < len(options):
+                            if is_add:
+                                selected[idx] = True
+                            elif is_sub:
+                                selected[idx] = False
+                            else:
+                                selected[idx] = not selected[idx]
+                    except ValueError:
+                        pass
+        return selected
+
+    # Interactive mode
+    import termios
+    import tty
+    
+    selected = list(defaults)
+    current_idx = 0
+    
+    print(bold(prompt))
+    print(dim("  (Use UP/DOWN to navigate, SPACE or number to toggle, ENTER to confirm)"))
+    
+    for _ in options:
         print()
-        return defaults
-    if answer:
-        for tok in answer.split():
-            try:
-                idx = int(tok) - 1
+        
+    def render():
+        sys.stdout.write(f"\033[{len(options)}A")
+        for i, opt in enumerate(options):
+            marker = green("[x]") if selected[i] else dim("[ ]")
+            cursor = cyan(">") if i == current_idx else " "
+            sys.stdout.write(f"\033[2K\r  {cursor} {marker} {i + 1}. {opt}\n")
+        sys.stdout.flush()
+        
+    render()
+    
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        while True:
+            char = _read_key()
+            if char in ('\n', '\r'):
+                break
+            elif char == ' ':
+                selected[current_idx] = not selected[current_idx]
+                render()
+            elif char in '123456789':
+                idx = int(char) - 1
                 if 0 <= idx < len(options):
                     selected[idx] = not selected[idx]
-            except ValueError:
-                pass
+                    current_idx = idx
+                    render()
+            elif char == '\x1b[A': # Up
+                current_idx = max(0, current_idx - 1)
+                render()
+            elif char == '\x1b[B': # Down
+                current_idx = min(len(options) - 1, current_idx + 1)
+                render()
+            elif char == '\x03': # Ctrl+C
+                raise KeyboardInterrupt
+    except KeyboardInterrupt:
+        sys.stdout.write("\n")
+        return defaults
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        
     return selected
 
 
@@ -775,142 +919,195 @@ def cmd_install(args: argparse.Namespace) -> int:
                 print(f"    - {n}")
     print()
 
-    # --- Selective install ---
+    # --- Interactive Wizard ---
+    step = 0
     selected_skills = list(skill_names)
-    if cli_skill_filter:
-        # CLI --skill flags take precedence
-        unknown = [s for s in cli_skill_filter if s not in skill_names]
-        if unknown:
-            print(yellow(f"Unknown skills (skipped): {', '.join(unknown)}"))
-        selected_skills = [s for s in cli_skill_filter if s in skill_names]
-        if not selected_skills:
-            print(red("No valid skills selected."))
-            return 1
-    elif advanced and interactive:
-        defaults = [True] * len(skill_names)
-        result = ask_multi("Select skills to install:", skill_names, defaults)
-        selected_skills = [n for n, sel in zip(skill_names, result) if sel]
-        if not selected_skills:
-            print(red("No skills selected."))
-            return 1
-        print()
-
-    # --- Detect system ---
-    print(bold("System check:"))
-    sys_deps = detect_system_deps()
-    for cmd, path in sys_deps.items():
-        if path:
-            print(f"  {OK} {cmd} -> {dim(path)}")
-        else:
-            print(f"  {MISS} {cmd}")
-
-    osascript = detect_osascript()
-    if osascript:
-        print(f"  {OK} osascript -> {dim(osascript)}")
-    else:
-        print(f"  {OPT} osascript {dim('(headless spawn still works)')}")
-    print()
-
-    # Missing critical deps
-    missing_critical = [cmd for cmd in ("zsh", "python3", "git", "rsync") if not sys_deps.get(cmd)]
-    if missing_critical:
-        print(red(f"Missing critical dependencies: {', '.join(missing_critical)}"))
-        print("Install them before continuing.")
-        return 1
-
-    # --- Agent runtimes ---
-    print(bold("Agent runtimes:"))
-    available_runtimes = detect_agent_runtimes()
-    for rt, path in available_runtimes.items():
-        if path:
-            print(f"  {OK} {rt} -> {dim(path)}")
-        else:
-            print(f"  {OPT} {rt} {dim('(not installed)')}")
-    print()
-
-    # Choose runtimes for symlink views
-    all_runtimes = list(AGENT_RUNTIMES)
-    if cli_tools:
-        # CLI --tool flags take precedence
-        all_runtimes = [rt for rt in cli_tools if rt in AGENT_RUNTIMES]
-    elif interactive and not advanced:
-        create_all = ask_yn("Create symlink views for all runtimes (codex, claude, gemini)?", default=True)
-        if not create_all:
-            defaults = [bool(available_runtimes.get(rt)) for rt in all_runtimes]
-            result = ask_multi("Select runtimes for symlink views:", all_runtimes, defaults)
-            all_runtimes = [rt for rt, sel in zip(AGENT_RUNTIMES, result) if sel]
-        print()
-    elif advanced and interactive:
-        defaults = [True] * len(all_runtimes)
-        result = ask_multi("Select runtimes for symlink views:", all_runtimes, defaults)
-        all_runtimes = [rt for rt, sel in zip(AGENT_RUNTIMES, result) if sel]
-        print()
-
-    # --- Runtime Foundations ---
-    print(bold("Runtime Foundations:"))
-    missing_foundations: List[Foundation] = []
-    for f in FOUNDATIONS:
-        path = f.is_installed()
-        if path:
-            print(f"  {OK} {f.name} -> {dim(path)}")
-            print(f"       {dim(f.description)}")
-        elif f.required:
-            print(f"  {MISS} {f.name} — {f.description}")
-            print(f"       {dim(f.install_hint())}")
-            missing_foundations.append(f)
-        else:
-            print(f"  {OPT} {f.name} — {f.description}")
-            print(f"       {dim(f.install_hint())}")
-    print()
-
-    # Offer to install missing foundations
-    has_cargo = detect_cargo()
+    all_runtimes = [rt for rt in AGENT_RUNTIMES if rt != "gemini"]
+    install_shell = cli_with_shell
     installed_foundations: Dict[str, Dict] = {}
-    if missing_foundations and has_cargo and interactive:
-        for f in missing_foundations:
-            if "crates" in f.channels:
-                label = "required" if f.required else "optional"
-                if ask_yn(f"Install {f.name} via cargo? ({label})", default=f.required):
-                    success = install_foundation_cargo(f, dry_run=dry_run)
-                    channel = "crates"
-                    installed_foundations[f.name] = {
-                        "channel": channel,
-                        "success": success,
-                    }
-                    if success:
-                        print(f"  {OK} {f.name} installed")
+
+    while True:
+        try:
+            if step == 0:
+                # Skills selection
+                if cli_skill_filter:
+                    unknown = [s for s in cli_skill_filter if s not in skill_names]
+                    if unknown:
+                        print(yellow(f"Unknown skills (skipped): {', '.join(unknown)}"))
+                    selected_skills = [s for s in cli_skill_filter if s in skill_names]
+                    if not selected_skills:
+                        print(red("No valid skills selected."))
+                        return 1
+                    step += 1
+                elif advanced and interactive:
+                    defaults = [s in selected_skills for s in skill_names]
+                    result = ask_multi("Select skills to install:", skill_names, defaults)
+                    selected_skills = [n for n, sel in zip(skill_names, result) if sel]
+                    if not selected_skills:
+                        print(red("No skills selected."))
+                        return 1
+                    print()
+                    step += 1
+                else:
+                    step += 1
+
+            elif step == 1:
+                # System check (static output, just flows through unless error)
+                if not getattr(args, '_sys_checked', False):
+                    print(bold("System check:"))
+                    sys_deps = detect_system_deps()
+                    for cmd, path in sys_deps.items():
+                        if path:
+                            print(f"  {OK} {cmd} -> {dim(path)}")
+                        else:
+                            print(f"  {MISS} {cmd}")
+                
+                    osascript = detect_osascript()
+                    if osascript:
+                        print(f"  {OK} osascript -> {dim(osascript)}")
                     else:
-                        print(f"  {MISS} {f.name} installation failed")
-        print()
-    elif missing_foundations and not has_cargo:
-        print(yellow("cargo not found — cannot auto-install foundations."))
-        print(dim("Install cargo (rustup) first, or install foundations manually:"))
-        for f in missing_foundations:
-            print(f"  {f.install_hint()}")
-        print()
+                        print(f"  {OPT} osascript {dim('(headless spawn still works)')}")
+                    print()
+                
+                    missing_critical = [cmd for cmd in ("zsh", "python3", "git", "rsync") if not sys_deps.get(cmd)]
+                    if missing_critical:
+                        print(red(f"Missing critical dependencies: {', '.join(missing_critical)}"))
+                        print("Install them before continuing.")
+                        return 1
+                    args._sys_checked = True
+                step += 1
 
-    # Record all foundations state
-    for f in FOUNDATIONS:
-        if f.name not in installed_foundations:
-            path = f.is_installed()
-            installed_foundations[f.name] = {
-                "channel": "pre-existing" if path else "not-installed",
-                "path": path or "",
-            }
+            elif step == 2:
+                # Runtimes
+                if not getattr(args, '_rt_checked', False):
+                    print(bold("Agent runtimes:"))
+                    available_runtimes = detect_agent_runtimes()
+                    for rt, path in available_runtimes.items():
+                        if path:
+                            print(f"  {OK} {rt} -> {dim(path)}")
+                        else:
+                            print(f"  {OPT} {rt} {dim('(not installed)')}")
+                    print()
+                    args._rt_checked = True
 
-    # --- Shell helpers ---
-    install_shell = cli_with_shell  # --with-shell flag
-    if not install_shell and interactive:
-        install_shell = ask_yn("Install zsh shell helpers (codex-implement, claude-plan, etc.)?", default=True)
-        print()
+                if cli_tools:
+                    all_runtimes = [rt for rt in cli_tools if rt in AGENT_RUNTIMES]
+                    step += 1
+                elif interactive and not advanced:
+                    print(dim("  Note: gemini-cli in some versions duplicates the workflows, inheriting"))
+                    print(dim("  skills from the other agents. Gemini symlinks skipped by default."))
+                    create_all = ask_yn("Create symlink views for default runtimes (codex, claude)?", default=True)
+                    if not create_all:
+                        defaults = [rt in all_runtimes for rt in AGENT_RUNTIMES]
+                        result = ask_multi("Select runtimes for symlink views:", AGENT_RUNTIMES, defaults)
+                        all_runtimes = [rt for rt, sel in zip(AGENT_RUNTIMES, result) if sel]
+                    print()
+                    step += 1
+                elif advanced and interactive:
+                    print(dim("  Note: gemini-cli in some versions duplicates the workflows, inheriting"))
+                    print(dim("  skills from the other agents. Gemini symlinks skipped by default."))
+                    defaults = [rt in all_runtimes for rt in AGENT_RUNTIMES]
+                    result = ask_multi("Select runtimes for symlink views:", AGENT_RUNTIMES, defaults)
+                    all_runtimes = [rt for rt, sel in zip(AGENT_RUNTIMES, result) if sel]
+                    print()
+                    step += 1
+                else:
+                    step += 1
 
-    # --- Helper conflict check ---
-    if install_shell:
-        conflicts = scan_helper_conflicts()
-        if conflicts:
-            should_proceed = report_helper_conflicts(conflicts, interactive)
-            if not should_proceed:
-                install_shell = False
+            elif step == 3:
+                # Foundations
+                if not getattr(args, '_fnd_checked', False):
+                    print(bold("Runtime Foundations:"))
+                    missing_foundations: List[Foundation] = []
+                    for f in FOUNDATIONS:
+                        path = f.is_installed()
+                        if path:
+                            print(f"  {OK} {f.name} -> {dim(path)}")
+                            print(f"       {dim(f.description)}")
+                        elif f.required:
+                            print(f"  {MISS} {f.name} — {f.description}")
+                            print(f"       {dim(f.install_hint())}")
+                            missing_foundations.append(f)
+                        else:
+                            print(f"  {OPT} {f.name} — {f.description}")
+                            print(f"       {dim(f.install_hint())}")
+                    print()
+                    args._missing_foundations = missing_foundations
+                    args._fnd_checked = True
+
+                missing_foundations = args._missing_foundations
+                has_cargo = detect_cargo()
+                
+                if missing_foundations and has_cargo and interactive:
+                    for f in missing_foundations:
+                        if "crates" in f.channels:
+                            label = "required" if f.required else "optional"
+                            if ask_yn(f"Install {f.name} via cargo? ({label})", default=f.required):
+                                success = install_foundation_cargo(f, dry_run=dry_run)
+                                installed_foundations[f.name] = {
+                                    "channel": "crates",
+                                    "success": success,
+                                }
+                                if success:
+                                    print(f"  {OK} {f.name} installed")
+                                else:
+                                    print(f"  {MISS} {f.name} installation failed")
+                    print()
+                elif missing_foundations and not has_cargo and interactive:
+                    if getattr(args, '_fnd_warn_done', False) == False:
+                        print(yellow("cargo not found — cannot auto-install foundations."))
+                        print(dim("Install cargo (rustup) first, or install foundations manually."))
+                        args._fnd_warn_done = True
+                
+                step += 1
+
+            elif step == 4:
+                # Shell helpers
+                if not cli_with_shell and interactive:
+                    install_shell = ask_yn("Install zsh shell helpers (codex-implement, claude-plan, etc.)?", default=install_shell)
+                    print()
+                
+                if install_shell:
+                    conflicts = scan_helper_conflicts()
+                    if conflicts:
+                        should_proceed = report_helper_conflicts(conflicts, interactive)
+                        if not should_proceed:
+                            install_shell = False
+                step += 1
+                
+            elif step == 5:
+                # Post-wizard setup
+                for f in FOUNDATIONS:
+                    if f.name not in installed_foundations:
+                        path = f.is_installed()
+                        installed_foundations[f.name] = {
+                            "channel": "pre-existing" if path else "not-installed",
+                            "path": path or "",
+                        }
+                break
+
+        except GoBack:
+            # Re-evaluate previous interactive steps to find the closest one
+            if step == 4:
+                # Going back from shell helpers
+                if missing_foundations and has_cargo and interactive:
+                    step = 3
+                else:
+                    step = 2
+            elif step == 3:
+                # Going back from foundations
+                if cli_tools:
+                    step = 0 if (advanced and interactive) else 0 # actually 0
+                else:
+                    step = 2
+            elif step == 2:
+                # Going back from runtimes
+                if advanced and interactive:
+                    step = 0
+                else:
+                    print(dim("  (Cannot go back further)"))
+            elif step == 0:
+                print(dim("  (Cannot go back further)"))
 
     # --- Confirm ---
     shared_home = Path(os.environ.get("VETCODERS_AGENTS_HOME", Path.home() / ".agents"))
