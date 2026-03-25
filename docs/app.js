@@ -973,38 +973,69 @@ function shuffleArr(a) {
 // ============ SCROLL PROGRESS BAR ============
 (function () {
     var bar = document.createElement('div');
+    var ticking = false;
     bar.className = 'scroll-progress';
     document.body.appendChild(bar);
-    window.addEventListener('scroll', function () {
+
+    function updateBar() {
+        ticking = false;
         var h = document.documentElement.scrollHeight - window.innerHeight;
         bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0';
-    }, {passive: true});
+    }
+
+    function queueUpdate() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(updateBar);
+    }
+
+    updateBar();
+    window.addEventListener('scroll', queueUpdate, {passive: true});
+    window.addEventListener('resize', queueUpdate);
 })();
 
-// ============ 3D CARD TILT ON HOVER ============
+// ============ FRAMEWORK STRIP ARROWS ============
 (function () {
-    var finePointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (prefersReducedMotion || !finePointer) return;
-    var cards = document.querySelectorAll('.card');
-    cards.forEach(function (card) {
-        var rafId = 0;
-        var nextTransform = 'perspective(700px) rotateY(0) rotateX(0) scale(1)';
+    var strip = document.querySelector('.framework-strip');
+    var leftBtn = document.querySelector('.strip-arrow--left');
+    var rightBtn = document.querySelector('.strip-arrow--right');
+    if (!strip || !leftBtn || !rightBtn) return;
 
-        function applyTransform() {
-            rafId = 0;
-            card.style.transform = nextTransform;
-        }
+    function getScrollAmount() {
+        var card = strip.querySelector('.card');
+        var styles = window.getComputedStyle(strip);
+        var gap = parseFloat(styles.columnGap || styles.gap || 0);
+        var width = card ? card.getBoundingClientRect().width : 300;
+        return width + gap;
+    }
 
-        card.addEventListener('mousemove', function (e) {
-            var r = card.getBoundingClientRect();
-            var x = (e.clientX - r.left) / r.width - 0.5;
-            var y = (e.clientY - r.top) / r.height - 0.5;
-            nextTransform = 'perspective(700px) rotateY(' + x * 6 + 'deg) rotateX(' + (-y * 6) + 'deg) scale(1.01)';
-            if (!rafId) rafId = requestAnimationFrame(applyTransform);
+    function scrollStrip(direction) {
+        strip.scrollBy({
+            left: direction * getScrollAmount(),
+            behavior: prefersReducedMotion ? 'auto' : 'smooth'
         });
-        card.addEventListener('mouseleave', function () {
-            nextTransform = 'perspective(700px) rotateY(0) rotateX(0) scale(1)';
-            if (!rafId) rafId = requestAnimationFrame(applyTransform);
+    }
+
+    leftBtn.addEventListener('click', function () {
+        scrollStrip(-1);
+    });
+
+    rightBtn.addEventListener('click', function () {
+        scrollStrip(1);
+    });
+})();
+
+// ============ MERMAID COPY ============
+(function () {
+    var btn = document.querySelector('.mmd-copy');
+    if (!btn) return;
+    btn.setAttribute('data-default-label', 'Copy');
+    var code = btn.parentElement && btn.parentElement.querySelector('code');
+    if (!code) return;
+    btn.addEventListener('click', function () {
+        copyText(code.textContent).then(function (ok) {
+            flashCopyButton(btn, ok);
+            announceUiMessage(ok ? 'Pipeline code copied.' : 'Copy failed.');
         });
     });
 })();

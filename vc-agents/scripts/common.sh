@@ -147,38 +147,10 @@ artifact.
 EOF_PROMPT
 }
 
-    printf '%s' "$GEMINI_API_KEY"
-    return 0
-  fi
-
-  command -v security >/dev/null 2>&1 || return 1
-
-  value="$(security find-generic-password -w -s GEMINI_API_KEY -a GEMINI_API_KEY 2>/dev/null || true)"
-  [[ -n "$value" ]] && {
-    printf '%s' "$value"
-    return 0
-  }
-
-  local service_name
-  for service_name in GEMINI_API_KEY gemini-cli google-generative-ai GoogleAIStudio; do
-    value="$(security find-generic-password -w -s "$service_name" 2>/dev/null || true)"
-    [[ -n "$value" ]] && {
-      printf '%s' "$value"
-      return 0
-    }
-  done
-
-  local account_name
-  for account_name in GEMINI_API_KEY gemini-cli gemini google; do
-    value="$(security find-generic-password -w -a "$account_name" 2>/dev/null || true)"
-    [[ -n "$value" ]] && {
-      printf '%s' "$value"
-      return 0
-    }
-  done
-
-  return 1
-}
+# spawn_gemini_api_key — REMOVED
+# Gemini CLI handles its own auth (OAuth or GEMINI_API_KEY from env).
+# The keychain prober was overriding OAuth sessions and causing auth failures.
+# If GEMINI_API_KEY is needed, set it in your shell env before spawning.
 
 spawn_generate_launcher() {
   local launcher="$1"

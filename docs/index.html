@@ -35,8 +35,8 @@
 <div class="topbar">
     <header class="nav-shell">
         <a class="brand" href="#main-content">
-            <span style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em;">vibecraft</span>
-            <img alt="" aria-hidden="true" class="brand-logo" height="24" src="./logo-32.png" style="margin-left: 6px;">
+            <span class="brand-wordmark">vibecraft</span>
+            <img alt="" aria-hidden="true" class="brand-logo" height="24" src="./logo-32.png">
         </a>
         <nav aria-label="Primary" class="nav-links">
             <a href="#pipeline">Vibecraft</a>
@@ -83,14 +83,18 @@
                 </div>
             </figure>
         </section>
+    </article>
 
-        <div class="manifesto-body" id="evidence">
-            <section class="manifesto-prose fade-up">
+<!-- END MANIFESTO -->
+
+    <section class="science-view view" id="evidence">
+        <div class="container">
+            <div class="science-prose fade-up">
                 <h2>It is not magic.<br>It is Computer Science.</h2>
                 <p>The vocabulary is vivid because it comes from real founder workflows. Underneath it is a formal substrate that translates VibeCraft language into concrete systems engineering.</p>
-            </section>
+            </div>
 
-            <section class="manifesto-evidence fade-up">
+            <div class="evidence-grid fade-up">
                 <div class="evidence-item">
                     <span class="evidence-num">01</span>
                     <h3>AST-Augmented Context</h3>
@@ -106,52 +110,58 @@
                     <h3>Vibecrafting (SHACE)</h3>
                     <p>Structured Human-AI Collaborative Engineering. We wrap deterministic human checkpoints around stochastic generation. The result is a system you control and understand.</p>
                 </div>
-            </section>
-
-            <hr class="manifesto-divider">
-
-            <section class="manifesto-origin fade-up">
-                <span class="origin-eyebrow">DA SIĘ.</span>
-                <h2>Forged in combat.<br>Shipped by veterinarians.</h2>
-                <p class="origin-loud">VibeCraft wasn't built in a sterile lab by elite ex-FAANG researchers playing with toy apps.</p>
-                <p>It was hammered together by two veterinarians who needed to ship actual software. We were not professional programmers. We didn’t memorize algorithms. But we had a problem to solve.</p>
-                <p>Instead of relying on unstable chatbots, we built this framework to force LLMs into deterministic submission. We proved that with the right scaffolding, anyone with a founder's will can construct and ship enterprise-grade systems.</p>
-                <p class="origin-conclusion">If two vets can ship complex AI infrastructure using VibeCraft, what could you ship?</p>
-            </section>
+            </div>
         </div>
-    </article>
+    </section>
 
-<!-- END MANIFESTO -->
+    <section class="dasie-view view">
+        <div class="container fade-up">
+            <div class="dasie-grid">
+                <div class="dasie-left">
+                    <span class="origin-eyebrow">Yes, you can.</span>
+                    <h2>Forged in combat.<br>Shipped by veterinarians.</h2>
+                </div>
+                <div class="dasie-right">
+                    <p class="origin-loud">VibeCraft wasn't built in a sterile lab by elite ex-FAANG researchers playing with toy apps.</p>
+                    <p>It was hammered together by two veterinarians who needed to ship actual software. We were not professional programmers. We didn’t memorize algorithms. But we had a problem to solve.</p>
+                    <p>Instead of relying on unstable chatbots, we built this framework to force LLMs into deterministic submission. We proved that with the right scaffolding, anyone with a founder's will can construct and ship enterprise-grade systems.</p>
+                </div>
+            </div>
+            <div class="dasie-conclusion">
+                <p>If two vets can ship complex AI infrastructure using VibeCraft, what could you ship?</p>
+            </div>
+        </div>
+    </section>
 
     <section class="runtime-view">
         <div class="container fade-up">
             <div class="section-label">Runtime Foundations</div>
-            <h2 class="section-title">The substrate underneath the suite.</h2>
+            <h2 class="section-title">The substrate underneath the framework.</h2>
             <p class="section-sub">Three Rust binaries. Not optional garnishes. The hard guardrails that keep frontier agents from coding blind.</p>
             <div class="foundation-grid">
-                <a class="foundation-card foundation-card--featured" href="https://loct.io">
-                    <div class="foundation-icon" style="color: var(--blue)">01</div>
-                    <h3>loctree-mcp</h3>
+                <a class="foundation-card" href="https://loct.io">
+                    <div class="foundation-icon foundation-icon--blue">01</div>
+                    <h3>loctree</h3>
                     <p class="foundation-role">Perception Engine</p>
                     <p>AST-augmented architectural memory. The eyes for every agent &mdash; forces LLMs to see the full repo structure before modifying a single file. Prevents "Lost in the Middle" blindness.</p>
                     <span class="foundation-link">loct.io</span>
                 </a>
                 <a class="foundation-card" href="https://github.com/VetCoders/ai-contexters">
-                    <div class="foundation-icon" style="color: var(--orange)">02</div>
+                    <div class="foundation-icon foundation-icon--orange">02</div>
                     <h3>aicx-mcp</h3>
                     <p class="foundation-role">Decisions &amp; Intents Retrieval</p>
                     <p>Indexes decisions, intents, and outcomes from every AI session. Agents retrieve what was decided and why &mdash; not raw chat logs, but structured engineering context.</p>
                     <span class="foundation-link">github.com/VetCoders/ai-contexters</span>
                 </a>
                 <a class="foundation-card" href="https://github.com/VetCoders/prview">
-                    <div class="foundation-icon" style="color: var(--green)">03</div>
+                    <div class="foundation-icon foundation-icon--green">03</div>
                     <h3>prview</h3>
                     <p class="foundation-role">Audit &amp; Quality Gate</p>
                     <p>Generates durable PR review packs with line-level findings. The merge gate that turns terminal dumps into actual artifacts that survive the session.</p>
                     <span class="foundation-link">github.com/VetCoders/prview</span>
                 </a>
                 <a class="foundation-card" href="https://github.com/VetCoders/screenscribe">
-                    <div class="foundation-icon" style="color: var(--mid)">04</div>
+                    <div class="foundation-icon foundation-icon--mid">04</div>
                     <h3>ScreenScribe</h3>
                     <p class="foundation-role">AI-Driven UI/UX Reviewer</p>
                     <p>Turns narrated screencasts into structured engineering findings. The orchestrator's eye on the product surface &mdash; what users see, not what code says.</p>
@@ -171,6 +181,7 @@
                 stops breaking, then force it to ship.</p>
 
             <div class="mmd-shell">
+                <button class="mmd-copy" type="button">Copy</button>
             <pre><code><span class="comment">%% vetcoders pipeline</span>
 flowchart LR
     subgraph Craft
@@ -211,17 +222,19 @@ flowchart LR
     <!-- SKILLS GRID -->
     <section id="skills">
         <div class="container fade-up">
-            <div class="section-label">The Suite</div>
-            <h2 class="section-title">What's in the Suite</h2>
+            <div class="section-label">The Framework</div>
+            <h2 class="section-title">The Framework</h2>
             <p class="section-sub">These aren't generic ChatGPT wrappers. They are hard-coded procedures born from pain.
                 <code>ship</code> chains them, <code>agents</code> spawns them in isolated terminals, and
                 <code>delegate</code> keeps them local. Underneath sits a custom-built Rust substrate:
                 <code>aicx-mcp</code> for indexed history, <code>loctree-mcp</code> for AST-level structural mapping,
                 and <code>prview</code> for code review.</p>
 
-            <div class="cards-grid">
+            <div class="framework-strip-wrap">
+                <button class="strip-arrow strip-arrow--left" aria-label="Scroll left" type="button">&#8249;</button>
+                <div class="framework-strip">
 
-                <div class="card card--featured">
+                <div class="card">
                     <div class="card-phase build card-phase--light">
                         Orchestrator
                     </div>
@@ -405,6 +418,8 @@ flowchart LR
                     <div class="card-trigger">"Hydrate" &middot; "Nawodnij" &middot; "Make it shippable"</div>
                 </div>
 
+                </div>
+                <button class="strip-arrow strip-arrow--right" aria-label="Scroll right" type="button">&#8250;</button>
             </div>
         </div>
     </section>
@@ -504,29 +519,11 @@ flowchart LR
             <div class="section-label">Get</div>
             <h2 class="section-title">Installation</h2>
             <div class="install-block">
-                <h3 class="install-heading install-heading--first">Quick Install</h3>
                 <div class="code-block">
                     <button class="copy-btn" type="button">Copy</button>
                     <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh &amp;&amp; bash install.sh</code></pre>
                 </div>
 
-                <p class="install-copy install-copy--top">
-                    Fast path: download the installer first, then execute it locally. It sets up the central store in
-                    <code>~/.agents/skills</code> and wires up the aliases. Want the Zsh helpers so you can type
-                    <code>codex-implement</code> instead of raw shell scripts? Add <code>--with-shell</code>.
-                </p>
-
-                <h3 class="install-heading">Verified Install</h3>
-                <div class="code-block">
-                    <button class="copy-btn" type="button">Copy</button>
-                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh
-curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh.sha256
-shasum -a 256 -c install.sh.sha256
-bash install.sh</code></pre>
-                </div>
-                <p class="install-note">On Linux with GNU coreutils, use <code>sha256sum -c install.sh.sha256</code> instead of <code>shasum -a 256 -c</code>.</p>
-
-                <h3 class="install-heading">Local / Repo Path</h3>
                 <div class="install-terminal-preview">
                     <div class="hterm">
             <div class="hterm-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
@@ -565,68 +562,50 @@ bash install.sh</code></pre>
             <div class="hterm-foot">Vibecrafted with AI Agents by VetCoders</div>
         </div>
                 </div>
-
-                <h3 class="install-heading">Runtime Foundations</h3>
-                <p class="install-copy install-copy--tight">
-                    The suite runs without them, but you're flying blind.
-                    <code>aicx-mcp</code> gives your agents indexed memory of what happened yesterday.
-                    <code>loctree-mcp</code> forces them to read the architecture before breaking it.
-                    <code>prview</code> creates actual review artifacts instead of terminal dumps.
-                </p>
-                <div class="code-block">
-                <pre><code><span class="comment"># The installer will try to compile these if you have cargo.</span>
-<span class="comment"># If you don't, install rustup first, or do it manually:</span>
-cargo install ai-contexters loctree-mcp
-cargo install prview</code></pre>
-                </div>
-
-                <h3 class="install-heading">Quick Start</h3>
-                <div class="code-block">
-                <pre><code><span class="comment"># The one-liner — full pipeline</span>
-&gt; "Ship: add auth module with JWT"
-
-<span class="comment"># Or run individual phases:</span>
-
-<span class="comment"># 1. Force the agent to read the repo context first</span>
-&gt; "Init session"
-
-<span class="comment"># 2. Run the full Examine -> Research -> Implement loop</span>
-&gt; "ERi pipeline for adding auth module"
-
-<span class="comment"># 3. Check what they broke</span>
-&gt; "Follow-up check"
-
-<span class="comment"># 4. Force convergence until it stops breaking</span>
-&gt; "Marbles -- loop until clean"
-
-<span class="comment"># 5. Measure how far you are from shipping</span>
-&gt; "DoU audit -- are we shippable?"
-
-<span class="comment"># 6. Do the boring work to go live</span>
-&gt; "Hydrate this project"</code></pre>
-                </div>
             </div>
         </div>
     </section>
 
-    </main>
+    <section class="references-section view">
+        <div class="container fade-up">
+            <div class="section-label">References</div>
+            <h2 class="section-title">Further Reading</h2>
+            <div class="ref-grid">
+                <a class="ref-card" href="https://loct.io/blog">
+                    <h3>Case Studies</h3>
+                    <p>Real AI agent sessions using VibeCraft, documented with terminal transcripts at loct.io</p>
+                </a>
+                <a class="ref-card" href="https://en.wikipedia.org/wiki/Human-in-the-loop">
+                    <h3>SHACE Methodology</h3>
+                    <p>Structured Human-AI Collaborative Engineering. Mixed-initiative SDLC with deterministic human checkpoints.</p>
+                </a>
+                <a class="ref-card" href="https://en.wikipedia.org/wiki/Counterexample-guided_abstraction_refinement">
+                    <h3>Counterexample-Guided Convergence</h3>
+                    <p>The formal substrate behind Marbles loops. Priority-weighted denoising through iterative variance reduction.</p>
+                </a>
+                <a class="ref-card" href="https://github.com/VetCoders/vc-skills">
+                    <h3>vc-skills</h3>
+                    <p>The VibeCraft Framework repository. Skills, installer, and shell helpers.</p>
+                </a>
+                <a class="ref-card" href="https://loct.io">
+                    <h3>loctree</h3>
+                    <p>AST-augmented perception engine. Maps living codebases for humans and AI agents.</p>
+                </a>
+                <a class="ref-card" href="https://github.com/VetCoders/ai-contexters">
+                    <h3>ai-contexters</h3>
+                    <p>Decisions and intents retrieval engine. Indexed context from every AI session.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
 
     <!-- FOOTER -->
     <footer>
-        <p class="credits">
-            <a href="https://div0.space">Maciej Gad</a> - a veterinarian who got tired of fragile software and chose
-            violence.
-        </p>
-        <p class="credits">
-            <a href="https://vetcoders.io">Monika Szymanska</a> - a veterinarian who got tired of him, and started
-            to do the same.
-            <a class="credits-email" href="mailto:hello@vetcoders.io">hello@vetcoders.io</a>
-        </p>
-        <p class="credits">
-            <a href="https://github.com/VetCoders">Hundreds of Anonymous AIs</a> - who had to build the tools to
-            survive them both.
-        </p>
-        <p class="tagline-footer">Vibecrafted through stochastic pain by VetCoders &copy; 2026</p>
+        <p class="footer-line">Built by <a href="https://vetcoders.io">VetCoders</a></p>
+        <p class="footer-line"><a href="mailto:hello@vetcoders.io">hello@vetcoders.io</a> &middot; <a href="https://github.com/VetCoders">GitHub</a></p>
+        <p class="tagline-footer">Vibecrafted through stochastic pain &copy; 2026</p>
     </footer>
 
     <script src="app.js"></script>
