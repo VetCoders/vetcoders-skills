@@ -73,6 +73,14 @@ if [[ -f "$zshrc_file" ]] && grep -Fq "$source_line" "$zshrc_file"; then
   exit 0
 fi
 
+# Respect locked/immutable files — never write without permission
+if [[ -f "$zshrc_file" ]] && ! touch -c "$zshrc_file" 2>/dev/null; then
+  printf '\033[33m[warn]\033[0m %s is locked (uchg/immutable) — skipping .zshrc update\n' "$zshrc_file"
+  printf '       Add this line manually:\n'
+  printf '       %s\n' "$source_line"
+  exit 0
+fi
+
 if (( dry_run )); then
   printf 'Dry run: would append helper source line to %s\n' "$zshrc_file"
   exit 0

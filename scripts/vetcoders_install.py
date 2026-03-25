@@ -113,6 +113,8 @@ class Foundation:
             pkg = self.packages.get(ch, self.name)
             if ch == "crates":
                 hints.append(f"cargo install {pkg}")
+            elif ch == "brew":
+                hints.append(f"brew install {pkg}")
             elif ch == "npm":
                 hints.append(f"npm i -g {pkg}")
             elif ch == "github":
@@ -153,9 +155,79 @@ FOUNDATIONS: List[Foundation] = [
         verify_cmd="prview --version",
         required=False,
     ),
+    Foundation(
+        name="mise",
+        description="Repo-owned toolchain, environment, and task substrate",
+        channels=["brew", "github"],
+        packages={
+            "brew": "mise",
+            "github": "https://github.com/jdx/mise/releases",
+        },
+        verify_cmd="mise --version",
+        required=False,
+    ),
+    Foundation(
+        name="starship",
+        description="Cross-shell prompt/status line for operator UX",
+        channels=["brew", "github"],
+        packages={
+            "brew": "starship",
+            "github": "https://github.com/starship/starship/releases",
+        },
+        verify_cmd="starship --version",
+        required=False,
+    ),
+    Foundation(
+        name="atuin",
+        description="Shell history recall with optional encrypted sync",
+        channels=["brew", "github"],
+        packages={
+            "brew": "atuin",
+            "github": "https://github.com/atuinsh/atuin/releases",
+        },
+        verify_cmd="atuin --version",
+        required=False,
+    ),
+    Foundation(
+        name="zoxide",
+        description="Fast directory jumping for agent-heavy shell workflows",
+        channels=["brew", "github"],
+        packages={
+            "brew": "zoxide",
+            "github": "https://github.com/ajeetdsouza/zoxide/releases",
+        },
+        verify_cmd="zoxide --version",
+        required=False,
+    ),
+    Foundation(
+        name="zellij",
+        description="Visible multi-agent terminal workspace surface",
+        channels=["brew", "github"],
+        packages={
+            "brew": "zellij",
+            "github": "https://github.com/zellij-org/zellij/releases",
+        },
+        verify_cmd="zellij --version",
+        required=False,
+    ),
 ]
 
 RUNTIME_DEPS = ["zsh", "python3", "git", "rsync"]
+
+OLD_SKILL_PREFIX = "vetcoders-"
+OLD_HELPER_NAME = "vetcoders-skills.zsh"
+
+
+def _is_writable(path: Path) -> bool:
+    """Check if a file is actually writable (respects uchg/immutable flags)."""
+    if not path.exists():
+        return True
+    try:
+        with open(path, 'a'):
+            pass
+        return True
+    except OSError:
+        return False
 
 AGENT_RUNTIMES = ["codex", "claude", "gemini"]
 
@@ -311,14 +383,33 @@ def ask_yn(prompt: str, default: bool = True) -> bool:
 
 
 def _read_key() -> str:
-    """Reads a single keypress or escape sequence from stdin."""
+    """Reads a single keypress or escape sequence from stdin (unbuffered)."""
     import select
-    char = sys.stdin.read(1)
-    if char == '\x1b':
-        r, _, _ = select.select([sys.stdin], [], [], 0.05)
+    fd = sys.stdin.fileno()
+    ch = os.read(fd, 1)
+    if ch == b'\x1b':
+        r, _, _ = select.select([fd], [], [], 0.05)
         if r:
-            char += sys.stdin.read(2)
-    return char
+            ch += os.read(fd, 2)
+    return ch.decode('utf-8', errors='ignore')
+
+
+def _accumulate_digits(first: str) -> str:
+    """Collect multi-digit number input with a short timeout between digits."""
+    import select
+    fd = sys.stdin.fileno()
+    buf = first
+    while True:
+        r, _, _ = select.select([fd], [], [], 0.2)
+        if r:
+            nxt = os.read(fd, 1).decode('utf-8', errors='ignore')
+            if nxt.isdigit():
+                buf += nxt
+            else:
+                break
+        else:
+            break
+    return buf
 
 
 def ask_choice(prompt: str, options: List[str], default: int = 0) -> int:
@@ -377,8 +468,9 @@ def ask_choice(prompt: str, options: List[str], default: int = 0) -> int:
             char = _read_key()
             if char in ('\n', '\r'):
                 break
-            elif char in '123456789':
-                idx = int(char) - 1
+            elif char.isdigit() and char != '0':
+                num_str = _accumulate_digits(char) if len(options) >= 10 else char
+                idx = int(num_str) - 1
                 if 0 <= idx < len(options):
                     current_idx = idx
                     break
@@ -480,8 +572,9 @@ def ask_multi(prompt: str, options: List[str], defaults: List[bool]) -> List[boo
             elif char == ' ':
                 selected[current_idx] = not selected[current_idx]
                 render()
-            elif char in '123456789':
-                idx = int(char) - 1
+            elif char.isdigit() and char != '0':
+                num_str = _accumulate_digits(char) if len(options) >= 10 else char
+                idx = int(num_str) - 1
                 if 0 <= idx < len(options):
                     selected[idx] = not selected[idx]
                     current_idx = idx
@@ -714,6 +807,78 @@ def rsync_skill(src: Path, dst: Path, dry_run: bool = False, mirror: bool = Fals
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+def prune_legacy_skills(store_path: Path, runtimes: List[str],
+                        dry_run: bool = False, interactive: bool = True) -> int:
+    """Remove old vetcoders-* skills replaced by vc-* equivalents."""
+    legacy: List[tuple] = []
+
+    if store_path.exists():
+        for entry in sorted(store_path.iterdir()):
+            if entry.is_dir() and entry.name.startswith(OLD_SKILL_PREFIX):
+                legacy.append(("store", entry))
+
+    for rt in runtimes:
+        rt_skills = Path.home() / f".{rt}" / "skills"
+        if not rt_skills.exists():
+            continue
+        for entry in sorted(rt_skills.iterdir()):
+            if (entry.is_dir() or entry.is_symlink()) and entry.name.startswith(OLD_SKILL_PREFIX):
+                legacy.append((rt, entry))
+
+    old_helper = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "zsh" / OLD_HELPER_NAME
+    if old_helper.exists():
+        legacy.append(("helper", old_helper))
+
+    if not legacy:
+        return 0
+
+    print(bold("Legacy vetcoders-* entries detected:"))
+    for location, entry in legacy:
+        kind = "symlink" if entry.is_symlink() else ("file" if entry.is_file() else "dir")
+        print(f"  {yellow(f'[{kind}]')} {location}/{entry.name}")
+    print()
+
+    if interactive:
+        if not ask_yn("Remove legacy vetcoders-* entries?", default=True):
+            print(dim("  Keeping legacy entries."))
+            print()
+            return 0
+
+    removed = 0
+    for location, entry in legacy:
+        if dry_run:
+            print(f"  {dim('rm')} {entry}")
+            removed += 1
+        else:
+            if entry.is_symlink() or entry.is_file():
+                entry.unlink()
+            elif entry.is_dir():
+                shutil.rmtree(entry)
+            removed += 1
+
+    if removed:
+        print(f"  {OK} Removed {removed} legacy entries")
+
+    # Clean old source line from .zshrc
+    zshrc = Path.home() / ".zshrc"
+    if zshrc.exists():
+        content = zshrc.read_text()
+        if OLD_HELPER_NAME in content:
+            if not _is_writable(zshrc):
+                print(f"  {WARN} {zshrc} is locked — cannot remove old source line")
+                print(f"       {dim('Remove manually: line referencing ' + OLD_HELPER_NAME)}")
+            elif not dry_run:
+                lines = content.splitlines(keepends=True)
+                new_lines = [l for l in lines if OLD_HELPER_NAME not in l]
+                zshrc.write_text(''.join(new_lines))
+                print(f"  {OK} Cleaned old source line from .zshrc")
+            else:
+                print(f"  {dim('would clean old source line from .zshrc')}")
+
+    print()
+    return removed
+
+
 def create_symlink(target: Path, link: Path, dry_run: bool = False) -> None:
     """Create a symlink, removing any existing entry."""
     if dry_run:
@@ -837,6 +1002,37 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
         findings.append(DoctorFinding("warn", "shell-helpers", "marked as installed but file missing"))
     else:
         findings.append(DoctorFinding("ok", "shell-helpers", "not installed (optional)"))
+
+    # 7. Shell smoke check: non-interactive zsh should stay quiet under TERM=dumb
+    zsh_path = shutil.which("zsh")
+    if zsh_path:
+        env = os.environ.copy()
+        env["TERM"] = "dumb"
+        smoke = subprocess.run(
+            [zsh_path, "-ic", "exit"],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        stderr = (smoke.stderr or "").strip()
+        if smoke.returncode == 0 and not stderr:
+            findings.append(DoctorFinding("ok", "shell:dumb-terminal", "zsh -ic stays quiet"))
+        elif smoke.returncode == 0:
+            findings.append(
+                DoctorFinding(
+                    "warn",
+                    "shell:dumb-terminal",
+                    "zsh -ic emits stderr under TERM=dumb — guard prompt init for non-interactive shells",
+                )
+            )
+        else:
+            findings.append(
+                DoctorFinding(
+                    "warn",
+                    "shell:dumb-terminal",
+                    f"zsh -ic exit failed under TERM=dumb (exit {smoke.returncode})",
+                )
+            )
 
     return findings
 
@@ -966,7 +1162,7 @@ def cmd_install(args: argparse.Namespace) -> int:
                     if osascript:
                         print(f"  {OK} osascript -> {dim(osascript)}")
                     else:
-                        print(f"  {OPT} osascript {dim('(headless spawn still works)')}")
+                        print(f"  {OPT} osascript {dim('(visible Terminal automation unavailable; non-visible fallback exists)')}")
                     print()
                 
                     missing_critical = [cmd for cmd in ("zsh", "python3", "git", "rsync") if not sys_deps.get(cmd)]
@@ -1160,6 +1356,9 @@ def cmd_install(args: argparse.Namespace) -> int:
             link = rt_skills / name
             create_symlink(canonical, link, dry_run=dry_run)
     print()
+
+    # --- Prune legacy vetcoders-* skills ---
+    prune_legacy_skills(store_path, all_runtimes, dry_run=dry_run, interactive=interactive)
 
     # --- Execute: shell helpers ---
     if install_shell:
@@ -1432,7 +1631,10 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         if zshrc.exists():
             content = zshrc.read_text()
             if source_line in content:
-                if dry_run:
+                if not _is_writable(zshrc):
+                    print(f"  {WARN} {zshrc} is locked — cannot remove source line")
+                    print(f"       {dim('Remove manually: line referencing vc-skills.zsh')}")
+                elif dry_run:
                     print(f"  {dim('remove source line from')} {zshrc}")
                 else:
                     new_content = content.replace(f"\n# VetCoders shell helpers\n{source_line}\n", "\n")

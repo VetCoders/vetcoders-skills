@@ -78,18 +78,6 @@ qreport="$(printf '%q' "$SPAWN_REPORT")"
 qtranscript="$(printf '%q' "$SPAWN_TRANSCRIPT")"
 qmodel="$(printf '%q' "$model")"
 
-gemini_pre_hook='
-  if [[ -n "${GEMINI_API_KEY:-}" ]]; then
-    printf "%s\n" "[INFO] GEMINI_API_KEY inherited from current shell env." | tee -a "$transcript"
-  else
-    gemini_api_key="$(spawn_gemini_api_key 2>/dev/null || true)"
-    if [[ -n "$gemini_api_key" ]]; then
-      export GEMINI_API_KEY="$gemini_api_key"
-      printf "%s\n" "[INFO] GEMINI_API_KEY resolved from macOS Keychain." | tee -a "$transcript"
-    else
-      printf "%s\n" "[INFO] No GEMINI_API_KEY found in env or Keychain; relying on Gemini CLI Google-account auth if configured." | tee -a "$transcript"
-    fi
-  fi'
 
 gemini_success_hook='
   if [[ ! -s "$report" && -s "$transcript" ]]; then
@@ -109,19 +97,12 @@ spawn_generate_launcher "$SPAWN_LAUNCHER" \
   "$SPAWN_TRANSCRIPT" \
   "$SCRIPT_DIR/common.sh" \
   "$launch_cmd" \
-  "$gemini_pre_hook" \
+  "" \
   "$gemini_success_hook" \
   "$gemini_failure_hook"
 
 chmod +x "$SPAWN_LAUNCHER"
 spawn_print_launch gemini "$mode" "$runtime"
 printf '  model:  %s\n' "$model"
-if [[ -n "${GEMINI_API_KEY:-}" ]]; then
-  printf '  auth:   GEMINI_API_KEY from current shell env\n'
-elif spawn_gemini_api_key >/dev/null 2>&1; then
-  printf '  auth:   GEMINI_API_KEY resolved from macOS Keychain\n'
-else
-  printf '  auth:   no env/keychain key found; launcher will rely on Gemini CLI account auth\n'
-fi
 spawn_launch "$SPAWN_LAUNCHER" "$runtime" "$dry_run"
 printf 'Agent launched. Report will land at: %s\n' "$SPAWN_REPORT"

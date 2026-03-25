@@ -77,6 +77,11 @@ If they are missing, skills still install, but the suite loses real substance:
 | `codex` CLI            | OpenAI Codex agent | Spawning Codex subagents        |
 | `claude` CLI           | Claude Code agent  | Spawning Claude subagents       |
 | `gemini` CLI           | Gemini agent       | Spawning Gemini subagents       |
+| `mise`                 | Repo tool/env/tasks substrate | Reproducible shell orchestration |
+| `starship`             | Prompt/status line | Interactive shell UX            |
+| `atuin`                | Shell history memory | Recalling long agent commands |
+| `zoxide`               | Smart directory jumping | Fast repo navigation         |
+| `zellij`               | Visible multi-agent sessions | Session presets and layouts |
 | `semgrep`              | Security scanning  | Quality gates in followup/spawn |
 | `brave-search` API key | Web search         | Research phase of ERi pipeline  |
 
@@ -186,8 +191,37 @@ python3 scripts/vetcoders_install.py doctor
 python3 scripts/vetcoders_install.py list
 ```
 
+### Mise substrate
+
+The repo now ships a [`mise.toml`](./mise.toml) manifest so the shell substrate
+can move from personal drift into repo-owned tasks and tool versions.
+
+If you already use `mise`, the same flows become:
+
+```bash
+mise run install
+mise run doctor
+mise run list
+mise run frontier-config-dry-run
+mise run frontier-config
+```
+
+The current manifest keeps the surface intentionally small:
+
+- pinned `python` and `node` for repo tasks
+- task wrappers around the existing installer
+- repo-owned frontier presets for Starship, Atuin, and Zellij
+- no forced rewrite of personal shell aesthetics
+
+If you want interactive activation, `mise` upstream recommends:
+
+```bash
+eval "$(mise activate zsh)"
+```
+
 The `doctor` subcommand verifies installation health: shared store, symlink
-views, stale copies, runtime foundations, and shell helpers.
+views, stale copies, runtime foundations, shell helpers, and the
+`TERM=dumb zsh -ic` smoke path that often breaks agent launches.
 
 The shell helper layer provides:
 

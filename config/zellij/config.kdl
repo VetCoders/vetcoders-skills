@@ -1,0 +1,6 @@
+default_shell "zsh"
+default_layout "compact"
+copy_command "pbcopy"
+mouse_mode true
+pane_frames true
+scroll_buffer_size 50000

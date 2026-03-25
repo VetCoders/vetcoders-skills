@@ -33,10 +33,10 @@ help:
 	@printf "\n"
 
 install:
-	@$(PYTHON) $(INSTALLER) install --source "$(SOURCE)" --with-shell --non-interactive
+	@$(PYTHON) $(INSTALLER) install --source "$(SOURCE)" --with-shell
 
 skills:
-	@$(PYTHON) $(INSTALLER) install --source "$(SOURCE)" --non-interactive
+	@$(PYTHON) $(INSTALLER) install --source "$(SOURCE)"
 
 helpers:
 	@bash $(SHELL_INSTALLER) --source "$(SOURCE)"

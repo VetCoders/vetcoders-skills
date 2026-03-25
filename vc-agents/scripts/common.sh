@@ -147,10 +147,6 @@ artifact.
 EOF_PROMPT
 }
 
-spawn_gemini_api_key() {
-  local value=""
-
-  if [[ -n "${GEMINI_API_KEY:-}" ]]; then
     printf '%s' "$GEMINI_API_KEY"
     return 0
   fi
