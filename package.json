@@ -1,0 +1,28 @@
+{
+  "name": "vetcoders-skills",
+  "version": "1.0.0",
+  "description": "Canonical source of truth for the reusable VibeCraft skill stack.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VetCoders/vc-skills.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/VetCoders/vc-skills/issues"
+  },
+  "homepage": "https://github.com/VetCoders/vc-skills#readme",
+  "devDependencies": {
+    "playwright": "^1.58.2"
+  }
+}

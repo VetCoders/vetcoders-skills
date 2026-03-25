@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>VetCoders Skills — The Vibecraft Framework for Founders</title>
+    <title>VibeCraft Skills — The Vibecraft Framework for Founders</title>
     <meta content="An operating system for AI agents (Codex, Claude, Gemini) built by founders to survive the 'Always-in-Production' plague and actually ship software."
           name="description">
-    <meta content="VetCoders Skills: The Vibecraft Framework" property="og:title">
+    <meta content="VibeCraft Skills: The Vibecraft Framework" property="og:title">
     <meta content="Stop playing with AI toys. Use the framework we built to force LLMs to converge and ship real products."
           property="og:description">
+    <meta content="https://vetcoders.github.io/vc-skills/og-image.png" property="og:image">
+    <meta content="1536" property="og:image:width">
+    <meta content="1024" property="og:image:height">
+    <meta content="website" property="og:type">
+    <meta content="https://vetcoders.github.io/vc-skills/" property="og:url">
+    <meta content="summary_large_image" name="twitter:card">
+    <meta content="VibeCraft Skills: The Vibecraft Framework" name="twitter:title">
+    <meta content="Stop playing with AI toys. Use the framework we built to force LLMs to converge and ship real products." name="twitter:description">
+    <meta content="https://vetcoders.github.io/vc-skills/og-image.png" name="twitter:image">
+    <meta content="T5B-vRPBGSbPiROhDSZPMplZ6bA5yCgT_3egIGQ8kIE" name="google-site-verification">
     <meta content="index,follow" name="robots">
     <link href="favicon.ico" rel="icon" sizes="32x32">
     <link href="logo-64.png" rel="icon" sizes="64x64" type="image/png">
@@ -25,8 +35,8 @@
 <div class="topbar">
     <header class="nav-shell">
         <a class="brand" href="#main-content">
-            <img alt="" aria-hidden="true" class="brand-logo" height="32" src="./logo-32.png" width="32">
-            <span>VetCoders Skills</span>
+            <span style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em;">vibecraft</span>
+            <img alt="" aria-hidden="true" class="brand-logo" height="24" src="./logo-32.png" style="margin-left: 6px;">
         </a>
         <nav aria-label="Primary" class="nav-links">
             <a href="#pipeline">Vibecraft</a>
@@ -34,16 +44,16 @@
             <a href="#marbles">Marbles</a>
             <a href="#dou">DoU</a>
             <a href="#get" id="nav-get-link">Get</a>
-            <a href="https://github.com/VetCoders/vetcoders-skills">GitHub</a>
+            <a href="https://github.com/VetCoders/vc-skills">GitHub</a>
         </nav>
     </header>
 </div>
 
 <div class="curl-banner">
     <code><span class="cb-g">$</span> curl -fsSLO
-        https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh &amp;&amp; bash install.sh</code>
+        https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh &amp;&amp; bash install.sh</code>
     <button class="cb-copy"
-            data-copy="curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh &amp;&amp; bash install.sh"
+            data-copy="curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh &amp;&amp; bash install.sh"
             type="button">
         Copy
     </button>
@@ -51,79 +61,69 @@
 
 <main class="shell" id="main-content">
     <!-- HERO -->
-    <section class="hero">
-        <div class="hero-copy fade-up">
-            <div class="section-label">VetCoders Vibecraft System</div>
-            <h1>The <span class="accent">Vibecraft</span> framework for founders tired of fragile AI toys.</h1>
-            <p class="tagline">We built an entire operating system for Codex, Claude, and Gemini just to survive
-                building our own app. Now you can use it to actually ship yours.</p>
-            <div class="hero-marble-showcase">
-                <div class="hero-canvas-wrap" id="showcase">
-                    <canvas id="marbleCanvas" aria-hidden="true"></canvas>
-                    <div class="stats" aria-hidden="true">
-                        <div>
-                            <span class="label">Loop</span>
-                            <strong id="loopCounter">0</strong>
-                        </div>
-                        <div>
-                            <span class="label">Coverage</span>
-                            <strong id="coverageCounter">0%</strong>
-                        </div>
-                    </div>
-                </div>
+            <!-- THE FOUNDER'S MANIFESTO -->
+    <article class="founder-manifesto">
+        
+        <header class="manifesto-header fade-up">
+            <h1 class="manifesto-title">The Vibecraft Framework<br>for Founders.</h1>
+            <p class="manifesto-lead">
+                Agents are no longer toys. VibeCraft gives you a full-featured factory of frontier engineers to ship real products.
+            </p>
+            <div class="manifesto-actions">
+                <a href="#evidence" class="btn-solid">See the Evidence</a>
+                <a href="https://github.com/VetCoders/vc-skills" class="btn-outline">View on GitHub</a>
             </div>
-        </div>
-        <aside class="hero-science fade-up" aria-labelledby="translation-layer-title">
-            <div class="hero-science-kicker">Translation Layer</div>
-            <h2 class="hero-science-title" id="translation-layer-title">It's Not Magic. It's Computer Science.</h2>
-            <p class="hero-science-intro">The vocabulary is gritty because it was born in founder combat. The
-                substrate is formal. This is the layer that translates VetCoders language into actual systems
-                engineering.</p>
-            <div class="hero-science-list">
-                <article class="hero-science-item">
-                    <div class="hero-science-term">
-                        <span class="hero-science-pill hero-science-pill--orange">Vibecrafting</span>
-                    </div>
-                    <div class="hero-science-copy">
-                        <strong>Structured Human-AI Collaborative Engineering (SHACE)</strong>
-                        <p>A mixed-initiative SDLC with deterministic checkpoints wrapped around stochastic generation.</p>
-                    </div>
-                </article>
-                <article class="hero-science-item">
-                    <div class="hero-science-term">
-                        <span class="hero-science-pill hero-science-pill--blue">Marbles Loop</span>
-                    </div>
-                    <div class="hero-science-copy">
-                        <strong>Counterexample-Guided Stochastic Convergence</strong>
-                        <p>Iterative variance reduction through priority-weighted denoising until the system actually
-                            stops breaking.</p>
-                    </div>
-                </article>
-                <article class="hero-science-item">
-                    <div class="hero-science-term">
-                        <span class="hero-science-pill hero-science-pill--green">Loctree Mapping</span>
-                    </div>
-                    <div class="hero-science-copy">
-                        <strong>AST-Augmented Context Engineering</strong>
-                        <p>External architectural memory that prevents LLMs from coding blind and getting lost in the
-                            middle.</p>
-                    </div>
-                </article>
-                <article class="hero-science-item">
-                    <div class="hero-science-term">
-                        <span class="hero-science-pill hero-science-pill--light">Definition of Undone</span>
-                    </div>
-                    <div class="hero-science-copy">
-                        <strong>Product-Surface Completeness Deficit (PSCD)</strong>
-                        <p>Ward Cunningham's debt model extended beyond code into installability, discoverability,
-                            usability, and market readiness.</p>
-                    </div>
-                </article>
-            </div>
-        </aside>
-    </section>
+        </header>
 
-    <section class="runtime-view">
+        <figure class="manifesto-canvas-container fade-up" id="showcase">
+             <canvas id="marbleCanvas" aria-hidden="true"></canvas>
+             <div class="stats" aria-hidden="true" style="display:none;">
+                 <span id="loopCounter">0</span>
+                 <span id="coverageCounter">0%</span>
+             </div>
+        </figure>
+
+        <div class="manifesto-body" id="evidence">
+            <section class="manifesto-prose fade-up">
+                <h2>It is not magic.<br>It is Computer Science.</h2>
+                <p>The vocabulary is vivid because it comes from real founder workflows. Underneath it is a formal substrate that translates VibeCraft language into concrete systems engineering.</p>
+            </section>
+
+            <section class="manifesto-evidence fade-up">
+                <div class="evidence-item">
+                    <span class="evidence-num">01</span>
+                    <h3>AST-Augmented Context</h3>
+                    <p>LLMs fail when they code blind. By externalizing architectural memory into AST-augmented mappings, VibeCraft keeps frontier models oriented precisely inside your repository.</p>
+                </div>
+                <div class="evidence-item">
+                    <span class="evidence-num">02</span>
+                    <h3>Stochastic Convergence</h3>
+                    <p>Code generation is stochastic. The Marbles loop uses priority-weighted denoising loops to relentlessly reduce variance, forcing the system into a shippable state.</p>
+                </div>
+                <div class="evidence-item">
+                    <span class="evidence-num">03</span>
+                    <h3>Vibecrafting (SHACE)</h3>
+                    <p>Structured Human-AI Collaborative Engineering. We wrap deterministic human checkpoints around stochastic generation. The result is a system you control and understand.</p>
+                </div>
+            </section>
+
+            <hr class="manifesto-divider">
+
+            <section class="manifesto-origin fade-up">
+                <span class="origin-eyebrow">DA SIĘ.</span>
+                <h2>Forged in combat.<br>Shipped by veterinarians.</h2>
+                <p class="origin-loud">VibeCraft wasn't built in a sterile lab by elite ex-FAANG researchers playing with toy apps.</p>
+                <p>It was hammered together by two veterinarians who needed to ship actual software. We were not professional programmers. We didn’t memorize algorithms. But we had a problem to solve.</p>
+                <p>Instead of relying on unstable chatbots, we built this framework to force LLMs into deterministic submission. We proved that with the right scaffolding, anyone with a founder's will can construct and ship enterprise-grade systems.</p>
+                <p class="origin-conclusion">If two vets can ship complex AI infrastructure using VibeCraft, what could you ship?</p>
+            </section>
+        </div>
+    </article>
+
+<!-- END MANIFESTO -->
+
+<!-- PIPELINE SECTION -->
+    <section class="pipeline-section" id="pipeline"><section class="runtime-view">
         <div class="container fade-up">
             <div class="runtime-layout">
                 <div class="runtime-copy">
@@ -212,7 +212,7 @@ flowchart LR
                     <div class="card-phase build card-phase--light">
                         Orchestrator
                     </div>
-                    <h3>vetcoders-ship</h3>
+                    <h3>vc-ship</h3>
                     <p class="card-desc">One command runs the full pipeline. Don't micro-manage the agents; let the
                         framework handle Craft &rarr; Converge &rarr; Ship until the thing is actually done.</p>
                     <div class="card-tags"><span class="tag">master orchestrator</span><span
@@ -223,7 +223,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-init</h3>
+                    <h3>vc-init</h3>
                     <p class="card-desc">Blind agents write bad code. This forces them to index history, read the AST,
                         and run quality gates before they are allowed to implement anything.</p>
                     <div class="card-tags"><span class="tag">loctree</span><span class="tag">aicx-mcp</span><span
@@ -233,7 +233,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-workflow</h3>
+                    <h3>vc-workflow</h3>
                     <p class="card-desc">The ERi Pipeline: Examine &rarr; Research &rarr; Implement. Stop the "vibe and
                         pray" approach and force a deliberate, measured execution path.</p>
                     <div class="card-tags"><span class="tag">ERi</span><span class="tag">loctree</span><span
@@ -246,7 +246,7 @@ flowchart LR
                     <div class="card-phase build card-phase--muted">Fallback
                         Path
                     </div>
-                    <h3>vetcoders-delegate</h3>
+                    <h3>vc-delegate</h3>
                     <p class="card-desc">Native in-session delegation. Use it when the task is bounded and you don't
                         need the heavy artillery of external frontier agents.</p>
                     <div class="card-tags"><span class="tag">native fallback</span><span
@@ -260,7 +260,7 @@ flowchart LR
                     <div class="card-phase build card-phase--orange">Frontier
                         Fleet
                     </div>
-                    <h3>vetcoders-agents</h3>
+                    <h3>vc-agents</h3>
                     <p class="card-desc">Unleash the external fleet (Codex, Claude, Gemini) in real terminals. They get
                         a `zsh -ic` shell and instructions to do the heavy lifting while you stay in control.</p>
                     <div class="card-tags"><span class="tag">frontier agents</span><span class="tag">Codex + Claude + Gemini</span><span
@@ -270,7 +270,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-research</h3>
+                    <h3>vc-research</h3>
                     <p class="card-desc">One agent's opinion is a hallucination waiting to happen. Throw all three
                         (Codex, Claude, Gemini) at the same problem and synthesize the delta into undeniable ground
                         truth.</p>
@@ -281,7 +281,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-partner</h3>
+                    <h3>vc-partner</h3>
                     <p class="card-desc">Executive-brain pairing mode. You keep your hands on the steering wheel while
                         delegating the repetitive fieldwork to agents in parallel. True command and control.</p>
                     <div class="card-tags"><span class="tag">partner mode</span><span class="tag">strategy</span><span
@@ -292,7 +292,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-ownership</h3>
+                    <h3>vc-ownership</h3>
                     <p class="card-desc">Hand over the keys. Full-spectrum ownership for when you need an operator to
                         drive the product from raw architecture all the way through to launch polish.</p>
                     <div class="card-tags"><span class="tag">ownership</span><span class="tag">end-to-end</span><span
@@ -302,7 +302,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-followup</h3>
+                    <h3>vc-followup</h3>
                     <p class="card-desc">The reality check. Post-implementation audit that runs quality gates and
                         security scans to give you a brutal GO / NO-GO verdict before you break production.</p>
                     <div class="card-tags"><span class="tag">audit</span><span class="tag">P0/P1/P2</span><span
@@ -313,7 +313,7 @@ flowchart LR
 
                 <div class="card card--accent-orange">
                     <div class="card-phase loop-phase">Phase 2 &middot; Converge</div>
-                    <h3>vetcoders-marbles</h3>
+                    <h3>vc-marbles</h3>
                     <p class="card-desc">Iterative convergence through brute force. Throw the prompt at the wall until
                         the circle is full (P0=0, P1=0, P2=0). The ultimate noise scheduler for code.</p>
                     <div class="card-tags"><span class="tag">diffusion</span><span class="tag">convergence</span><span
@@ -323,7 +323,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-prview</h3>
+                    <h3>vc-prview</h3>
                     <p class="card-desc">Stop merging garbage. Generates durable review artifact packs with line-level
                         findings to create a solid merge-gate instead of relying on one-off terminal wisdom.</p>
                     <div class="card-tags"><span class="tag">PR review</span><span class="tag">artifact pack</span><span
@@ -333,7 +333,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase build">Phase 1 &middot; Craft</div>
-                    <h3>vetcoders-prune</h3>
+                    <h3>vc-prune</h3>
                     <p class="card-desc">Ruthless cleanup for repositories drowning in scar tissue. Finds out what
                         actually ships, what's dead weight, and cuts it out without mercy.</p>
                     <div class="card-tags"><span class="tag">prune</span><span class="tag">runtime cone</span><span
@@ -345,7 +345,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase ship">Phase 3 &middot; Ship</div>
-                    <h3>vetcoders-screenscribe</h3>
+                    <h3>vc-screenscribe</h3>
                     <p class="card-desc">Turns narrated screencasts into brutal engineering findings. Don't write bug
                         reports; record your screen yelling at the app, and let this agent extract the actionable
                         failures.</p>
@@ -359,7 +359,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase ship">Phase 3 &middot; Ship</div>
-                    <h3>vetcoders-dou</h3>
+                    <h3>vc-dou</h3>
                     <p class="card-desc">The Definition of Undone audit. It crawls your URLs, checks your install paths,
                         and exposes the exact gap between your "working code" and a product someone can actually
                         buy.</p>
@@ -370,7 +370,7 @@ flowchart LR
 
                 <div class="card card--accent-blue">
                     <div class="card-phase ship">Phase 3 &middot; Ship</div>
-                    <h3>vetcoders-decorate</h3>
+                    <h3>vc-decorate</h3>
                     <p class="card-desc">Make it look like you actually care. Detects your existing tokens (colors,
                         fonts) and adds the necessary micro-interactions so your app doesn't look like a 2004 admin
                         panel.</p>
@@ -384,7 +384,7 @@ flowchart LR
 
                 <div class="card">
                     <div class="card-phase ship">Phase 3 &middot; Ship</div>
-                    <h3>vetcoders-hydrate</h3>
+                    <h3>vc-hydrate</h3>
                     <p class="card-desc">The final mile. Automates the soul-crushing work of packaging for market: SEO,
                         marketplace listings, and onboarding. The only cure for Always-in-Production.</p>
                     <div class="card-tags"><span class="tag">marketplace</span><span class="tag">SEO</span><span
@@ -494,7 +494,7 @@ flowchart LR
                 <h3 class="install-heading install-heading--first">Quick Install</h3>
                 <div class="code-block">
                     <button class="copy-btn" type="button">Copy</button>
-                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh &amp;&amp; bash install.sh</code></pre>
+                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh &amp;&amp; bash install.sh</code></pre>
                 </div>
 
                 <p class="install-copy install-copy--top">
@@ -506,8 +506,8 @@ flowchart LR
                 <h3 class="install-heading">Verified Install</h3>
                 <div class="code-block">
                     <button class="copy-btn" type="button">Copy</button>
-                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh
-curl -fsSLO https://raw.githubusercontent.com/VetCoders/vetcoders-skills/main/install.sh.sha256
+                    <pre><code>curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh
+curl -fsSLO https://raw.githubusercontent.com/VetCoders/vc-skills/main/install.sh.sha256
 shasum -a 256 -c install.sh.sha256
 bash install.sh</code></pre>
                 </div>
@@ -517,15 +517,15 @@ bash install.sh</code></pre>
                 <div class="install-terminal-preview">
                     <div class="hterm">
             <div class="hterm-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
-            <div class="hterm-prompt" data-copy="git clone https://github.com/VetCoders/vetcoders-skills.git"><span
-                    class="g">&#x276f;</span> git clone &hellip;/vetcoders-skills.git
+            <div class="hterm-prompt" data-copy="git clone https://github.com/VetCoders/vc-skills.git"><span
+                    class="g">&#x276f;</span> git clone &hellip;/vc-skills.git
             </div>
-            <div class="hterm-prompt" data-copy="cd vetcoders-skills"><span class="g">&#x276f;</span> cd
-                vetcoders-skills
+            <div class="hterm-prompt" data-copy="cd vc-skills"><span class="g">&#x276f;</span> cd
+                vc-skills
             </div>
             <div class="hterm-prompt" data-copy="make help"><span class="g">&#x276f;</span> make help</div>
             <div class="hterm-sep"></div>
-            <div class="hterm-title">VetCoders Skills</div>
+            <div class="hterm-title">VibeCraft Skills</div>
             <div class="hterm-row y" data-copy="make install"><span class="ic">&#x25c6;</span><span class="cmd">make install</span><span
                     class="dsc">Skills + shell helpers</span></div>
             <div class="hterm-row y" data-copy="make skills"><span class="ic">&#x25c7;</span><span class="cmd">make skills</span><span
