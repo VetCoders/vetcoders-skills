@@ -447,7 +447,7 @@ h1, h2, h3, h4, h5, h6 {
 /* legacy .manifesto-canvas-container removed — replaced by .hero-canvas */
 
 .manifesto-body {
-    max-width: 650px;
+    max-width: var(--page-shell);
     margin: 0 auto;
     padding-top: var(--space-xl);
 }
@@ -461,6 +461,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .manifesto-prose {
     margin-bottom: var(--space-xl);
+    max-width: 800px;
 }
 
 .manifesto-prose h2 {
@@ -479,15 +480,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .manifesto-body section.manifesto-evidence {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-    margin-bottom: var(--space-2xl);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
 }
 
 .evidence-item {
-    padding-left: 2rem;
-    border-left: 2px solid rgba(255,255,255,0.1);
+    padding: var(--space-md);
+    border-left: 2px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
     transition: border-color 0.3s;
 }
 
@@ -505,15 +508,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .evidence-item h3 {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     color: var(--light);
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-sm);
     font-weight: 600;
     letter-spacing: -0.01em;
 }
 
 .evidence-item p {
-    font-size: 1.05rem;
+    font-size: .88rem;
     color: var(--mid);
     line-height: 1.6;
 }
@@ -552,14 +555,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .manifesto-origin .origin-loud {
     font-size: 1.35rem;
-    color: #f0f0f0;
+    color: var(--light);
     font-weight: 500;
 }
 
 .manifesto-origin .origin-conclusion {
-    margin-top: 3rem;
+    margin-top: var(--space-lg);
     font-size: 1.25rem;
-    color: #d97757;
+    color: var(--orange);
     font-weight: 600;
 }
 
@@ -636,6 +639,90 @@ section {
     gap: .5rem
 }
 
+/* FOUNDATION GRID */
+.foundation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.foundation-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg) var(--space-md);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    text-decoration: none;
+    color: var(--light);
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+
+.foundation-card:hover {
+    border-color: var(--orange);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px var(--glow);
+}
+
+.foundation-card--featured {
+    border-color: var(--blue);
+}
+
+.foundation-card--featured:hover {
+    border-color: var(--blue);
+    box-shadow: 0 8px 24px rgba(91, 135, 168, 0.25);
+}
+
+.foundation-icon {
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    margin-bottom: var(--space-sm);
+    letter-spacing: 0.05em;
+}
+
+.foundation-card h3 {
+    font-family: var(--font-head);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+}
+
+.foundation-role {
+    font-family: var(--font-head);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--mid);
+    margin-bottom: var(--space-sm);
+}
+
+.foundation-card p {
+    font-size: .88rem;
+    color: var(--mid);
+    line-height: 1.6;
+    flex: 1;
+}
+
+.foundation-link {
+    display: block;
+    margin-top: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    color: var(--orange);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.foundation-card:hover .foundation-link {
+    opacity: 1;
+}
+
+@media (max-width: 900px) {
+    .foundation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* PIPELINE */
 .pipeline-section {
     background: var(--dark)
@@ -645,8 +732,8 @@ section {
     background: linear-gradient(180deg, rgba(12, 12, 11, .96), rgba(8, 8, 7, .98));
     border: 1px solid rgba(250, 249, 245, .1);
     border-radius: 10px;
-    padding: 18px 20px;
-    margin-bottom: 1.4rem;
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .02)
 }
 
@@ -658,9 +745,9 @@ section {
 .mmd-shell code {
     display: block;
     white-space: pre;
-    font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: .88rem;
-    line-height: 1.72;
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    line-height: 1.55;
     color: rgba(250, 249, 245, .96)
 }
 

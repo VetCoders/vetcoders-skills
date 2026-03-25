@@ -125,25 +125,38 @@
 
     <section class="runtime-view">
         <div class="container fade-up">
-            <div class="runtime-layout">
-                <div class="runtime-copy">
-                    <div class="section-label">Runtime Foundations</div>
-                    <h2 class="section-title">The substrate underneath the suite.</h2>
-                    <p class="section-sub">The suite is the callable surface. These three binaries are the hard
-                        guardrails underneath it: indexed history, structural mapping, and durable review artifacts.
-                        They are what keep frontier agents from coding blind.</p>
-                </div>
-                <div class="hero-foundations runtime-foundations-panel">
-                    <div class="hero-foundations-label">Three binaries, one constraint surface</div>
-                    <p class="hero-foundations-copy">We had to build our own parsers and indexers just to stop the
-                        LLMs from breaking the build. These are not optional garnishes. They are the runtime
-                        discipline.</p>
-                    <div class="foundation-strip-tags">
-                        <span class="tag">aicx-mcp = history index + recovery</span>
-                        <span class="tag">loctree-mcp = repo structure + impact mapping</span>
-                        <span class="tag">prview = review artifacts + merge clarity</span>
-                    </div>
-                </div>
+            <div class="section-label">Runtime Foundations</div>
+            <h2 class="section-title">The substrate underneath the suite.</h2>
+            <p class="section-sub">Three Rust binaries. Not optional garnishes. The hard guardrails that keep frontier agents from coding blind.</p>
+            <div class="foundation-grid">
+                <a class="foundation-card foundation-card--featured" href="https://loct.io">
+                    <div class="foundation-icon" style="color: var(--blue)">01</div>
+                    <h3>loctree-mcp</h3>
+                    <p class="foundation-role">Perception Engine</p>
+                    <p>AST-augmented architectural memory. The eyes for every agent &mdash; forces LLMs to see the full repo structure before modifying a single file. Prevents "Lost in the Middle" blindness.</p>
+                    <span class="foundation-link">loct.io</span>
+                </a>
+                <a class="foundation-card" href="https://github.com/VetCoders/ai-contexters">
+                    <div class="foundation-icon" style="color: var(--orange)">02</div>
+                    <h3>aicx-mcp</h3>
+                    <p class="foundation-role">Decisions &amp; Intents Retrieval</p>
+                    <p>Indexes decisions, intents, and outcomes from every AI session. Agents retrieve what was decided and why &mdash; not raw chat logs, but structured engineering context.</p>
+                    <span class="foundation-link">github.com/VetCoders/ai-contexters</span>
+                </a>
+                <a class="foundation-card" href="https://github.com/VetCoders/prview">
+                    <div class="foundation-icon" style="color: var(--green)">03</div>
+                    <h3>prview</h3>
+                    <p class="foundation-role">Audit &amp; Quality Gate</p>
+                    <p>Generates durable PR review packs with line-level findings. The merge gate that turns terminal dumps into actual artifacts that survive the session.</p>
+                    <span class="foundation-link">github.com/VetCoders/prview</span>
+                </a>
+                <a class="foundation-card" href="https://github.com/VetCoders/screenscribe">
+                    <div class="foundation-icon" style="color: var(--mid)">04</div>
+                    <h3>ScreenScribe</h3>
+                    <p class="foundation-role">AI-Driven UI/UX Reviewer</p>
+                    <p>Turns narrated screencasts into structured engineering findings. The orchestrator's eye on the product surface &mdash; what users see, not what code says.</p>
+                    <span class="foundation-link">github.com/VetCoders/screenscribe</span>
+                </a>
             </div>
         </div>
     </section>
