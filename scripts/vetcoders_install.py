@@ -1375,7 +1375,7 @@ def cmd_install(args: argparse.Namespace) -> int:
     # --- Execute: shell helpers ---
     if install_shell:
         print(bold("Installing shell helpers..."))
-        shell_script = repo_root / "vc-agents" / "scripts" / "install-shell.sh"
+        shell_script = repo_root / "skills" / "vc-agents" / "scripts" / "install-shell.sh"
         if shell_script.exists():
             cmd = ["bash", str(shell_script), "--source", str(repo_root)]
             if dry_run:

@@ -57,7 +57,7 @@ def run_underlying_installer(repo_dir):
     if os.path.exists(installer_path):
         print_step("Running Core Installer...")
         try:
-            subprocess.run([sys.executable, installer_path, "install", "--source", repo_dir, "--with-shell"], check=True)
+            subprocess.run([sys.executable, installer_path, "install", "--source", repo_dir], check=True)
         except subprocess.CalledProcessError as e:
             print_warning(f"Core installer exited with code {e.returncode}")
     else:
