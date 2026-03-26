@@ -107,7 +107,7 @@ Split implementation into independent, parallel-safe units:
 ### Pipeline Directory Structure
 
 ```
-.ai-agents/pipeline/<slug>/
+.vibecrafted/pipeline/<slug>/
 ├── CONTEXT.md          (from Phase 1)
 ├── RESEARCH.md         (from Phase 2, if applicable)
 ├── plans/
@@ -128,7 +128,7 @@ environment setup automatically.
 
 ```bash
 SLUG="<pipeline-slug>"
-PLAN=".ai-agents/pipeline/$SLUG/plans/01_task.md"
+PLAN=".vibecrafted/pipeline/$SLUG/plans/01_task.md"
 
 bash vc-agents/scripts/codex_spawn.sh "$PLAN" --mode implement --runtime terminal
 ```
@@ -162,7 +162,7 @@ After agents complete:
 
 ### 1. Collect Reports
 
-Read all reports from `.ai-agents/pipeline/<slug>/reports/`.
+Read all reports from `.vibecrafted/pipeline/<slug>/reports/`.
 
 ### 2. Quality Gate
 

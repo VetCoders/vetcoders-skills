@@ -24,7 +24,7 @@ spawn_repo_root() {
 
 # Central artifact store: ~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
 # Override with VIBECRAFTED_HOME env var for custom location
-# Falls back to <repo>/.ai-agents/ if git remote unavailable
+# Falls back to <repo>/.vibecrafted/ if git remote unavailable
 VIBECRAFTED_HOME="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
 
 spawn_store_dir() {
@@ -37,7 +37,7 @@ spawn_store_dir() {
     printf '%s/artifacts/%s/%s' "$VIBECRAFTED_HOME" "$org_repo" "$date_dir"
   else
     # Fallback: per-repo
-    printf '%s/.ai-agents' "$root"
+    printf '%s/.vibecrafted' "$root"
   fi
 }
 
@@ -153,16 +153,11 @@ spawn_prepare_paths() {
   SPAWN_LAUNCHER="$SPAWN_TMP_DIR/${SPAWN_TS}_${SPAWN_SLUG}_${agent}_launch.sh"
   mkdir -p "$SPAWN_REPORT_DIR" "$SPAWN_TMP_DIR"
 
-  # Backward compat: symlink from repo .ai-agents/reports → central store
-  local repo_reports="$SPAWN_ROOT/.ai-agents/reports"
-  if [[ "$store_base" != "$SPAWN_ROOT/.ai-agents" ]] && [[ ! -L "$repo_reports" ]]; then
-    mkdir -p "$SPAWN_ROOT/.ai-agents"
-    if [[ -d "$repo_reports" ]] && [[ ! -L "$repo_reports" ]]; then
-      # Existing dir with content — leave it, don't break
-      true
-    else
-      ln -sfn "$SPAWN_REPORT_DIR" "$repo_reports" 2>/dev/null || true
-    fi
+  # Create a convenient symlink from repo .vibecrafted/reports → central store
+  local repo_reports="$SPAWN_ROOT/.vibecrafted/reports"
+  if [[ "$store_base" != "$SPAWN_ROOT/.vibecrafted" ]]; then
+    mkdir -p "$SPAWN_ROOT/.vibecrafted"
+    ln -sfn "$SPAWN_REPORT_DIR" "$repo_reports" 2>/dev/null || true
   fi
 }
 

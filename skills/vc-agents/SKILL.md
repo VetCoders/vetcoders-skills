@@ -4,7 +4,7 @@ version: 1.4.1
 description: >
   Spawn external subagents via the VibeCraft method using the operator-facing
   helper launchers in an interactive `zsh -ic` shell. Use when the user wants
-  full isolation, visible Terminal agents, durable artifacts in `.ai-agents/`,
+  full isolation, visible Terminal agents, durable artifacts in `.vibecrafted/`,
   and real delegated implementation instead of in-thread analysis. Trigger
   phrases: "spawn agents", "terminal agents", "agent fleet", "odpal agentow",
   "deleguj przez terminal", "codex agents", "power agents".
@@ -26,7 +26,7 @@ Trigger when the user asks to delegate work, especially phrases like:
 - Spawning through the VibeCraft method requires a strict execution pattern.
 - The command shape is canonical and obligatory without exceptions. If you hesitate to use it as provided, do not use this skill.
 - Agents are copies of yourself: same smart, same capable, just lighter and more agile because they do not carry your full context window.
-- Spawn exists so field teams can implement, research, review, and converge outside the main thread while still leaving durable artifacts in `.ai-agents/`.
+- Spawn exists so field teams can implement, research, review, and converge outside the main thread while still leaving durable artifacts in `.vibecrafted/`.
 
 ## Why-matrix
 
@@ -43,7 +43,7 @@ If the task wants one of these strengths, external agents win by default because
 
 ## Goal
 
-Create a small fleet of subagents that each get a precise task into `.ai-agents/plans/`.
+Create a small fleet of subagents that each get a precise task into `.vibecrafted/plans/`.
 
 Delegate:
 
@@ -52,15 +52,15 @@ Delegate:
 - implementation
 - review
 
-Then collect their results in `.ai-agents/reports/` in the current repo.
+Then collect their results in `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/` in the current repo.
 
 ## Standard workflow
 
 1. Clarify scope if needed.
    - If tasks are not explicit, propose a split into 2-5 items and get alignment.
 2. Prepare repo folders.
-   - Ensure `.ai-agents/plans/`, `.ai-agents/reports/`, and `.ai-agents/tmp/` exist in the repo root.
-3. Write one plan per subagent in `.ai-agents/plans/`.
+   - Ensure `.vibecrafted/plans/`, `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`, and `.vibecrafted/tmp/` exist in the repo root.
+3. Write one plan per subagent in `.vibecrafted/plans/`.
    - Keep it high level, decisive, and test-gated.
    - Provide reason and context.
    - Give a clear `[ ]` todo list.
@@ -160,33 +160,33 @@ This guarantees the user's real shell environment, aliases, and helper wrappers 
 ### Codex
 
 ```bash
-zsh -ic 'codex-implement .ai-agents/plans/<plan>.md'
+zsh -ic 'codex-implement .vibecrafted/plans/<plan>.md'
 ```
 
 ### Claude
 
 ```bash
-zsh -ic 'claude-implement .ai-agents/plans/<plan>.md'
+zsh -ic 'claude-implement .vibecrafted/plans/<plan>.md'
 ```
 
 ### Gemini
 
 ```bash
-zsh -ic 'gemini-implement .ai-agents/plans/<plan>.md'
+zsh -ic 'gemini-implement .vibecrafted/plans/<plan>.md'
 ```
 
 If these helper wrappers are unavailable, stop pretending spawn is correctly configured and say so explicitly.
 
 ## Output convention
 
-- Plans: `.ai-agents/plans/<timestamp>_<slug>.md` or another stable per-task filename
-- Reports: `.ai-agents/reports/<timestamp>_<slug>_<agent>.md`
-- Transcripts: `.ai-agents/reports/<timestamp>_<slug>_<agent>.transcript.log`
-- Metadata: `.ai-agents/reports/<timestamp>_<slug>_<agent>.meta.json`
+- Plans: `.vibecrafted/plans/<timestamp>_<slug>.md` or another stable per-task filename
+- Reports: `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.md`
+- Transcripts: `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.transcript.log`
+- Metadata: `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.meta.json`
 
 ## Observation
 
-Observe progress through durable artifacts in `.ai-agents/reports/`.
+Observe progress through durable artifacts in `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
 
 If your environment exposes the observer helper, the standard check is:
 

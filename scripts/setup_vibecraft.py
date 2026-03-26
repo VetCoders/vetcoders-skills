@@ -97,8 +97,14 @@ def main():
 
     # Step 1: Run core installer — copies skills to ~/.vibecrafted/skills/,
     # creates symlinks, installs shell helpers to ~/.config/zsh/vc-skills.zsh
+    skills_dir = os.path.join(repo_dir, "skills")
+    skill_count = len([d for d in os.listdir(skills_dir)
+                       if os.path.isdir(os.path.join(skills_dir, d))
+                       and d.startswith("vc-")
+                       and os.path.isfile(os.path.join(skills_dir, d, "SKILL.md"))
+                       ]) if os.path.isdir(skills_dir) else 0
     print_step("Installing the shared skill store")
-    print_info(f"What:   Copy 16 VibeCraft skills to {vibecrafted_home}/skills/")
+    print_info(f"What:   Copy {skill_count} VibeCraft skills to {vibecrafted_home}/skills/")
     print_info("Reason: Keep one canonical skill store for Claude, Codex, and Gemini")
     print_info(f"Safe: Everything reversible with 'make -C {shlex.quote(control_plane)} uninstall'")
     run_underlying_installer(repo_dir)

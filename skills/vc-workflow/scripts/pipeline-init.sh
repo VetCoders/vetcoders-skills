@@ -7,7 +7,7 @@ set -euo pipefail
 
 SLUG="${1:?Usage: pipeline-init.sh <slug> [root-dir]}"
 ROOT="${2:-$(pwd)}"
-PIPELINE_DIR="$ROOT/.ai-agents/pipeline/$SLUG"
+PIPELINE_DIR="$ROOT/.vibecrafted/pipeline/$SLUG"
 
 if [ -d "$PIPELINE_DIR" ]; then
     echo "Pipeline '$SLUG' already exists at $PIPELINE_DIR"
@@ -23,7 +23,7 @@ cat > "$PIPELINE_DIR/CONTEXT.md" << 'CONTEXT_EOF'
 # Examination: SLUG_PLACEHOLDER
 
 Date: DATE_PLACEHOLDER
-Pipeline: .ai-agents/pipeline/SLUG_PLACEHOLDER/
+Pipeline: .vibecrafted/pipeline/SLUG_PLACEHOLDER/
 
 ## Repo Health
 - <!-- fill from repo-view -->

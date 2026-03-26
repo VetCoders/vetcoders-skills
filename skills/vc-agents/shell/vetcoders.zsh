@@ -80,8 +80,8 @@ _vetcoders_prompt_file() {
   slug="$(printf '%s' "$prompt_text" | tr '\n' ' ' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-48)"
   [[ -n "$slug" ]] || slug="adhoc-prompt"
 
-  mkdir -p "$root/.ai-agents/tmp"
-  prompt_file="$root/.ai-agents/tmp/${ts}_${slug}_${agent}_prompt.md"
+  mkdir -p "$root/.vibecrafted/tmp"
+  prompt_file="$root/.vibecrafted/tmp/${ts}_${slug}_${agent}_prompt.md"
   printf '%s\n' "$prompt_text" > "$prompt_file"
   printf '%s\n' "$prompt_file"
 }
@@ -214,6 +214,173 @@ skills-sync() {
   local script
   script="$(_vetcoders_spawn_script codex skills_sync.sh)" || return 1
   bash "$script" "$@"
+}
+
+repo-full() {
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "Not a git repository."
+    return 1
+  }
+
+  local cwd root repo branch head_short head_full upstream origin_url default_remote default_branch
+  local last_tag stash_count staged_count unstaged_count untracked_count worktree_count
+  local upstream_ahead upstream_behind
+
+  cwd="$(pwd)"
+  root="$(git rev-parse --show-toplevel 2>/dev/null)"
+  repo="$(basename "$root")"
+  branch="$(git symbolic-ref --short -q HEAD 2>/dev/null || echo "DETACHED_HEAD")"
+  head_short="$(git rev-parse --short HEAD 2>/dev/null)"
+  head_full="$(git rev-parse HEAD 2>/dev/null)"
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "no upstream")"
+  origin_url="$(git remote get-url origin 2>/dev/null || echo "no origin")"
+  last_tag="$(git describe --tags --abbrev=0 2>/dev/null || echo "no tags")"
+  stash_count="$(git stash list 2>/dev/null | wc -l | tr -d ' ')"
+  staged_count="$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')"
+  unstaged_count="$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')"
+  untracked_count="$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')"
+  worktree_count="$(git worktree list 2>/dev/null | wc -l | tr -d ' ')"
+
+  default_remote="$(git remote | awk 'NR==1{print; exit}')"
+  [[ -z "$default_remote" ]] && default_remote="origin"
+
+  default_branch="$(git symbolic-ref --quiet --short "refs/remotes/${default_remote}/HEAD" 2>/dev/null | sed "s#^${default_remote}/##")"
+  [[ -z "$default_branch" ]] && default_branch="$(git remote show "$default_remote" 2>/dev/null | sed -n '/HEAD branch/s/.*: //p' | head -n 1)"
+  [[ -z "$default_branch" ]] && default_branch="unknown"
+
+  if git rev-parse '@{u}' >/dev/null 2>&1; then
+    read upstream_ahead upstream_behind <<< "$(git rev-list --left-right --count HEAD...@{u} 2>/dev/null)"
+  else
+    upstream_ahead="-"
+    upstream_behind="-"
+  fi
+
+  _repo_full_compare_ref() {
+    local ref="$1"
+    git rev-parse --verify "$ref" >/dev/null 2>&1 || return 0
+    local ahead behind sha
+    read ahead behind <<< "$(git rev-list --left-right --count HEAD..."$ref" 2>/dev/null)"
+    sha="$(git rev-parse --short "$ref" 2>/dev/null)"
+    printf "%-24s ahead:%-4s behind:%-4s sha:%s\n" "$ref" "$ahead" "$behind" "$sha"
+  }
+
+  _repo_full_human_awk='
+    function human(x) {
+      split("B KB MB GB TB", u, " ");
+      i=1;
+      while (x >= 1024 && i < 5) { x /= 1024; i++ }
+      return sprintf("%.1f %s", x, u[i]);
+    }
+    {
+      size=$1;
+      $1="";
+      sub(/^\t/, "", $0);
+      printf "%10s  %s\n", human(size), $0;
+    }
+  '
+
+  echo "==================== REPO FULL ===================="
+  echo "Repo:              $repo"
+  echo "Working dir:       $cwd"
+  echo "Root:              $root"
+  echo "Branch:            $branch"
+  echo "Default remote:    $default_remote"
+  echo "Default branch:    $default_branch"
+  echo "Upstream:          $upstream"
+  echo "Ahead / Behind:    $upstream_ahead / $upstream_behind"
+  echo "Origin:            $origin_url"
+  echo "HEAD short:        $head_short"
+  echo "HEAD full:         $head_full"
+  echo "Last tag:          $last_tag"
+  echo "Stashes:           $stash_count"
+  echo "Worktrees:         $worktree_count"
+  echo "Staged changes:    $staged_count"
+  echo "Unstaged changes:  $unstaged_count"
+  echo "Untracked files:   $untracked_count"
+  echo
+
+  echo "==================== HEAD COMMIT ===================="
+  git show -s --format="Commit: %H%nAuthor: %an <%ae>%nDate:   %ad%nTitle:  %s" --date=iso HEAD
+  echo
+
+  echo "==================== STATUS ===================="
+  git status -sb
+  echo
+
+  echo "==================== WORKTREE ===================="
+  git status --short
+  echo
+
+  echo "==================== COMPARE TO IMPORTANT REFS ===================="
+  {
+    [[ "$upstream" != "no upstream" ]] && echo "$upstream"
+    [[ "$default_branch" != "unknown" ]] && echo "${default_remote}/${default_branch}"
+    echo "origin/develop"
+    echo "origin/main"
+  } | awk 'NF && !seen[$0]++' | while IFS= read -r ref; do
+    _repo_full_compare_ref "$ref"
+  done
+  echo
+
+  echo "==================== REMOTES ===================="
+  git remote -v
+  echo
+
+  echo "==================== LOCAL BRANCHES (RECENT FIRST) ===================="
+  git for-each-ref \
+    --sort=-committerdate \
+    refs/heads \
+    --format='%(HEAD) %(refname:short) | upstream=%(upstream:short) | %(committerdate:short) | %(objectname:short) | %(subject)'
+  echo
+
+  echo "==================== LAST 20 COMMITS ===================="
+  git log --oneline --decorate --graph -n 20
+  echo
+
+  echo "==================== STAGED DIFF STAT ===================="
+  git diff --cached --stat
+  echo
+
+  echo "==================== UNSTAGED DIFF STAT ===================="
+  git diff --stat
+  echo
+
+  echo "==================== STASH LIST ===================="
+  git stash list 2>/dev/null
+  echo
+
+  echo "==================== WORKTREES ===================="
+  git worktree list 2>/dev/null
+  echo
+
+  echo "==================== SUBMODULES ===================="
+  if [[ -f "$root/.gitmodules" ]]; then
+    git submodule status
+  else
+    echo "No submodules."
+  fi
+  echo
+
+  echo "==================== TOP 10 LARGEST TRACKED FILES ===================="
+  if git ls-files -z | grep -q . 2>/dev/null; then
+    git ls-files -z \
+      | xargs -0 stat -f "%z\t%N" 2>/dev/null \
+      | sort -nr \
+      | head -n 10 \
+      | awk "$_repo_full_human_awk"
+  else
+    echo "No tracked files."
+  fi
+  echo
+
+  echo "==================== GIT CONFIG ===================="
+  echo "user.name:         $(git config --get user.name 2>/dev/null || echo "not set")"
+  echo "user.email:        $(git config --get user.email 2>/dev/null || echo "not set")"
+  echo "pull.rebase:       $(git config --get pull.rebase 2>/dev/null || echo "not set")"
+  echo "init.defaultBranch:$(git config --get init.defaultBranch 2>/dev/null || echo "not set")"
+  echo
+
+  echo "==================== DONE ===================="
 }
 
 vc-frontier-paths() {

@@ -110,7 +110,7 @@ Write your findings to the report file as markdown with this structure:
 - Do not hallucinate API signatures — verify them
 ```
 
-Save to `.ai-agents/pipeline/<slug>/plans/research-plan.md`.
+Save to `.vibecrafted/pipeline/<slug>/plans/research-plan.md`.
 
 Plans can be split if the problem has clearly separable domains. Each agent
 gets ALL plans — they are independent researchers, not specialists.
@@ -123,9 +123,9 @@ exists in the user's interactive shell, and always launch through `zsh -ic`.
 Canonical path when `*-research` helpers exist:
 
 ```bash
-zsh -ic 'claude-research .ai-agents/pipeline/<slug>/plans/research-plan.md'
-zsh -ic 'codex-research  .ai-agents/pipeline/<slug>/plans/research-plan.md'
-zsh -ic 'gemini-research .ai-agents/pipeline/<slug>/plans/research-plan.md'
+zsh -ic 'claude-research .vibecrafted/pipeline/<slug>/plans/research-plan.md'
+zsh -ic 'codex-research  .vibecrafted/pipeline/<slug>/plans/research-plan.md'
+zsh -ic 'gemini-research .vibecrafted/pipeline/<slug>/plans/research-plan.md'
 ```
 
 Quick verification if needed:
@@ -137,9 +137,9 @@ zsh -ic 'for c in claude-research codex-research gemini-research; do command -v 
 Compatibility fallback when the shell exposes only `*-implement` helpers:
 
 ```bash
-zsh -ic 'claude-implement .ai-agents/pipeline/<slug>/plans/research-plan.md'
-zsh -ic 'codex-implement  .ai-agents/pipeline/<slug>/plans/research-plan.md'
-zsh -ic 'gemini-implement .ai-agents/pipeline/<slug>/plans/research-plan.md'
+zsh -ic 'claude-implement .vibecrafted/pipeline/<slug>/plans/research-plan.md'
+zsh -ic 'codex-implement  .vibecrafted/pipeline/<slug>/plans/research-plan.md'
+zsh -ic 'gemini-implement .vibecrafted/pipeline/<slug>/plans/research-plan.md'
 ```
 
 Raw `*_spawn.sh` is last-resort plumbing only. Reach for it only when neither
@@ -152,9 +152,9 @@ divergence between reports reveals blind spots.
 
 Reports land in:
 ```
-.ai-agents/reports/<ts>_research-plan_claude.md
-.ai-agents/reports/<ts>_research-plan_codex.md
-.ai-agents/reports/<ts>_research-plan_gemini.md
+~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_claude.md
+~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_codex.md
+~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_gemini.md
 ```
 
 Wait for all three. Use `{agent}-observe --last` through `zsh -ic`:
@@ -186,7 +186,7 @@ Rules for synthesis:
 
 ### Step 6 — Produce gap-free research document
 
-Write the final document to `.ai-agents/pipeline/<slug>/RESEARCH.md`:
+Write the final document to `.vibecrafted/pipeline/<slug>/RESEARCH.md`:
 
 ```markdown
 # Research: <title>

@@ -220,8 +220,8 @@ done
 ```
 
 Preferred outputs:
-- `.ai-agents/pipeline/<slug>/reports/supervisor-latest.md`
-- `.ai-agents/pipeline/<slug>/reports/supervisor-watch.log`
+- `.vibecrafted/pipeline/<slug>/reports/supervisor-latest.md`
+- `.vibecrafted/pipeline/<slug>/reports/supervisor-watch.log`
 
 If the platform supports a native recurring prompt primitive such as `/loop`,
 prefer combining it with `marbles` rather than replacing `marbles` with it:
@@ -252,7 +252,7 @@ For each loop:
      Task("Verify: run gates", prompt="cd $ROOT && <gate commands>")
 
   4. Collect results
-  5. Write loop report to .ai-agents/pipeline/<slug>/reports/loop_N.md
+  5. Write loop report to .vibecrafted/pipeline/<slug>/reports/loop_N.md
   6. Calculate convergence score
   7. If not converged → loop N+1
 ```
@@ -261,9 +261,9 @@ For each loop:
 
 ```
 For each loop:
-  1. Write loop plan to .ai-agents/pipeline/<slug>/plans/loop_N_fixes.md
+  1. Write loop plan to .vibecrafted/pipeline/<slug>/plans/loop_N_fixes.md
   2. Spawn agent with plan
-  3. Read report from .ai-agents/pipeline/<slug>/reports/loop_N.md
+  3. Read report from .vibecrafted/pipeline/<slug>/reports/loop_N.md
   4. Run gates locally
   5. Calculate convergence score
   6. If not converged → loop N+1

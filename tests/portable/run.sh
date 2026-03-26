@@ -123,8 +123,8 @@ assert_contains "$home_dir/.zshrc" 'vc-skills.zsh'
 
 log "prepare fake repo and fake agent CLIs"
 git -C "$work_repo" init -q
-mkdir -p "$work_repo/.ai-agents/plans"
-cat > "$work_repo/.ai-agents/plans/test.md" <<'PLAN'
+mkdir -p "$work_repo/.vibecrafted/plans"
+cat > "$work_repo/.vibecrafted/plans/test.md" <<'PLAN'
 # Test plan
 - Prove the portable spawn runtime can create artifacts.
 PLAN
@@ -166,13 +166,13 @@ chmod +x "$fake_bin/codex" "$fake_bin/claude" "$fake_bin/gemini"
 common_env=(HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH")
 
 log "headless spawn smoke"
-env "${common_env[@]}" bash "$home_dir/.codex/skills/vc-agents/scripts/codex_spawn.sh" --mode plan --runtime headless --root "$work_repo" "$work_repo/.ai-agents/plans/test.md"
-env "${common_env[@]}" bash "$home_dir/.claude/skills/vc-agents/scripts/claude_spawn.sh" --mode review --runtime headless --root "$work_repo" "$work_repo/.ai-agents/plans/test.md"
-env "${common_env[@]}" bash "$home_dir/.gemini/skills/vc-agents/scripts/gemini_spawn.sh" --mode implement --runtime headless --root "$work_repo" "$work_repo/.ai-agents/plans/test.md"
+env "${common_env[@]}" bash "$home_dir/.codex/skills/vc-agents/scripts/codex_spawn.sh" --mode plan --runtime headless --root "$work_repo" "$work_repo/.vibecrafted/plans/test.md"
+env "${common_env[@]}" bash "$home_dir/.claude/skills/vc-agents/scripts/claude_spawn.sh" --mode review --runtime headless --root "$work_repo" "$work_repo/.vibecrafted/plans/test.md"
+env "${common_env[@]}" bash "$home_dir/.gemini/skills/vc-agents/scripts/gemini_spawn.sh" --mode implement --runtime headless --root "$work_repo" "$work_repo/.vibecrafted/plans/test.md"
 
-codex_meta="$(find "$work_repo/.ai-agents/reports" -maxdepth 1 -type f -name '*_codex.meta.json' | sort | tail -n 1)"
-claude_meta="$(find "$work_repo/.ai-agents/reports" -maxdepth 1 -type f -name '*_claude.meta.json' | sort | tail -n 1)"
-gemini_meta="$(find "$work_repo/.ai-agents/reports" -maxdepth 1 -type f -name '*_gemini.meta.json' | sort | tail -n 1)"
+codex_meta="$(find "$work_repo/.vibecrafted/reports" -maxdepth 1 -type f -name '*_codex.meta.json' | sort | tail -n 1)"
+claude_meta="$(find "$work_repo/.vibecrafted/reports" -maxdepth 1 -type f -name '*_claude.meta.json' | sort | tail -n 1)"
+gemini_meta="$(find "$work_repo/.vibecrafted/reports" -maxdepth 1 -type f -name '*_gemini.meta.json' | sort | tail -n 1)"
 
 require_file "$codex_meta"
 require_file "$claude_meta"

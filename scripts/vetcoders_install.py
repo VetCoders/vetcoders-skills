@@ -813,6 +813,69 @@ def rsync_skill(src: Path, dst: Path, dry_run: bool = False, mirror: bool = Fals
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+def prune_orphaned_skills(store_path: Path, runtimes: List[str],
+                          current_bundle: set, dry_run: bool = False,
+                          interactive: bool = True) -> int:
+    """Remove vc-* skills from store and runtime dirs that are no longer in the bundle."""
+    orphans: List[tuple] = []
+
+    if store_path.exists():
+        for entry in sorted(store_path.iterdir()):
+            if entry.name.startswith(".") or not entry.is_dir():
+                continue
+            if entry.name.startswith("vc-") and entry.name not in current_bundle:
+                if (entry / "SKILL.md").exists():
+                    orphans.append(("store", entry))
+
+    for rt in runtimes:
+        rt_skills = Path.home() / f".{rt}" / "skills"
+        if not rt_skills.exists():
+            continue
+        for entry in sorted(rt_skills.iterdir()):
+            if not entry.name.startswith("vc-"):
+                continue
+            if entry.name in current_bundle:
+                continue
+            if entry.is_symlink():
+                target = entry.resolve()
+                if str(store_path) in str(target):
+                    orphans.append((rt, entry))
+            elif entry.is_dir() and (entry / "SKILL.md").exists():
+                orphans.append((rt, entry))
+
+    if not orphans:
+        return 0
+
+    print(bold("Orphaned skills detected (no longer in bundle):"))
+    for location, entry in orphans:
+        kind = "symlink" if entry.is_symlink() else "dir"
+        print(f"  {yellow(f'[{kind}]')} {location}/{entry.name}")
+    print()
+
+    if interactive:
+        if not ask_yn("Remove orphaned skills?", default=True):
+            print(dim("  Keeping orphaned skills."))
+            print()
+            return 0
+
+    removed = 0
+    for location, entry in orphans:
+        if dry_run:
+            print(f"  {dim('rm')} {entry}")
+            removed += 1
+        else:
+            if entry.is_symlink():
+                entry.unlink()
+            elif entry.is_dir():
+                shutil.rmtree(entry)
+            removed += 1
+
+    if removed:
+        print(f"  {OK} Removed {removed} orphaned entries")
+    print()
+    return removed
+
+
 def prune_legacy_skills(store_path: Path, runtimes: List[str],
                         dry_run: bool = False, interactive: bool = True) -> int:
     """Remove old vetcoders-* skills replaced by vc-* equivalents."""
@@ -1371,6 +1434,10 @@ def cmd_install(args: argparse.Namespace) -> int:
             create_symlink(canonical, link, dry_run=dry_run)
     print()
 
+    # --- Prune orphaned vc-* skills no longer in bundle ---
+    prune_orphaned_skills(store_path, all_runtimes, set(selected_skills),
+                          dry_run=dry_run, interactive=interactive)
+
     # --- Prune legacy vetcoders-* skills ---
     prune_legacy_skills(store_path, all_runtimes, dry_run=dry_run, interactive=interactive)
 
@@ -1521,6 +1588,36 @@ def cmd_doctor(args: argparse.Namespace) -> int:
                             f"symlink:{rt}/{entry.name}",
                             f"points to {target}, expected {expected}",
                         ))
+
+    # Orphan detection: vc-* entries in store/runtime dirs not in current bundle
+    bundle = set(_known_bundle_names())
+    if bundle and store_path.exists():
+        for entry in sorted(store_path.iterdir()):
+            if not entry.is_dir() or entry.name.startswith("."):
+                continue
+            if entry.name.startswith("vc-") and entry.name not in bundle:
+                if (entry / "SKILL.md").exists():
+                    findings.append(DoctorFinding(
+                        "warn",
+                        f"orphan:store/{entry.name}",
+                        "in store but no longer in bundle — run installer to clean up",
+                    ))
+    if bundle:
+        for rt in state.runtimes:
+            rt_skills = Path.home() / f".{rt}" / "skills"
+            if not rt_skills.exists():
+                continue
+            for entry in sorted(rt_skills.iterdir()):
+                if not entry.name.startswith("vc-"):
+                    continue
+                if entry.name in bundle or entry.name in state.skills:
+                    continue
+                if entry.is_symlink() or (entry.is_dir() and (entry / "SKILL.md").exists()):
+                    findings.append(DoctorFinding(
+                        "warn",
+                        f"orphan:{rt}/{entry.name}",
+                        "symlink/dir for skill no longer in bundle",
+                    ))
 
     return print_doctor(findings)
 

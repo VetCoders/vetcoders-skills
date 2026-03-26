@@ -76,13 +76,13 @@ Same convention as `vc-agents`:
 ROOT="$(git rev-parse --show-toplevel)"
 SLUG="$(date +%Y%m%d)_<task-name>"
 
-mkdir -p "$ROOT/.ai-agents/pipeline/$SLUG/plans"
-mkdir -p "$ROOT/.ai-agents/pipeline/$SLUG/reports"
+mkdir -p "$ROOT/.vibecrafted/pipeline/$SLUG/plans"
+mkdir -p "$ROOT/.vibecrafted/pipeline/$SLUG/reports"
 ```
 
 ### 2. Write Plans
 
-Write one plan per subagent to `.ai-agents/pipeline/<slug>/plans/`.
+Write one plan per subagent to `.vibecrafted/pipeline/<slug>/plans/`.
 Use the same plan template as `vc-agents`:
 
 ```markdown
@@ -177,7 +177,7 @@ Task tool returns results directly to the conversation.
 **Also** write results to report files for pipeline continuity:
 
 ```
-Write report to: .ai-agents/pipeline/<slug>/reports/<N>_<task>_claude-task.md
+Write report to: .vibecrafted/pipeline/<slug>/reports/<N>_<task>_claude-task.md
 ```
 
 Format:
@@ -224,7 +224,7 @@ After all agents return, the primary agent (you):
 ```
 ## Context
 Project: $ROOT
-Pipeline: .ai-agents/pipeline/<slug>/
+Pipeline: .vibecrafted/pipeline/<slug>/
 
 ## Structural Intelligence (loctree MCP)
 Use loctree MCP tools as your primary exploration layer:
@@ -334,8 +334,8 @@ that plans exist in `/plans/` and reports exist in `/reports/`.
 
 Same as `vc-agents` — full compatibility:
 
-- Plans: `.ai-agents/pipeline/<slug>/plans/<N>_<task>_claude-task.md`
-- Reports: `.ai-agents/pipeline/<slug>/reports/<N>_<task>_claude-task.md`
+- Plans: `.vibecrafted/pipeline/<slug>/plans/<N>_<task>_claude-task.md`
+- Reports: `.vibecrafted/pipeline/<slug>/reports/<N>_<task>_claude-task.md`
 - Agent suffix: `_claude-task` (vs `_codex` or `_claude` for spawn)
 
 ## Anti-Patterns

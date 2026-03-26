@@ -64,9 +64,9 @@ DoU audit -- are we shippable?          (vc-dou)
 When one agent isn't enough, spawn external agents in parallel:
 
 ```
-codex-implement .ai-agents/plans/my-plan.md
-claude-research .ai-agents/plans/my-plan.md
-gemini-implement .ai-agents/plans/my-plan.md
+codex-implement .vibecrafted/plans/my-plan.md
+claude-research .vibecrafted/plans/my-plan.md
+gemini-implement .vibecrafted/plans/my-plan.md
 ```
 
 Or use skill-specific shortcuts:

@@ -91,7 +91,7 @@ Report depth level in RESEARCH.md header.
 # Research: <slug>
 Date: <YYYY-MM-DD>
 Depth: quick | standard | deep
-Pipeline: .ai-agents/pipeline/<slug>/
+Pipeline: .vibecrafted/pipeline/<slug>/
 
 ## Open Questions (from CONTEXT.md)
 1. <Q1>

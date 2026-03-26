@@ -78,7 +78,7 @@ on what, where the risk is.
 
 #### 2b. Absorb Existing Agent Configs
 
-Check for and read `.ai-agents/GUIDELINES.md` — the canonical cross-tool
+Check for and read `.vibecrafted/GUIDELINES.md` — the canonical cross-tool
 reference. If it exists, use it as starting context but verify against code.
 
 Also glob for any other agent config files that may exist in the repo
@@ -93,13 +93,27 @@ claims a command or convention that contradicts the current code, trust the code
 
 #### 2c. Derive Conventions from Git History
 
+Run `repo-full` (available as a shell helper) to get a complete repository
+snapshot in one call: branch state, upstream sync, last 15 commits with graph,
+worktree status, stash list, diff stats, and git config. This replaces
+ad-hoc git log/status/diff calls during init.
+
 ```bash
-git log --oneline -20       # recent commit message patterns
-git log --format="%an" | sort -u | head -10  # active contributors
+repo-full    # full repo snapshot — branch, commits, status, stash, diffs, config
 ```
 
-Observe actual commit style (conventional commits? prefixes? Polish/English?).
-Do not invent conventions — read what the team actually does.
+If `repo-full` is not available (helper not sourced), fall back to:
+
+```bash
+git log --oneline --decorate --graph -n 15
+git status -sb
+git stash list
+git log --format="%an" | sort -u | head -10
+```
+
+From the output, observe actual commit style (conventional commits? prefixes?
+Polish/English?) and active contributors. Do not invent conventions — read
+what the team actually does.
 
 ### Step 3: Verify — Is What You See Actually True
 
@@ -108,7 +122,7 @@ Do not invent conventions — read what the team actually does.
 Locate the project's quality gate commands. Common sources:
 - `pyproject.toml` `[tool.pytest]`, `[tool.ruff]`, `[tool.mypy]`
 - `Makefile` / `justfile` / `package.json` scripts
-- `.ai-agents/GUIDELINES.md` or other agent config files
+- `.vibecrafted/GUIDELINES.md` or other agent config files
 - `VETCODERS.md` or equivalent repo-wide charter/instructions
 - README.md "Testing" or "Development" sections
 - test harness wrappers such as `scripts/check-*.sh` or `tests/**/run.sh`
@@ -141,7 +155,7 @@ After steps 1-3, produce two outputs:
 Keep it tight — Codex-level conciseness. No padding, no filler.
 Omit sections that produced no signal.
 
-**B. `.ai-agents/GUIDELINES.md`** — durable, for all future agents.
+**B. `.vibecrafted/GUIDELINES.md`** — durable, for all future agents.
 See the "Canonical Reference File" section below for format and guardrails.
 Generate on first init, update on subsequent inits if stale. Always ask before writing.
 
@@ -173,9 +187,9 @@ domain experts (veterinarians, scientists, designers) who code through
 AI collaboration — not necessarily seasoned programmers. Be explicit
 about what matters. Don't hide behind jargon.
 
-## .ai-agents/GUIDELINES.md — Canonical Reference File
+## .vibecrafted/GUIDELINES.md — Canonical Reference File
 
-After init completes, generate (or update) `.ai-agents/GUIDELINES.md` in the repo.
+After init completes, generate (or update) `.vibecrafted/GUIDELINES.md` in the repo.
 This is the **single canonical reference** that all AI agents — Claude, Codex, Gemini,
 Cursor, Copilot — can read regardless of which tool-specific config format they prefer.
 
@@ -284,15 +298,15 @@ Before creating new implementations, search for existing ones:
 | Eyes    | `repo-view(project)`                           | Current structure + health     |
 | Focus   | `focus(directory)`                             | Module-level detail            |
 | Signals | `follow(scope)`                                | Dead code, cycles, twins       |
-| Configs | Read `.ai-agents/GUIDELINES.md` + glob others  | Cross-tool instructions        |
-| Git     | `git log --oneline -20`                        | Actual commit conventions      |
+| Configs | Read `.vibecrafted/GUIDELINES.md` + glob others  | Cross-tool instructions        |
+| Git     | `repo-full` (or `git log --oneline -15`)       | Full repo snapshot in one call |
 | Verify  | Run quality gate commands                      | Ground truth on test/lint/type |
 
 ## Fallback
 
 If **AICX MCP** unavailable: fall back to `aicx` CLI if present, otherwise skip history steps and proceed with eyes + verify.
 If **loctree MCP** unavailable: fall back to `loct --for-ai` CLI, then `rg --files`.
-If **both** unavailable: read `.ai-agents/GUIDELINES.md` + README.md + `git log -20`. Run quality gates. Announce gaps.
+If **both** unavailable: read `.vibecrafted/GUIDELINES.md` + README.md + `git log -20`. Run quality gates. Announce gaps.
 Quality gate verification has **no fallback** — always attempt it.
 
 ## Anti-Patterns

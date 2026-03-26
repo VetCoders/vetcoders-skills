@@ -34,7 +34,7 @@ Each phase accumulates context for the next — no blind implementation.
    CONTEXT.md                 RESEARCH.md              REPORTS/*.md
 ```
 
-Artifacts accumulate in `.ai-agents/pipeline/<slug>/` per pipeline run.
+Artifacts accumulate in `.vibecrafted/pipeline/<slug>/` per pipeline run.
 
 ## Phase 1: EXAMINE
 
@@ -51,7 +51,7 @@ Map the codebase before touching anything. Use loctree MCP tools as the primary 
 
 ### Output: CONTEXT.md
 
-Write structured examination output to `.ai-agents/pipeline/<slug>/CONTEXT.md`:
+Write structured examination output to `.vibecrafted/pipeline/<slug>/CONTEXT.md`:
 
 ```markdown
 # Examination: <slug>
@@ -106,7 +106,7 @@ Formulate queries from Examination findings:
 
 ### Output: RESEARCH.md
 
-Write to `.ai-agents/pipeline/<slug>/RESEARCH.md`:
+Write to `.vibecrafted/pipeline/<slug>/RESEARCH.md`:
 
 ```markdown
 # Research: <slug>
@@ -160,8 +160,8 @@ Never edit code without mapping it first.
 ### Spawn Pattern
 
 Follow vc-agents skill for spawn commands (portable scripts preferred).
-Plans go to `.ai-agents/pipeline/<slug>/plans/`.
-Reports go to `.ai-agents/pipeline/<slug>/reports/`.
+Plans go to `.vibecrafted/pipeline/<slug>/plans/`.
+Reports go to `.vibecrafted/pipeline/<slug>/reports/`.
 
 ### Review
 
