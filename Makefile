@@ -10,8 +10,8 @@ BRANCH   ?= main
 
 help:
 	@printf "\n"
-	@printf "  \033[1m𝕍𝕖𝕥ℂ𝕠𝕕𝕖𝕣𝕤 𝕊𝕜𝕚𝕝𝕝𝕤\033[0m\n"
-	@printf "  ───────────────────────────────────────\n"
+	@printf "  \033[1m𝗩𝗶𝗯𝗲𝗖𝗿𝗮𝗳𝘁 𝗙𝗿𝗮𝗺𝗲𝘄𝗼𝗿𝗸\033[0m\n"
+	@printf "  ─────────────────────────────────────\n"
 	@printf "\n"
 	@printf "  \033[33m◆\033[0m  make install       \033[2mSkills + shell helpers\033[0m\n"
 	@printf "  \033[33m◇\033[0m  make skills        \033[2mSkills only\033[0m\n"

@@ -1040,7 +1040,10 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
 
 def print_doctor(findings: List[DoctorFinding]) -> int:
     """Print doctor findings. Returns exit code (0 if no failures)."""
-    print(f"\n{bold('VetCoders Doctor')}\n")
+    if _IS_TTY:
+        print(f"\n{bold('\U0001d54d\U0001d55a\U0001d553\U0001d556\U0001d554\U0001d563\U0001d552\U0001d557\U0001d565 Doctor')}\n")
+    else:
+        print(f"\n{bold('VibeCraft Doctor')}\n")
 
     fails = 0
     warns = 0
@@ -1067,7 +1070,7 @@ def print_doctor(findings: List[DoctorFinding]) -> int:
         print(f"  {yellow('Installation healthy with minor warnings.')}\n")
         return 0
     else:
-        print(f"  {green('Installation healthy.')}\n")
+        print(f"  {green('\u2713 Installation healthy.')}\n")
         return 0
 
 
@@ -1092,8 +1095,12 @@ def cmd_install(args: argparse.Namespace) -> int:
 
     # --- Header ---
     print()
-    print(bold("VetCoders Skills Installer v2"))
-    print(dim(f"Source: {repo_root}"))
+    if _IS_TTY:
+        print(bold("  \U0001d5e9\U0001d5f6\U0001d5ef\U0001d5f2\U0001d5d6\U0001d5f3\U0001d5ee\U0001d5f3\U0001d601 \U0001d5d9\U0001d5f3\U0001d5ee\U0001d5fa\U0001d5f2\U0001d600\U0001d5fc\U0001d5f3\U0001d5f8 \U0001d5dc\U0001d5fb\U0001d600\U0001d601\U0001d5ee\U0001d5f9\U0001d5f9\U0001d5f2\U0001d5f3"))
+        print(dim("  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"))
+    else:
+        print(bold("VibeCraft Framework Installer"))
+    print(dim(f"  Source: {repo_root}"))
     print()
 
     # --- Discover skills ---
@@ -1411,11 +1418,21 @@ def cmd_install(args: argparse.Namespace) -> int:
     print()
 
     # --- Done ---
-    print(green(bold("Install complete.")))
-    print()
-    print(dim("Next steps:"))
-    print(dim("  - Run 'python3 scripts/vetcoders_install.py doctor' anytime to re-verify"))
-    print(dim("  - Start a new shell session to pick up helpers"))
+    if _IS_TTY:
+        print()
+        print(green(bold("  \u2713 \u026a\u0274\u1a60\u1d1b\u1d00\u029f\u029f \u1d04\u1d0f\u1d0d\u1d18\u029f\u1d07\u1d1b\u1d07")))
+        print()
+        print(dim("  Next steps:"))
+        print(dim("    \u25b8 make doctor      \u2500 verify health"))
+        print(dim("    \u25b8 make uninstall   \u2500 reverse everything"))
+        print(dim("    \u25b8 source ~/.zshrc  \u2500 or open a new terminal"))
+        print()
+        print(dim("  \u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e"))
+        print(dim("  \u2502 VibeCrafted with AI Agents by VetCoders  \u2502"))
+        print(dim("  \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f"))
+    else:
+        print(green(bold("Install complete.")))
+        print(dim("  make doctor — verify | make uninstall — reverse"))
 
     missing_fnd = [f for f in FOUNDATIONS if f.required and not f.is_installed()]
     if missing_fnd:
