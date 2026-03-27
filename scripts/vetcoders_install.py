@@ -213,7 +213,8 @@ FOUNDATIONS: List[Foundation] = [
     ),
 ]
 
-RUNTIME_DEPS = ["zsh", "python3", "git", "rsync"]
+RUNTIME_DEPS = ["python3", "git", "rsync"]
+OPTIONAL_DEPS = ["zsh"]  # shell helpers need zsh; core install works without it
 
 OLD_SKILL_PREFIX = "vetcoders-"
 OLD_HELPER_NAME = "vetcoders-skills.zsh"
@@ -1319,11 +1320,15 @@ def cmd_install(args: argparse.Namespace) -> int:
                         print(f"  {OPT} osascript {dim('(visible Terminal automation unavailable; non-visible fallback exists)')}")
                     print()
 
-                    missing_critical = [cmd for cmd in ("zsh", "python3", "git", "rsync") if not sys_deps.get(cmd)]
+                    missing_critical = [cmd for cmd in ("python3", "git", "rsync") if not sys_deps.get(cmd)]
                     if missing_critical:
                         print(red(f"Missing critical dependencies: {', '.join(missing_critical)}"))
                         print("Install them before continuing.")
                         return 1
+                    if not sys_deps.get("zsh"):
+                        print(f"  {WARN} zsh not found — shell helpers will not be installed")
+                        print(f"       Skills, doctor, and agent spawns still work via bash.")
+                        cli_with_shell = False
                     args._sys_checked = True
                 step += 1
 
