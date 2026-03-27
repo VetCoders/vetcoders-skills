@@ -15,4 +15,15 @@
 /*.png
 /__pycache__
 /scripts/__pycache__
-nohup.out
+/*.js
+/*.py
+/.*css
+/output
+*.audit*.md
+/.playwright-mcp
+*.out
+*.zip
+/.vibecrafted
+CLAUDE.md
+AGENTS.md
+/tests/tui/__pycache__

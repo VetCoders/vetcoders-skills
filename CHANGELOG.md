@@ -27,12 +27,13 @@ This project uses per-skill semver in SKILL.md frontmatter.
 - vc-followup 1.0.0
 - vc-hydrate 1.0.0
 - vc-init 2.2.0
+- vc-justdo 2.0.0
 - vc-marbles 1.1.0
-- vc-ownership 0.1.0
-- vc-partner 1.1.0
+- vc-partner 2.0.0
 - vc-prune 2.0.0
-- vc-prview 1.0.0
+- vc-release 0.1.0
 - vc-research 1.2.0
+- vc-review 1.0.0
+- vc-scaffold 0.1.0
 - vc-screenscribe 1.2.1
-- vc-ship 1.0.0
 - vc-workflow 1.0.0

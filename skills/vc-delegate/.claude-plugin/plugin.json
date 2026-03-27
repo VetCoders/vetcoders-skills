@@ -1,0 +1,8 @@
+{
+  "name": "VibeCraft Delegate",
+  "description": "Native in-session subagent delegation. Use /vc-delegate to invoke.",
+  "author": {
+    "name": "VetCoders",
+    "email": "hello@vetcoders.io"
+  }
+}
