@@ -247,6 +247,7 @@ class InstallState:
     """Persisted installation state."""
 
     version: str = "2.0"
+    framework_version: str = ""
     installed_at: str = ""
     updated_at: str = ""
     repo_commit: str = ""
@@ -309,6 +310,13 @@ def detect_osascript() -> Optional[str]:
 
 def detect_cargo() -> Optional[str]:
     return shutil.which("cargo")
+
+
+def get_framework_version(repo_root: Path) -> str:
+    version_file = repo_root / "VERSION"
+    if version_file.exists():
+        return version_file.read_text().strip()
+    return "unknown"
 
 
 def get_repo_commit(repo_root: Path) -> str:
@@ -1082,6 +1090,10 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
     """Run full installation health check."""
     findings: List[DoctorFinding] = []
 
+    # 0. Framework version
+    fw_ver = state.framework_version or "unknown"
+    findings.append(DoctorFinding("ok", "version", fw_ver))
+
     # 1. Store exists
     if store_path.exists():
         findings.append(DoctorFinding("ok", "store", f"{store_path} exists"))
@@ -1265,7 +1277,10 @@ def cmd_install(args: argparse.Namespace) -> int:
         print(dim("  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"))
     else:
         print(bold("VibeCraft Framework Installer"))
+    fw_ver = get_framework_version(repo_root)
     print(dim(f"  Source: {repo_root}"))
+    if fw_ver != "unknown":
+        print(dim(f"  Version: {fw_ver}"))
     print()
 
     # --- Discover skills ---
@@ -1571,6 +1586,7 @@ def cmd_install(args: argparse.Namespace) -> int:
     state = InstallState(
         installed_at=now,
         updated_at=now,
+        framework_version=get_framework_version(repo_root),
         repo_commit=get_repo_commit(repo_root),
         repo_url=get_repo_url(repo_root),
         skills=selected_skills,

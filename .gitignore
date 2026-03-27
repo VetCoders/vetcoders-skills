@@ -27,3 +27,4 @@
 CLAUDE.md
 AGENTS.md
 /tests/tui/__pycache__
+/presence
