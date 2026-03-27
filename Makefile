@@ -10,7 +10,7 @@ BRANCH   ?= main
 
 help:
 	@printf "\n"
-	@printf "  \033[1m𝗩𝗶𝗯𝗲𝗖𝗿𝗮𝗳𝘁 𝗙𝗿𝗮𝗺𝗲𝘄𝗼𝗿𝗸\033[0m\n"
+	@printf "  \033[1m\033[38;5;173m⚒  VibeCraft Framework\033[0m\n"
 	@printf "  ─────────────────────────────────────\n"
 	@printf "\n"
 	@printf "  \033[36m▸\033[0m  make vibecrafted   \033[2mSafely install or update the VibeCraft framework (Orchestrator)\033[0m\n"

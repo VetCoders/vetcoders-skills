@@ -1581,6 +1581,27 @@ def cmd_install(args: argparse.Namespace) -> int:
             print(f"  {WARN} Shell installer not found: {shell_script}")
         print()
 
+    # --- Execute: vibecraft launcher ---
+    launcher_src = repo_root / "scripts" / "vibecraft"
+    launcher_bin_dir = Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")) / "bin"
+    launcher_dst = launcher_bin_dir / "vibecraft"
+    if launcher_src.exists():
+        if not dry_run:
+            launcher_bin_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(launcher_src, launcher_dst)
+            launcher_dst.chmod(0o755)
+        # Ensure ~/.vibecrafted/bin is in PATH via shell rc files
+        path_line = f'export PATH="${{VIBECRAFTED_HOME:-$HOME/.vibecrafted}}/bin:$PATH"'
+        for rcname in (".bashrc", ".zshrc"):
+            rcfile = Path.home() / rcname
+            if rcfile.exists():
+                content = rcfile.read_text()
+                if "vibecrafted/bin" not in content and ".vibecrafted/bin" not in content:
+                    if not dry_run:
+                        with rcfile.open("a") as f:
+                            f.write(f"\n# VibeCraft launcher\n{path_line}\n")
+        print()
+
     # --- Save state ---
     now = datetime.now(timezone.utc).isoformat()
     state = InstallState(
@@ -1618,27 +1639,66 @@ def cmd_install(args: argparse.Namespace) -> int:
             print(f"  {OK} All checks passed")
     print()
 
-    # --- Done ---
-    if _IS_TTY:
-        control_plane_cmd = shlex.quote(str(repo_root))
-        print()
-        print(green(bold("  \u2713 Ready.")))
-        print()
-        print(dim("  Next:"))
-        print(dim(f"    \u25b8 make -C {control_plane_cmd} doctor      \u2500 verify health"))
-        print(dim(f"    \u25b8 make -C {control_plane_cmd} uninstall   \u2500 reverse everything"))
-        print(dim("    \u25b8 source ~/.bashrc   \u2500 or source ~/.zshrc \u2500 or open a new terminal"))
-    else:
-        control_plane_cmd = shlex.quote(str(repo_root))
-        print(green(bold("Ready.")))
-        print(dim(f"  make -C {control_plane_cmd} doctor — verify | make -C {control_plane_cmd} uninstall — reverse"))
+    # --- Done: compact one-screen summary ---
+    fw_ver_display = get_framework_version(repo_root)
+    skill_count = len(skills)
+    agent_list = " \u00b7 ".join(
+        a for a in ("claude", "codex", "gemini")
+        if (store_path / "vc-agents" / "scripts" / f"{a}_spawn.sh").exists()
+    )
+    shell_list = []
+    if (Path.home() / ".bashrc").exists():
+        shell_list.append("bash")
+    if (Path.home() / ".zshrc").exists():
+        shell_list.append("zsh")
+    shell_str = " + ".join(shell_list) if shell_list else "manual"
+    fnd_ok = [f.name for f in FOUNDATIONS if f.is_installed()]
+    fnd_str = " \u00b7 ".join(fnd_ok[:3]) if fnd_ok else "none"
+    if len(fnd_ok) > 3:
+        fnd_str += f" +{len(fnd_ok) - 3}"
+    store_display = str(store_path).replace(str(Path.home()), "~")
+
+    copper = "\033[38;5;173m" if _IS_TTY else ""
+    steel = "\033[38;5;247m" if _IS_TTY else ""
+    rst = "\033[0m" if _IS_TTY else ""
+    bld = "\033[1m" if _IS_TTY else ""
+    grn = "\033[32m" if _IS_TTY else ""
+
+    chk = f"{grn}\u2713{rst}"
+    sep = "\u2500" * 47
+
+    def _row(label: str, value: str, check: bool = False) -> str:
+        """Format a box row with consistent width."""
+        mark = f" {chk}" if check else ""
+        # Pad to 42 visible chars (excluding ANSI) then close box
+        visible = f"   {label:<13s}{value}"
+        pad = 44 - len(label) - len(value) - 3
+        if pad < 1:
+            pad = 1
+        return f"  \u2502{visible}{mark}{' ' * pad}\u2502"
+
+    print()
+    print(f"  \u256d{sep}\u256e")
+    print(f"  \u2502  {copper}{bld}\u2692  VibeCraft {fw_ver_display}{rst}                              \u2502")
+    print(f"  \u2502                                               \u2502")
+    print(_row("Skills", f"{skill_count} installed", True))
+    print(_row("Agents", agent_list, True))
+    print(_row("Helpers", shell_str, True))
+    print(_row("Foundations", fnd_str, True))
+    print(_row("Store", store_display))
+    print(f"  \u2502                                               \u2502")
+    print(f"  \u2502   {steel}{'\u2500' * 39}{rst}         \u2502")
+    print(f"  \u2502   {bld}Start{rst}       vibecraft help                \u2502")
+    print(f"  \u2502   {bld}Verify{rst}      vibecraft doctor              \u2502")
+    print(f"  \u2502   {bld}Reverse{rst}     vibecraft uninstall           \u2502")
+    print(f"  \u2570{sep}\u256f")
 
     missing_fnd = [f for f in FOUNDATIONS if f.required and not f.is_installed()]
     if missing_fnd:
         print()
-        print(yellow("Foundations still missing:"))
+        print(yellow("  Foundations still missing:"))
         for f in missing_fnd:
-            print(f"  {f.name}: {f.install_hint()}")
+            print(f"    {f.name}: {f.install_hint()}")
     print()
 
     return 0

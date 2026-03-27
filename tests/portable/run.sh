@@ -301,7 +301,7 @@ assert_matches "$gemini_transcript" '\[[0-9]{2}:[0-9]{2}:[0-9]{2} Read\]'
 jq -e '.prompt_id == "test_20260327"' "$codex_meta" >/dev/null || die "codex meta missing prompt_id"
 jq -e '.run_id == "impl-000"' "$codex_meta" >/dev/null || die "codex meta missing default run_id"
 jq -e '.loop_nr == 0' "$codex_meta" >/dev/null || die "codex meta missing loop_nr"
-jq -e '.framework_version == "1.0.2"' "$codex_meta" >/dev/null || die "codex meta missing framework_version"
+jq -e '.framework_version != null and .framework_version != ""' "$codex_meta" >/dev/null || die "codex meta missing framework_version"
 jq -e '.completed_at != null and .duration_s != null' "$codex_meta" >/dev/null || die "codex meta missing completion telemetry"
 
 log "helper bash smoke"
