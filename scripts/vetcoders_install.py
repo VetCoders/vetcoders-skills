@@ -141,7 +141,7 @@ FOUNDATIONS: List[Foundation] = [
         packages={
             "crates": "loctree-mcp",
             "npm": "loctree-mcp",
-            "github": "https://github.com/Loctree-Repos/loctree/releases",
+            "github": "https://github.com/Loctree/Loctree/releases",
         },
         verify_cmd="loctree-mcp --version",
     ),
