@@ -5,7 +5,7 @@ Answers from the trenches. This is the truth as of March 2026.
 ## Installation
 
 - **Why does the installer write to `~/.vibecrafted/` and not `~/.agents/` like other tools?**
-  VibeCraft is the *orchestrator*, not just a collection of scripts. `~/.agents/` is the legacy dumping ground for standalone agent configs. `~/.vibecrafted/` is the central command store where the actual skill source code lives, where artifacts are archived, and where the multi-agent state is managed. We separate the *source* (vibecrafted) from the *view* (the symlinks in agent-specific dirs).
+  VibeCraft is the _orchestrator_, not just a collection of scripts. `~/.agents/` is the legacy dumping ground for standalone agent configs. `~/.vibecrafted/` is the central command store where the actual skill source code lives, where artifacts are archived, and where the multi-agent state is managed. We separate the _source_ (vibecrafted) from the _view_ (the symlinks in agent-specific dirs).
 
 - **What happens to my existing skills in `~/.agents/skills/` after installation?**
   The installer is surgical. It detects legacy `vetcoders-*` skills and offers to prune them. If you have custom, non-VetCoders skills there, it leaves them alone. VibeCraft skills are symlinked into `~/.agents/skills/` (and others) so your agents "see" them, but the source of truth remains in `~/.vibecrafted/`.
@@ -37,13 +37,13 @@ Answers from the trenches. This is the truth as of March 2026.
 ## Skills & Agents
 
 - **What is the difference between a skill and an agent?**
-  An **Agent** is the runtime (Claude, Codex, Gemini) with its personality and tools. A **Skill** is a specialized *instruction set + protocol* (found in `SKILL.md`) that tells an agent how to behave for a specific engineering phase (e.g., `vc-workflow`). Think of agents as the "brains" and skills as the "manuals" they follow.
+  An **Agent** is the runtime (Claude, Codex, Gemini) with its personality and tools. A **Skill** is a specialized _instruction set + protocol_ (found in `SKILL.md`) that tells an agent how to behave for a specific engineering phase (e.g., `vc-workflow`). Think of agents as the "brains" and skills as the "manuals" they follow.
 
 - **Why can't I just use ChatGPT/Copilot instead of this framework?**
-  You can, if you want a chat box. VibeCraft is for building *systems*. It provides structural awareness (loctree), decision history (aicx), and a rigorous iterative loop (marbles). ChatGPT doesn't know your codebase's architecture; VibeCraft ensures the agent sees the 360-degree view before it touches a single line of code.
+  You can, if you want a chat box. VibeCraft is for building _systems_. It provides structural awareness (loctree), decision history (aicx), and a rigorous iterative loop (marbles). ChatGPT doesn't know your codebase's architecture; VibeCraft ensures the agent sees the 360-degree view before it touches a single line of code.
 
 - **How does VibeCraft decide which AI model to use for a task?**
-  It doesn't "decide" for you; it provides the *mechanics* to run them. However, our workflows generally prefer **Codex** for precision coding, **Claude** for deep investigative research, and **Gemini** for creative synthesis or high-volume data processing. `vc-agents` spawns the "frontier fleet" to get all three perspectives.
+  It doesn't "decide" for you; it provides the _mechanics_ to run them. However, our workflows generally prefer **Codex** for precision coding, **Claude** for deep investigative research, and **Gemini** for creative synthesis or high-volume data processing. `vc-agents` spawns the "frontier fleet" to get all three perspectives.
 
 - **What is the Marbles loop and why does it exist?**
   It's an iterative denoising loop. AI is stochastic—it produces noise along with code. The Marbles loop (implement → followup → measure → repeat) runs until the "circle is full" (P0/P1/P2 findings = 0). It exists because "one-shot" AI generation is a myth for anything complex.
@@ -52,6 +52,7 @@ Answers from the trenches. This is the truth as of March 2026.
   Context drift and "lazy" generation. If an agent isn't anchored by structural truth (loctree) or is overwhelmed by a 200k token history, it starts hallucinating. VibeCraft's `vc-init` and `vc-workflow` combat this by providing surgical, high-signal context rather than a history dump.
 
 - **How does `vc-followup` decide between P0, P1, and P2 severity?**
+
   - **P0**: Blocker. Code doesn't compile, critical security leak, or core feature is fundamentally broken.
   - **P1**: High Risk. Regression likely, edge cases unhandled, or architectural mismatch.
   - **P2**: Polish/Gap. Missing tests, suboptimal naming, observability gaps, or minor UI jank.
@@ -63,10 +64,10 @@ Answers from the trenches. This is the truth as of March 2026.
   Absolutely. Drop a folder with a `SKILL.md` into `skills/` and run `make install`. The `skill-creator` skill can guide you through the process.
 
 - **Why is there no `vc-test` skill?**
-  Testing isn't a "skill"—it's a requirement of *every* skill. `vc-workflow`, `vc-justdo`, and `vc-marbles` all have testing and validation baked into their "Execution" and "Validate" phases.
+  Testing isn't a "skill"—it's a requirement of _every_ skill. `vc-workflow`, `vc-justdo`, and `vc-marbles` all have testing and validation baked into their "Execution" and "Validate" phases.
 
 - **What is the Definition of Undone and why is it not the Definition of Done?**
-  Definition of Done (DoD) is about checking boxes. **Definition of Undone (DoU)** is about exposing the gaps you *didn't* think to check: SEO, installability, legal boilerplate, product identity. It's a "plague check" for the entire product surface.
+  Definition of Done (DoD) is about checking boxes. **Definition of Undone (DoU)** is about exposing the gaps you _didn't_ think to check: SEO, installability, legal boilerplate, product identity. It's a "plague check" for the entire product surface.
 
 ## Architecture
 
@@ -74,6 +75,7 @@ Answers from the trenches. This is the truth as of March 2026.
   To prevent "skill drift." If every project has its own version of `vc-workflow`, updates become impossible. Central storage allows you to improve your agent's "brain" once and have it apply across all your repos.
 
 - **What is the relationship between `~/.vibecrafted/skills/`, `~/.claude/skills/`, and `~/.agents/skills/`?**
+
   - `~/.vibecrafted/skills/`: The **Central Store** (Source of Truth).
   - `~/.claude/skills/`, `~/.agents/skills/`: **Symlink Views**. These are portals that let specific agent CLIs find the skills. They point back to the Central Store.
 
@@ -104,13 +106,13 @@ Answers from the trenches. This is the truth as of March 2026.
   `loctree` is the agent's eyes. It provides structural code intelligence (who imports what, where are the hubs, what breaks if I change this). Without it, the agent is just guessing based on filenames.
 
 - **What is aicx-mcp and why is it called a "decisions retrieval engine" not a "memory system"?**
-  Because "memory" implies fuzzy recall. `aicx` (AI Contextualizer) is a deterministic engine that retrieves *prior decisions* and *context chunks* based on the current task. It's built for precision, not nostalgia.
+  Because "memory" implies fuzzy recall. `aicx` (AI Contextualizer) is a deterministic engine that retrieves _prior decisions_ and _context chunks_ based on the current task. It's built for precision, not nostalgia.
 
 - **Can I use VibeCraft without installing loctree or aicx?**
   Technically yes, but you're running blind and with amnesia. You lose the structural mapping and the session history recovery that makes VibeCraft powerful.
 
 - **Why does prview generate artifacts instead of just printing to terminal?**
-  So they can be consumed by *other* agents. A terminal print is lost. A `report.json` or `findings.md` can be read by a followup agent to fix the issues discovered during review.
+  So they can be consumed by _other_ agents. A terminal print is lost. A `report.json` or `findings.md` can be read by a followup agent to fix the issues discovered during review.
 
 - **What is ScreenScribe and when would I use it instead of a bug report?**
   ScreenScribe turns screen recordings (narrated bug demos) into structured engineering findings. Use it when "it's broken" is easier to show than to type. It's the ultimate "bridge" from product to engineering.
@@ -118,6 +120,7 @@ Answers from the trenches. This is the truth as of March 2026.
 ## Workflow
 
 - **What does "Craft, Converge, Ship" actually mean in practice?**
+
   - **Craft**: Research, scaffold, and implement the initial "noise" (rough code).
   - **Converge**: Run Marbles loops to denoise the code, fix bugs, and fill gaps until P0/P1/P2 = 0.
   - **Ship**: Run `vc-dou`, hydrate the product (docs, SEO), and push to market.
@@ -152,16 +155,18 @@ Answers from the trenches. This is the truth as of March 2026.
   We started the same way everyone starts — playing with AI toys, pasting prompts, hoping. The framework exists because hoping didn't scale. Trust it or don't — the code is open, the methodology is documented, the results are measurable.
 
 - **What makes VibeCraft different from AutoGPT/CrewAI/LangChain agents?**
+
   - **AutoGPT**: May be too chaotic; some claims that it lacks structural anchoring.
   - **CrewAI**: Great for roles, but lacks the "denoising" rigor of the Marbles loop.
   - **LangChain**: A library for building tools, not a workflow for shipping products.
-  - **VibeCraft**: A complete pipeline (Research → Strategy → Execution → Convergence → DoU) focused on the *entire* product surface.
+  - **VibeCraft**: A complete pipeline (Research → Strategy → Execution → Convergence → DoU) focused on the _entire_ product surface.
 
 - **Does VibeCraft actually work on large codebases or only small projects?**
   In a small project, you can fit the whole thing in context and an agent can manage. The challenge starts when you approach or go beyond 100k LOC — dead code, circular imports, invisible dependencies. That's where `loctree` and `aicx` provide real leverage. Vista has 300k LOC. That's where we live.
 
 - **Why is the marble metaphor useful and not just marketing?**
-  It's about **entropy**. In 2026, we've accepted that AI output is "noisy." The marble metaphor (filling the circle) correctly frames development as a process of *reducing uncertainty* rather than *writing lines*.
+  It's about **entropy**. In 2026, we've accepted that AI output is "noisy." The marble metaphor (filling the circle) correctly frames development as a process of _reducing uncertainty_ rather than _writing lines_.
 
 ---
+
 VibeCrafted by VetCoders | vibecrafted.io

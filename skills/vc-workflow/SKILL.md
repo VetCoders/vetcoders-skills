@@ -69,23 +69,29 @@ Write structured examination output to
 # Examination: <slug>
 
 ## Repo Health
+
 - <3-5 bullets from repo-view>
 
 ## Scope
+
 - Target dirs: <list>
 - Why: <rationale>
 
 ## Critical Files
+
 | File | Consumers | Risk | Notes |
-|------|-----------|------|-------|
+| ---- | --------- | ---- | ----- |
 
 ## Symbols Found
+
 - <existing symbols relevant to task>
 
 ## Risk Map
+
 - <high-impact files and mitigation strategy>
 
 ## Decision
+
 - [ ] Research needed (unknown APIs/patterns)
 - [ ] Skip to Implement (well-understood domain)
 ```
@@ -125,20 +131,25 @@ Write to
 # Research: <slug>
 
 ## Questions (from Examination)
+
 1. <question derived from CONTEXT.md>
 
 ## Findings
+
 ### Q1: <question>
+
 - **Source**: <URL or Context7 lib>
 - **Answer**: <concise finding>
 - **Code example**: <if applicable>
 
 ## Architectural Decision
+
 - Chosen approach: <decision>
 - Why: <based on findings>
 - Alternatives rejected: <with reasons>
 
 ## Implementation Notes
+
 - <concrete guidance for agents>
 ```
 
@@ -189,11 +200,11 @@ After agents complete:
 
 ## Quick Reference
 
-| Phase     | Tool                               | Output       |
-|-----------|------------------------------------|--------------|
-| Examine   | loctree MCP                        | plans/<ts>_<slug>_CONTEXT.md   |
-| Research  | brave-search + Context7 + WebFetch | plans/<ts>_<slug>_RESEARCH.md  |
-| Implement | vc-agents (portable scripts) | reports/*.md |
+| Phase     | Tool                               | Output                          |
+| --------- | ---------------------------------- | ------------------------------- |
+| Examine   | loctree MCP                        | plans/<ts>\_<slug>\_CONTEXT.md  |
+| Research  | brave-search + Context7 + WebFetch | plans/<ts>\_<slug>\_RESEARCH.md |
+| Implement | vc-agents (portable scripts)       | reports/\*.md                   |
 
 ## Phase Skipping
 

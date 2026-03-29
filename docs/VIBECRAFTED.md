@@ -154,6 +154,7 @@ We prefer the smallest surface that proves truth.
 ## We reject false reassurance
 
 We reject:
+
 - green CI as proof of readiness
 - tiny diffs as proof of wisdom
 - backward compatibility by reflex
@@ -213,7 +214,7 @@ We ship.
 ## Influences
 
 1. **Kief Morris; Birgitta Böckeler (Thoughtworks / Martin Fowler, 2026).**
-   *Humans and Agents in Software Engineering Loops*, *Harness Engineering*, *Context Engineering for Coding Agents*.
+   _Humans and Agents in Software Engineering Loops_, _Harness Engineering_, _Context Engineering for Coding Agents_.
    Inspiration for the why-loop / how-loop framing, harness design, and human-guided agent workflows.
 
 2. **AST-T5 (2024); GraphCodeBERT (ICLR 2021).**

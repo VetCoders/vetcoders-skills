@@ -5,6 +5,7 @@ Welcome! We build tools for AI agents to build tools.
 ## The Living Tree Rule
 
 VibeCraft operates on the principle that the codebase is alive. When contributing:
+
 - Always assume concurrent changes are possible.
 - Re-read files before editing if time has passed.
 - Use the provided tools (`loctree`) to understand impact before making structural changes.

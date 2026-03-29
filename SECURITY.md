@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| Latest on `main` | Yes |
-| Older commits | Best effort |
+| Version          | Supported   |
+| ---------------- | ----------- |
+| Latest on `main` | Yes         |
+| Older commits    | Best effort |
 
 ## Reporting a Vulnerability
 

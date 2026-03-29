@@ -82,7 +82,7 @@ fi
 
 _update_rcfile() {
   local rcfile="$1"
-  local shell_name="$2"
+  # $2 = shell_name (for logging, currently unused)
 
   # Already present — nothing to do
   if [[ -f "$rcfile" ]] && grep -Fq "vetcoders/vc-skills.sh" "$rcfile"; then

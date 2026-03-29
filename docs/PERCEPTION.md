@@ -1,6 +1,6 @@
 # PERCEPTION: How Agents See the Codebase
 
-In the VibeCraft framework, agents don't just "read code"—they *perceive* the architecture. We achieve this primarily through **loctree**.
+In the VibeCraft framework, agents don't just "read code"—they _perceive_ the architecture. We achieve this primarily through **loctree**.
 
 ## Loctree integration
 

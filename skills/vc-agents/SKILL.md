@@ -34,11 +34,11 @@ Trigger when the user asks to delegate work, especially phrases like:
 Use `vc-agents` as the default first choice whenever the task benefits from model-specific strengths.
 Reach for native `vc-delegate` only when the task is small, bounded, and model-agnostic.
 
-| Model | Why choose it | Best for | Avoid when |
-| --- | --- | --- | --- |
-| Codex | Precision, implementation purity, and highly reliable code surgery. | Critical implementations, exact refactors, test-gated fixes, and bounded engineering execution. | The repo is dirty, the brief is vague, or you are really asking someone to explore and clean up chaos first. |
-| Claude | Investigative depth, stubborn logic tracing, and exhaustive research instincts. | Bug hunts, codebase forensics, audits, architecture research, and SoTA framework evaluation. | The work is mostly straightforward code surgery and does not need a full investigative pass. |
-| Gemini | Bold reframing, creative system redesign, and fearless simplification. | Architecture leaps, radical cleanup ideas, product reframing, and high-variance creative exploration. | The task only needs predictable, surgical implementation and low-variance execution. |
+| Model  | Why choose it                                                                   | Best for                                                                                              | Avoid when                                                                                                   |
+| ------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Codex  | Precision, implementation purity, and highly reliable code surgery.             | Critical implementations, exact refactors, test-gated fixes, and bounded engineering execution.       | The repo is dirty, the brief is vague, or you are really asking someone to explore and clean up chaos first. |
+| Claude | Investigative depth, stubborn logic tracing, and exhaustive research instincts. | Bug hunts, codebase forensics, audits, architecture research, and SoTA framework evaluation.          | The work is mostly straightforward code surgery and does not need a full investigative pass.                 |
+| Gemini | Bold reframing, creative system redesign, and fearless simplification.          | Architecture leaps, radical cleanup ideas, product reframing, and high-variance creative exploration. | The task only needs predictable, surgical implementation and low-variance execution.                         |
 
 If the task wants one of these strengths, external agents win by default because you can route work to the right mind instead of forcing a generic in-thread delegation path.
 

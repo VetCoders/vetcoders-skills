@@ -18,10 +18,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import io
 import json
 import os
-import shlex
 import shutil
 import subprocess
 import sys
@@ -1074,7 +1072,7 @@ def prune_legacy_skills(store_path: Path, runtimes: List[str],
                 print(f"       {dim('Remove manually: line referencing ' + OLD_HELPER_NAME)}")
             elif not dry_run:
                 lines = content.splitlines(keepends=True)
-                new_lines = [l for l in lines if OLD_HELPER_NAME not in l]
+                new_lines = [ln for ln in lines if OLD_HELPER_NAME not in ln]
                 zshrc.write_text(''.join(new_lines))
                 print(f"  {OK} Cleaned old source line from .zshrc")
             else:
@@ -1097,6 +1095,44 @@ def create_symlink(target: Path, link: Path, dry_run: bool = False) -> None:
         else:
             link.unlink()
     link.symlink_to(target)
+
+
+def _configure_gemini_plans(dry_run: bool = False) -> None:
+    """Fix Gemini CLI plan.directory if it points into .vibecrafted.
+
+    Gemini resolves symlinks with realpath() and rejects plans directories
+    that resolve outside the project root.  Our .vibecrafted/plans symlink
+    points to ~/.vibecrafted/artifacts/…  which is always outside the repo.
+
+    Fix: reset plan.directory to the Gemini-native default so Gemini writes
+    plans into $PWD/.gemini/plans/ (its own space).  Our spawn system handles
+    artifact centralisation separately via spawn_link_repo_artifacts().
+    """
+    gemini_settings = Path.home() / ".gemini" / "settings.json"
+    if not gemini_settings.exists():
+        return
+
+    try:
+        data = json.loads(gemini_settings.read_text())
+    except (json.JSONDecodeError, OSError):
+        return
+
+    plan_dir = (data.get("general") or {}).get("plan", {}).get("directory", "")
+    if ".vibecrafted" not in plan_dir:
+        return
+
+    # Remove the override — let Gemini use its default (.gemini/plans/)
+    if dry_run:
+        print(f"  {dim('would reset')} gemini plan.directory (was {plan_dir!r})")
+        return
+
+    data["general"]["plan"].pop("directory", None)
+    # Clean up empty plan dict if only modelRouting or nothing left
+    if not data["general"]["plan"] or data["general"]["plan"] == {}:
+        data["general"].pop("plan", None)
+
+    gemini_settings.write_text(json.dumps(data, indent=2) + "\n")
+    print(f"  {OK} Gemini plan.directory reset (was {plan_dir!r} -> default)")
 
 
 def install_foundation_cargo(foundation: Foundation, dry_run: bool = False) -> bool:
@@ -1224,7 +1260,7 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
             )
         else:
             findings.append(
-                DoctorFinding("warn", f"foundation:{f.name}", f"optional, not installed")
+                DoctorFinding("warn", f"foundation:{f.name}", "optional, not installed")
             )
 
     # 6. Shell helpers
@@ -1496,7 +1532,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
                                     print(f"  {MISS} {f.name} installation failed")
                     print()
                 elif missing_foundations and not has_cargo and interactive:
-                    if getattr(args, '_fnd_warn_done', False) == False:
+                    if not getattr(args, '_fnd_warn_done', False):
                         print(yellow("cargo not found — cannot auto-install foundations."))
                         print(dim("Install cargo (rustup) first, or install foundations manually."))
                         args._fnd_warn_done = True
@@ -1640,6 +1676,9 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
     # --- Execute: vibecraft launcher ---
     _install_launcher(repo_root, dry_run)
 
+    # --- Fix Gemini plan.directory if it points into .vibecrafted ---
+    _configure_gemini_plans(dry_run)
+
     # --- Save state ---
     now = datetime.now(timezone.utc).isoformat()
     state = InstallState(
@@ -1693,7 +1732,7 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
             shutil.copy2(launcher_src, launcher_dst)
             launcher_dst.chmod(0o755)
         # Ensure ~/.vibecrafted/bin is in PATH via shell rc files
-        path_line = f'export PATH="${{VIBECRAFTED_HOME:-$HOME/.vibecrafted}}/bin:$PATH"'
+        path_line = 'export PATH="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin:$PATH"'
         for rcname in (".bashrc", ".zshrc"):
             rcfile = Path.home() / rcname
             if rcfile.exists():
@@ -1754,9 +1793,9 @@ def _print_unicode_summary(repo_root: Path, store_path: Path,
         f"\u2713 Store        {store_display}",
         "",
         sep,
-        f"  Start        vibecraft help",
-        f"  Verify       vibecraft doctor",
-        f"  Reverse      vibecraft uninstall",
+        "  Start        vibecraft help",
+        "  Verify       vibecraft doctor",
+        "  Reverse      vibecraft uninstall",
         "",
         f"  {sq_framework}",
     ]
@@ -1930,6 +1969,9 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
         # Launcher
         _install_launcher(repo_root, dry_run)
 
+        # Fix Gemini plan.directory if it points into .vibecrafted
+        _configure_gemini_plans(dry_run)
+
         # Save state
         now = datetime.now(timezone.utc).isoformat()
         state = InstallState(
@@ -1981,9 +2023,9 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
     print()
     print(f"  {mono_sub} ({mono_cli}) \U0001D69F{fw_ver_display}")
     print(f"  {sep}")
-    print(f"    Start        vibecraft help")
-    print(f"    Verify       vibecraft doctor")
-    print(f"    Reverse      vibecraft uninstall")
+    print("    Start        vibecraft help")
+    print("    Verify       vibecraft doctor")
+    print("    Reverse      vibecraft uninstall")
     print()
     print(f"    {sq_framework}")
     print()
@@ -2074,7 +2116,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
                     findings.append(DoctorFinding(
                         "fail",
                         f"stale-copy:{rt}/{entry.name}",
-                        f"is a local COPY, not a symlink to shared store — drift risk",
+                        "is a local COPY, not a symlink to shared store — drift risk",
                     ))
                 elif store_path.exists():
                     target = entry.resolve()

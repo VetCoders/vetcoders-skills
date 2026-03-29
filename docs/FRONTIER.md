@@ -39,11 +39,11 @@ After step 5 you have: a main pane + two agent panes, smart prompt with branch/r
 
 ### Key concepts
 
-| Concept | How it works |
-|---------|-------------|
-| Tool versions | `mise.toml` pins Python 3.12 and Node LTS — every contributor gets the same versions |
-| Environment | `VIBECRAFTED_HOME` and other vars are set automatically when you `cd` into the repo |
-| Task runner | `mise run <task>` replaces ad-hoc scripts — `doctor`, `install`, `skills`, `list`, `frontier-config` |
+| Concept       | How it works                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| Tool versions | `mise.toml` pins Python 3.12 and Node LTS — every contributor gets the same versions                 |
+| Environment   | `VIBECRAFTED_HOME` and other vars are set automatically when you `cd` into the repo                  |
+| Task runner   | `mise run <task>` replaces ad-hoc scripts — `doctor`, `install`, `skills`, `list`, `frontier-config` |
 
 ### Daily use
 
@@ -92,11 +92,11 @@ When Zellij is not running, agents fall back to Terminal.app (macOS) or backgrou
 
 ### Navigation
 
-| Key | Action |
-|-----|--------|
-| `Ctrl+t` then arrow keys | Switch between panes |
-| `Ctrl+t` then `d` | Detach session (agents keep running) |
-| `zellij attach` | Reattach to a detached session |
+| Key                      | Action                               |
+| ------------------------ | ------------------------------------ |
+| `Ctrl+t` then arrow keys | Switch between panes                 |
+| `Ctrl+t` then `d`        | Detach session (agents keep running) |
+| `zellij attach`          | Reattach to a detached session       |
 
 ---
 
@@ -142,10 +142,10 @@ Like Starship, auto-detected by `vetcoders.zsh`. Config lives at `config/atuin/c
 
 ### Daily use
 
-| Key | Action |
-|-----|--------|
-| `Ctrl+r` | Fuzzy search through history |
-| `↑` | Browse recent commands (inline, 12 lines) |
+| Key      | Action                                    |
+| -------- | ----------------------------------------- |
+| `Ctrl+r` | Fuzzy search through history              |
+| `↑`      | Browse recent commands (inline, 12 lines) |
 
 ### Key settings in the VibeCraft config
 
@@ -180,6 +180,7 @@ mise run frontier-config  # Same, via mise task runner
 VibeCraft works without any frontier tools. The skills, agent spawners, pipeline commands, and all framework functionality operate the same way with or without Zellij, Mise, Starship, or Atuin.
 
 These are enhancements for operators who want the full cockpit experience:
+
 - **Mise** removes "works on my machine" tool version drift
 - **Zellij** makes agents visible instead of hidden in background processes
 - **Starship** puts context in your prompt so you stop running `git status`

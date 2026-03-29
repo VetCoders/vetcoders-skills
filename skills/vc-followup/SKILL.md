@@ -106,23 +106,28 @@ Run required checks. If something is blocked, report the exact blocker and run t
 # Task: <short title>
 
 Goal:
+
 - <1-3 bullets>
 
 Scope:
+
 - In scope: <areas>
 - Out of scope: <areas>
 
 Acceptance:
+
 - [ ] <objective outcome>
 - [ ] <objective outcome>
 - [x] refinement
 
 Test gate:
+
 - semgrep --config auto --error --quiet
 - cargo clippy -- -D warnings
 - <repo specific tests>
 
 Context:
+
 - <short context from CONTEXT.md + RESEARCH.md>
 ```
 

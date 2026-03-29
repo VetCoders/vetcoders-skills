@@ -5,7 +5,6 @@ set -euo pipefail
 
 VIBECRAFT_HOME="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
 VIBECRAFT_SKILLS="$VIBECRAFT_HOME/skills"
-VIBECRAFT_BIN="$VIBECRAFT_HOME/bin"
 
 # ── Colors (copper/steel palette, ANSI only) ──────────────────────
 _bold='\033[1m'
@@ -104,7 +103,6 @@ cmd_agent() {
   local agent="$1"
   local skill="$2"
   shift 2
-  local args="$*"
 
   _ensure_helpers || return 1
 

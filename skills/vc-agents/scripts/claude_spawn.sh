@@ -75,7 +75,6 @@ fi
 
 qroot="$(printf '%q' "$SPAWN_ROOT")"
 qruntime="$(printf '%q' "$runtime_input")"
-qreport="$(printf '%q' "$SPAWN_REPORT")"
 qtranscript="$(printf '%q' "$SPAWN_TRANSCRIPT")"
 qmodel="$(printf '%q' "$model")"
 

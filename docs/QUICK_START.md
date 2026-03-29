@@ -46,6 +46,7 @@ Just do: add user authentication with JWT
 ```
 
 That's it. `vc-justdo` chains the entire pipeline:
+
 - **Craft** — examines the repo, researches the approach, implements
 - **Converge** — runs marbles loops until P0/P1/P2 are all zero
 - **Ship** — checks product surface, decorates, hydrates, releases to market
@@ -124,17 +125,18 @@ Symlinks in `~/.agents/skills/`, `~/.claude/skills/`, and `~/.codex/skills/` poi
 
 ## Vocabulary
 
-| You say | Framework does |
-|---------|---------------|
-| "Init session" | Reads history, maps repo, runs gates |
-| "Just do: ..." | Full pipeline end-to-end |
-| "Scaffold this" | Founder-first architecture and scoping plan |
-| "Release this" | Launch, deploy, and market-readiness mechanics |
-| "Follow-up check" | P0/P1/P2 triage of what's broken |
-| "Marbles" | Convergence loop until clean |
-| "DoU audit" | Gap analysis: code vs. shippable product |
-| "Decorate" | Visual polish using your existing design tokens |
-| "Hydrate" | Market packaging, SEO, distribution |
+| You say           | Framework does                                  |
+| ----------------- | ----------------------------------------------- |
+| "Init session"    | Reads history, maps repo, runs gates            |
+| "Just do: ..."    | Full pipeline end-to-end                        |
+| "Scaffold this"   | Founder-first architecture and scoping plan     |
+| "Release this"    | Launch, deploy, and market-readiness mechanics  |
+| "Follow-up check" | P0/P1/P2 triage of what's broken                |
+| "Marbles"         | Convergence loop until clean                    |
+| "DoU audit"       | Gap analysis: code vs. shippable product        |
+| "Decorate"        | Visual polish using your existing design tokens |
+| "Hydrate"         | Market packaging, SEO, distribution             |
 
 ---
+
 VibeCrafted by VetCoders | vibecrafted.io

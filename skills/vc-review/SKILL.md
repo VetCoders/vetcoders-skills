@@ -63,7 +63,7 @@ prview --with-tests --with-lint --with-security
 ### Other modes
 
 | Command                      | Purpose                                          |
-|------------------------------|--------------------------------------------------|
+| ---------------------------- | ------------------------------------------------ |
 | `prview --ci`                | CI mode: all checks, no color, exit 1 on failure |
 | `prview --json --quiet`      | JSON output for automation / jq piping           |
 | `prview --update`            | Incremental: only regenerate changed artifacts   |
@@ -73,7 +73,7 @@ prview --with-tests --with-lint --with-security
 ### Flag Reference
 
 | Flag                   | What                                                  |
-|------------------------|-------------------------------------------------------|
+| ---------------------- | ----------------------------------------------------- |
 | `--quick`              | Skip tests/lint/bundle/heuristics; triage only        |
 | `--deep`               | All checks enabled                                    |
 | `--ci`                 | CI mode (strict exit)                                 |
@@ -181,7 +181,7 @@ Zasady:
 ### P-Level Scale
 
 | P-level | Definicja                                                          | Przykłady                                                              |
-|---------|--------------------------------------------------------------------|------------------------------------------------------------------------|
+| ------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
 | **P0**  | Blocker merge / security / data loss / failing blocking check      | Failing tsc, leaked credentials, missing artifacts                     |
 | **P1**  | Wysoki risk regresji w core flow, niekompatybilne zmiany kontraktu | Breaking API, duże zmiany bez testów, import cycles in critical module |
 | **P2**  | Średni risk: edge-cases, a11y, telemetria, częściowy brak testów   | Missing i18n keys, hardcoded URLs, no error handling on external call  |
@@ -368,7 +368,7 @@ Create `.prview-policy.yml` in repo root:
 
 ```yaml
 version: 1
-mode: warn        # shadow | warn | block
+mode: warn # shadow | warn | block
 default_severity: warn
 checks:
   cargo_audit: block
@@ -391,7 +391,7 @@ Modes:
 Auto-detected from repo contents. Override: `--profile <PROFILE>`.
 
 | Profile | Detection                   | Checks                                        |
-|---------|-----------------------------|-----------------------------------------------|
+| ------- | --------------------------- | --------------------------------------------- |
 | rust    | Cargo.toml                  | cargo test, clippy, cargo audit, cargo geiger |
 | js      | package.json + source files | vitest, eslint, tsc, pnpm build               |
 | python  | pyproject.toml              | pytest, ruff, mypy                            |
@@ -450,4 +450,4 @@ prview --json --quiet | jq '.checks[] | select(.status == "Failed")'
 
 ---
 
-*Created by M&K (c)2026 VetCoders*
+_Created by M&K (c)2026 VetCoders_

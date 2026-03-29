@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # VetCoders shell helpers (bash/zsh compatible)
 # Source this from your ~/.bashrc or ~/.zshrc to get consistent wrapper commands
 # for the VibeCraft framework installed under your local repository path.
@@ -346,8 +347,9 @@ repo-full() {
   [[ -z "$default_branch" ]] && default_branch="$(git remote show "$default_remote" 2>/dev/null | sed -n '/HEAD branch/s/.*: //p' | head -n 1)"
   [[ -z "$default_branch" ]] && default_branch="unknown"
 
+  # shellcheck disable=SC1083 # @{u} is git upstream ref syntax, not shell braces
   if git rev-parse '@{u}' >/dev/null 2>&1; then
-    read upstream_ahead upstream_behind <<< "$(git rev-list --left-right --count HEAD...@{u} 2>/dev/null)"
+    read upstream_ahead upstream_behind <<< "$(git rev-list --left-right --count HEAD...'@{u}' 2>/dev/null)"
   else
     upstream_ahead="-"
     upstream_behind="-"

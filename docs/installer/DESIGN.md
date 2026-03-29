@@ -10,6 +10,7 @@ not the log of the process.
 ## Current Problem
 
 `make vibecrafted` currently outputs ~80 lines across:
+
 - VibeCraft Framework Setup header + plan (8 lines)
 - Y/n prompt
 - "Installing the shared skill store" block (3 lines)
@@ -35,13 +36,15 @@ Total: ~80+ lines. User scrolls past everything to see the result.
 
 ## Target
 
-- Keeping the all each step, but display it as one screen as the result (~20-25 lines max). 
+- Keeping the all each step, but display it as one screen as the result (~20-25 lines max).
 - Visualize the results as they go but the summary is built from curated list of lines.
-- During proces Each line appears on the visible portion but only **some** STAYS as a summary. 
-- They are built from current lines.  
+- During proces Each line appears on the visible portion but only **some** STAYS as a summary.
+- They are built from current lines.
 - The final state on screen IS the complete summary but the details are hidden and can be shown by pressing ->| key.
-- Introduce the installer's ~/.vibecrafted/logs/install.log.   
+- Introduce the installer's ~/.vibecrafted/logs/install.log.
+
 ---
+
 ## Current setup:
 
 ```bash
@@ -210,17 +213,20 @@ Verification:
 ## Target flow for interactive mode (`make vibecrafted`):
 
 - I. Upper portion - Hero
-```bash 
+
+```bash
 ─────────────────────────────────────────────────────────
               ⚒ ＶｉｂｅＣｒａｆｔｅｄ ⚒
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
 ```
+
 - II. Middle section - dynamic
+
 ```bash
   Welcome to The VibeCraft
-  
-  This setup will install and configure The Framework 
+
+  This setup will install and configure The Framework
   and all of its required foundation packages and
   tooling.
 
@@ -228,41 +234,48 @@ Verification:
   and unless you accept all the consents, won't
   make any modifications in your system.
 
-  Each step says what changes, why it matters, and 
+  Each step says what changes, why it matters, and
   we will provide you a summary before we touch your
   filesystem. Do do it so friendly as we want it to
   keep we need to checkout some things if you agree.
 
-  This installer will guide you through the setup but 
-  it won't explain what the Framework is, what it does, 
+  This installer will guide you through the setup but
+  it won't explain what the Framework is, what it does,
   why you need it, or why you should use it.
   If you are here you probably already know what that.
-  If not - you can read about it here: 
+  If not - you can read about it here:
   https://vetcoders.github.io/vibecrafted
 ```
+
 III. Action prompt or progress bar
+
 ```bash
                 Press ⏎ Enter to proceed or Esc to quit
 ```
+
 - IV. Footer with nav helpers
+
 ```bash
 ─────────────────────────────────────────────────────────
 ↑↓ Nav | ␣ Sel |  ⏎ Next |  ⌫ Back |  ⇥ View | ⎋ Quit # Alternatively in the small window mode: ⌥ Shortcuts
               🅵·🅁·🄰·🄼·🄴·🅆·🄞·🅁·🅺
 ─────────────────────────────────────────────────────────
 ```
+
 ---
+
 ## THE FLOW STEP BY STEP:
 
-- 0. Welcome step 
+- 0. Welcome step
+
 ```shell
 ─────────────────────────────────────────────────────────
               ⚒ ＶｉｂｅＣｒａｆｔｅｄ ⚒
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
   Welcome to The VibeCraft
-  
-  This setup will install and configure The Framework 
+
+  This setup will install and configure The Framework
   and all of its required foundation packages and
   tooling.
 
@@ -270,16 +283,16 @@ III. Action prompt or progress bar
   and unless you accept all the consents, won't
   make any modifications in your system.
 
-  Each step says what changes, why it matters, and 
+  Each step says what changes, why it matters, and
   we will provide you a summary before we touch your
   filesystem. Do do it so friendly as we want it to
   keep we need to checkout some things if you agree.
 
-  This installer will guide you through the setup but 
-  it won't explain what the Framework is, what it does, 
+  This installer will guide you through the setup but
+  it won't explain what the Framework is, what it does,
   why you need it, or why you should use it.
   If you are here you probably already know what that.
-  If not - you can read about it here: 
+  If not - you can read about it here:
   https://vetcoders.github.io/vibecrafted
 
                 Press ⏎ Enter to proceed or Esc to quit
@@ -288,24 +301,26 @@ III. Action prompt or progress bar
               🅵·🅁·🄰·🄼·🄴·🅆·🄞·🅁·🅺
 ─────────────────────────────────────────────────────────
 ```
+
 - I. Explain step
+
 ```shell
 ─────────────────────────────────────────────────────────
               ⚒ ＶｉｂｅＣｒａｆｔｅｄ ⚒
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
-  Craftsmanship is about making things useful, handy and 
+  Craftsmanship is about making things useful, handy and
   beautiful. Vibecraft is a craft for the code.
   We mainly use the cli for the daily coding.
-  We believe though that the cli shouldn't be 
+  We believe though that the cli shouldn't be
   unfriendly.
   We created this installer to make it friendly for you.
-  You can simply follow the instructions and be sure 
-  we won't do any action without your explicit consent 
-  primarly explaining it to you. 
- 
+  You can simply follow the instructions and be sure
+  we won't do any action without your explicit consent
+  primarly explaining it to you.
 
-   
+
+
   Quick overview of the navigation keys:
     ⇅  Arrows       to navigate
     ␣  Space        to select
@@ -322,31 +337,33 @@ III. Action prompt or progress bar
               🅵·🅁·🄰·🄼·🄴·🅆·🄞·🅁·🅺
 ─────────────────────────────────────────────────────────
 ```
+
 - II. Installer checklist plan:
+
 ```shell
 ─────────────────────────────────────────────────────────
               ⚒ ＶｉｂｅＣｒａｆｔｅｄ ⚒
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
   Installer checklist:
-  1. Diagnostics  
+  1. Diagnostics
   We will check your environment for:
     - Any existing framework installation
-      foundations · workflows · helpers · binaries 
-    - Toolchains   
+      foundations · workflows · helpers · binaries
+    - Toolchains
       node · python · rust
-    - Agents       
+    - Agents
       claude-code · codex · gemini-cli
     - Additional tools
       zellji · mise · starship · atuin · zoxide
   2. Installation
   We will install:
-    - Missing dependencies   
+    - Missing dependencies
     - Workflows (9 basic, 7 advanced)
     - Helpers and binaries (executables and functions)
   3. Post-installation setup
     - Workspace directories (in $HOME/.vibecrafted/)
-    - Symlinks for AI coding agents (in $HOME/.agents/)      
+    - Symlinks for AI coding agents (in $HOME/.agents/)
   4. Verification and quick tour
 
                                 ⏎ proceed ⌫ Back ⎋ quit
@@ -355,9 +372,13 @@ III. Action prompt or progress bar
               🅵·🅁·🄰·🄼·🄴·🅆·🄞·🅁·🅺
 ─────────────────────────────────────────────────────────
 ```
+
 ---
+
 > The other steps are to be referenced from the detailed mockups within this folder.
+
 ---
+
 # Target for non-interactive mode (`make install`):
 
 Same output but without Y/n prompts — just runs and prints the final state.
@@ -367,6 +388,7 @@ Same output but without Y/n prompts — just runs and prints the final state.
 ### setup_vibecraft.py (interactive orchestrator)
 
 Simplify to:
+
 1. Print header + plan (keep, but shorter)
 2. Ask Y/n (one prompt, not three)
 3. Call vetcoders_install.py with `--compact` flag
@@ -377,6 +399,7 @@ Simplify to:
 Add a `--compact` flag (default True when called from setup_vibecraft.py).
 
 When compact:
+
 - **System check**: run silently. If any critical dep missing, print error and stop.
   Otherwise don't print individual checks.
 - **Bundle contents**: don't list 16 skill names. Just count.
@@ -391,6 +414,7 @@ When compact:
 - **Summary**: print the unicode box (already done).
 
 When NOT compact (direct `make install` or `python3 installer.py`):
+
 - Keep current verbose output as fallback
 
 ### Verbose log
@@ -405,6 +429,7 @@ The user can always check it if something went wrong.
 ### 1. Add --compact flag to vetcoders_install.py
 
 In the argument parser, add:
+
 ```python
 p_install.add_argument("--compact", action="store_true",
     help="Compact output — one screen, details to log")
@@ -436,6 +461,7 @@ class TeeLogger:
 ### 3. Restructure cmd_install flow for compact mode
 
 When `--compact`:
+
 1. Redirect stdout to TeeLogger (quiet=True) for the duration of install
 2. Run all the existing logic (system check, skill discovery, etc.) silently to log
 3. After each phase completes, print ONE compact line to real stdout
@@ -453,6 +479,7 @@ Keep only: header, plan, Y/n, then let installer handle the rest compactly.
 ### 5. Single Y/n prompt
 
 Currently there are 3 prompts in interactive mode:
+
 - "Start setup?" (setup_vibecraft.py)
 - "Create the default skill views?" (vetcoders_install.py)
 - "Install this plan?" (vetcoders_install.py)
@@ -487,6 +514,7 @@ The installer runs without additional prompts when called with --compact.
 ## Reference
 
 Look at how `uv` (https://github.com/astral-sh/uv) handles install output:
+
 - Each resolution step is a single line
 - Progress updates overwrite in place
 - Final state is clean and compact
@@ -500,11 +528,12 @@ Keep streaming useful progress to stdout while you work. If you cannot write a
 standalone report file, finish normally and let the transcript act as the fallback
 artifact.
 
-When writing your report file, include YAML frontmatter at the top:
----
+## When writing your report file, include YAML frontmatter at the top:
+
 agent: claude
 run_id: impl-000
 prompt_id: 0510_uv-style-installer_implement_20260328
 started_at: (ISO 8601 when you began)
 model: (your model name)
+
 ---

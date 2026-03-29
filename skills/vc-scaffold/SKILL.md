@@ -24,6 +24,7 @@ when the task is new, vague, or requires architectural scoping. If the user
 already has a clear, bounded task, skip scaffold and start with `vc-init`.
 
 After scaffolding produces a plan, the pipeline continues:
+
 - `vc-init` bootstraps agent context
 - `vc-workflow` executes the ERi pipeline (Examine → Research → Implement)
 - `vc-justdo` can consume the scaffold plan for autonomous end-to-end execution
@@ -33,6 +34,7 @@ After scaffolding produces a plan, the pipeline continues:
 A founder walks in with a problem or a feature idea. Maybe it's vague. Maybe it's "we need real-time collaboration" or "our codebase is unmaintainable" or "I have this idea but don't know where to start."
 
 Your job:
+
 1. **Clarify** what they actually want built
 2. **Map** the existing landscape (codebase, constraints, dependencies)
 3. **Propose** a scoped architecture with clear boundaries
@@ -73,6 +75,7 @@ Before breaking down tasks, establish how the product LOOKS and FEELS.
 This is an architectural decision, not a decoration afterthought.
 
 Define:
+
 - **Material metaphor**: What physical materials represent this product? (steel=precision, wood=craft, stone=foundation, copper=warmth, glass=transparency)
 - **Color strategy**: 3-5 semantic roles (accent, surface, text, muted, success/warning/error)
 - **Typography strategy**: Mono for tools/chrome, serif for narrative/craft, sans for apps/dashboards
@@ -80,6 +83,7 @@ Define:
 - **Dark/light**: Based on product context (dev tools → dark, consumer → light, both → auto)
 
 This feeds into:
+
 - DoU presence generation (if no representation surface exists)
 - Decorate coherence audit (what IS the system to audit against?)
 - Hydrate marketplace packaging (consistent brand across surfaces)
@@ -113,6 +117,7 @@ Scope creep kills startups. Write it down.
 Break the work into agent-sized chunks (30-120 min tasks):
 
 Each task gets:
+
 - A clear title (imperative)
 - What it produces (code, config, test suite, docs)
 - Dependencies (what must run first)
@@ -179,4 +184,4 @@ That's it. No polishing. No prettifying. Just working plans.
 
 See references/plan-template.md for the output format.
 
-*Vibecrafted with AI Agents by VetCoders (c)2026 VetCoders*
+_Vibecrafted with AI Agents by VetCoders (c)2026 VetCoders_

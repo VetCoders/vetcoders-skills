@@ -23,6 +23,7 @@ Decorate is a **late-stage product finishing skill**.
 Its job is to take a working product and turn it into a **coherent, intentional, premium experience**.
 
 That means:
+
 - detecting the user's real design language (colors, fonts, theme, spacing, interaction rhythm)
 - separating identity from drift
 - preserving what is distinctive
@@ -35,6 +36,7 @@ Decorate does **not** overwrite the user's brand.
 Decorate does **not** add random blur, glow, parallax, or "AI prettiness."
 
 Its job is to make the existing system feel:
+
 - more deliberate
 - more modern
 - more stable
@@ -75,6 +77,7 @@ and intentionality as any web page or app screen. Nasty, raw, unformatted
 terminal output is not "developer-friendly." It is offensive to the operator.
 
 Decorate applies to CLI surfaces too:
+
 - installer output (alignment, color, progress signals)
 - agent spawn banners (branded, compact, informative)
 - doctor/health check output (clear pass/fail, not wall of text)
@@ -100,6 +103,7 @@ guessing code points or hardcoding ANSI escape sequences.
 **Pipeline: plain text → unicode transform → decorate_text**
 
 Always follow this order:
+
 1. Write the plain text content first
 2. Transform labels/titles via `rewrite_using_unicode` (choose style)
 3. Wrap the final layout with `decorate_text` for box art (if needed)
@@ -109,40 +113,42 @@ return verified, consistent characters from the same Unicode block.
 
 **Available styles** (via `rewrite_using_unicode`):
 
-| Style | Look | Best for |
-|-------|------|----------|
-| `squared` | 🄵🅁🄰🄼🄴 | Branding stamps, footer badges |
-| `vaporwave` | Ｖｉｂｅ | Spaced-out headers |
-| `monospace` | 𝚟𝚒𝚋𝚎 | CLI subheaders, version strings |
-| `smallCaps` | Vɪʙᴇ | Inline emphasis |
-| `fraktur` | 𝔙𝔦𝔟𝔢 | Decorative section titles |
-| `doubleStruck` | 𝕍𝕚𝕓𝕖 | Mathematical / formal labels |
-| `bubble` | Ⓥⓘⓑⓔ | Status badges, tags |
+| Style          | Look     | Best for                        |
+| -------------- | -------- | ------------------------------- |
+| `squared`      | 🄵🅁🄰🄼🄴    | Branding stamps, footer badges  |
+| `vaporwave`    | Ｖｉｂｅ | Spaced-out headers              |
+| `monospace`    | 𝚟𝚒𝚋𝚎     | CLI subheaders, version strings |
+| `smallCaps`    | Vɪʙᴇ     | Inline emphasis                 |
+| `fraktur`      | 𝔙𝔦𝔟𝔢     | Decorative section titles       |
+| `doubleStruck` | 𝕍𝕚𝕓𝕖     | Mathematical / formal labels    |
+| `bubble`       | Ⓥⓘⓑⓔ     | Status badges, tags             |
 
 **CLI decoration elements** (from the Unicode DB):
 
-| Need | Characters | Source |
-|------|-----------|--------|
-| Box frames | `╭─╮│╰─╯` | Box Drawing block |
-| Separators | `·` `─` `━` `┄` | Box Drawing, General Punctuation |
-| Checkmarks | `✓` `✗` `⚠` | Dingbats |
-| Bullets | `▸` `▪` `◆` `›` | Geometric Shapes |
-| Progress | `⣿⣶⣤⣀` `█▓▒░` | Braille Patterns, Block Elements |
-| Sparklines | `⣀⣤⣶⣿` (8px per cell) | Braille Patterns (256 combos) |
-| Arrows | `→` `←` `↑` `↓` `⟶` | Arrows block |
-| Status | `⚒` `⚡` `⚙` `⟳` | Misc Symbols |
-| Brands | `🄵·🅁·🄰·🄼·🄴·🅆·🄾·🅁·🄺` | Enclosed Alphanumerics |
+| Need       | Characters            | Source                           |
+| ---------- | --------------------- | -------------------------------- |
+| Box frames | `╭─╮│╰─╯`             | Box Drawing block                |
+| Separators | `·` `─` `━` `┄`       | Box Drawing, General Punctuation |
+| Checkmarks | `✓` `✗` `⚠`          | Dingbats                         |
+| Bullets    | `▸` `▪` `◆` `›`      | Geometric Shapes                 |
+| Progress   | `⣿⣶⣤⣀` `█▓▒░`         | Braille Patterns, Block Elements |
+| Sparklines | `⣀⣤⣶⣿` (8px per cell) | Braille Patterns (256 combos)    |
+| Arrows     | `→` `←` `↑` `↓` `⟶`   | Arrows block                     |
+| Status     | `⚒` `⚡` `⚙` `⟳`    | Misc Symbols                     |
+| Brands     | `🄵·🅁·🄰·🄼·🄴·🅆·🄾·🅁·🄺`   | Enclosed Alphanumerics           |
 
 **Braille sparklines** deserve special attention. A single Braille character
 encodes 8 dots in a 2×4 grid (256 combinations). This means a line of 40
 Braille characters can display a **320-point convergence curve** in the
 terminal — no graphics library needed. Use them for:
+
 - token usage over time
 - P0/P1/P2 findings across marbles loops
 - agent activity timelines
 - any trend data in CLI output
 
 **Rules:**
+
 - Zero ANSI escape codes for text styling — pure unicode renders everywhere
 - ANSI colors (`\033[32m` etc.) are acceptable for status coloring only
 - Never mix Unicode blocks within one label (squared F next to negative
@@ -156,6 +162,7 @@ terminal — no graphics library needed. Use them for:
 ## What Decorate Is For
 
 Use Decorate when:
+
 - the product works but still feels flat, prototype-ish, or unfinished
 - the user asks for visual polish, smaczki, curb appeal, or premium feel
 - the UI is functionally correct but lacks coherence across surfaces
@@ -183,11 +190,15 @@ Decorate sits after `dou`, ensuring the now-complete product surface is visually
 One of Decorate's most important jobs is to tell the difference between:
 
 ### Identity
+
 The user's actual visual language:
+
 - chosen palette, typography, spacing rhythm, component forms, and interaction style.
 
 ### Drift
+
 Things that merely accumulated:
+
 - inconsistent border radii, mismatched spacing, conflicting button styles, random hover behaviors, or prototype artifacts.
 
 Decorate should preserve **identity** and reduce **drift**.
@@ -212,6 +223,7 @@ Step 5: Verify
 ---
 
 ## Anti-Patterns
+
 - decorating a broken structure
 - keeping bad patterns because "the user already had them"
 - replacing their style with ours
@@ -220,5 +232,5 @@ Step 5: Verify
 
 ---
 
-*Phase 3 — Ship (dou → decorate → hydrate → release)*
-*Vibecrafted with AI Agents by VetCoders (c)2026 VetCoders*
+_Phase 3 — Ship (dou → decorate → hydrate → release)_
+_Vibecrafted with AI Agents by VetCoders (c)2026 VetCoders_
