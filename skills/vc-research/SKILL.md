@@ -128,34 +128,43 @@ gets ALL plans — they are independent researchers, not specialists.
 ### Step 3 — Spawn triple research swarm
 
 Runtime truth beats repo spec. Always use the helper surface that actually
-exists in the user's interactive shell, and always launch through `eval`.
+exists in the user's interactive shell, and always launch helper functions
+through `zsh -ic`.
+
+Why: VetCoders helpers are shell functions sourced by `~/.zshrc` (and
+`~/.bashrc`). Plain `eval` in a non-interactive shell does not guarantee those
+rc files were loaded, so helper calls can fail with `command not found`.
+This applies to all agent-to-agent helper launches, not just direct user
+terminal calls.
+
+If `zsh` is unavailable, use `bash -ic` as the fallback.
 
 Canonical path when `*-research` helpers exist:
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_research-plan.md"
 
-eval "claude-research $PLAN"
-eval "codex-research  $PLAN"
-eval "gemini-research $PLAN"
+zsh -ic "claude-research $PLAN"
+zsh -ic "codex-research $PLAN"
+zsh -ic "gemini-research $PLAN"
 ```
 
 Quick verification if needed:
 
 ```bash
-eval 'for c in claude-research codex-research gemini-research; do command -v "$c" >/dev/null 2>&1 && echo "OK $c" || echo "MISSING $c"; done'
+zsh -ic 'for c in claude-research codex-research gemini-research; do command -v "$c" >/dev/null 2>&1 && echo "OK $c" || echo "MISSING $c"; done'
 ```
 
 Compatibility fallback when the shell exposes only `*-implement` helpers:
 
 ```bash
-eval "claude-implement $PLAN"
-eval "codex-implement  $PLAN"
-eval "gemini-implement $PLAN"
+zsh -ic "claude-implement $PLAN"
+zsh -ic "codex-implement $PLAN"
+zsh -ic "gemini-implement $PLAN"
 ```
 
 Raw `*_spawn.sh` is last-resort plumbing only. Reach for it only when neither
-`*-research` nor `*-implement` helpers exist in `eval`.
+`*-research` nor `*-implement` helpers exist through `zsh -ic` or `bash -ic`.
 
 All three get the same plan. All three work independently. This is intentional —
 divergence between reports reveals blind spots.
@@ -170,12 +179,12 @@ Reports land in:
 ~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_gemini.md
 ```
 
-Wait for all three. Use `{agent}-observe --last` through `eval`:
+Wait for all three. Use `{agent}-observe --last` through `zsh -ic`:
 
 ```bash
-eval 'claude-observe --last'
-eval 'codex-observe --last'
-eval 'gemini-observe --last'
+zsh -ic 'claude-observe --last'
+zsh -ic 'codex-observe --last'
+zsh -ic 'gemini-observe --last'
 ```
 
 ### Step 5 — Synthesize

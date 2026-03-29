@@ -19,6 +19,8 @@ model="${GEMINI_MODEL:-}"
 root=""
 plan_file=""
 dry_run=0
+success_hook_extra=""
+failure_hook_extra=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -44,6 +46,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       dry_run=1
+      ;;
+    --success-hook)
+      shift
+      [[ $# -gt 0 ]] || spawn_die "Missing value for --success-hook"
+      success_hook_extra="$1"
+      ;;
+    --failure-hook)
+      shift
+      [[ $# -gt 0 ]] || spawn_die "Missing value for --failure-hook"
+      failure_hook_extra="$1"
       ;;
     -h|--help)
       usage
@@ -99,6 +111,12 @@ vibecrafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
 qvhome="$(printf '%q' "$vibecrafted_home")"
 launch_cmd="set -o pipefail && cd $qroot && prompt=\$(cat $qruntime) && gemini -p \"\$prompt\" -y $model_flag --include-directories $qvhome -o stream-json 2>&1 | grep --line-buffered '^{' | jq --unbuffered -rj -f $qfilter | tee -a $qtranscript"
 
+# Combine built-in hooks with caller-provided hooks (marbles chain, etc.)
+combined_success="${gemini_success_hook}${success_hook_extra:+
+$success_hook_extra}"
+combined_failure="${gemini_failure_hook}${failure_hook_extra:+
+$failure_hook_extra}"
+
 spawn_generate_launcher "$SPAWN_LAUNCHER" \
   "$SPAWN_META" \
   "$SPAWN_REPORT" \
@@ -106,8 +124,8 @@ spawn_generate_launcher "$SPAWN_LAUNCHER" \
   "$SCRIPT_DIR/common.sh" \
   "$launch_cmd" \
   "" \
-  "$gemini_success_hook" \
-  "$gemini_failure_hook"
+  "$combined_success" \
+  "$combined_failure"
 
 chmod +x "$SPAWN_LAUNCHER"
 spawn_print_launch gemini "$mode" "$runtime"

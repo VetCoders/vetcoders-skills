@@ -2,6 +2,9 @@
 # VetCoders shell helpers (bash/zsh compatible)
 # Source this from your ~/.bashrc or ~/.zshrc to get consistent wrapper commands
 # for the VibeCraft framework installed under your local repository path.
+# These are shell functions, not standalone binaries. Non-interactive callers
+# should use `zsh -ic "<helper> ..."` so ~/.zshrc sources this file; fall back
+# to `bash -ic` on bash-only systems.
 
 _vetcoders_spawn_home() {
   local tool="$1"
@@ -233,9 +236,17 @@ codex-hydrate() { _vetcoders_skill codex hydrate "$@"; }
 claude-hydrate() { _vetcoders_skill claude hydrate "$@"; }
 gemini-hydrate() { _vetcoders_skill gemini hydrate "$@"; }
 
-codex-marbles() { _vetcoders_skill codex marbles "$@"; }
-claude-marbles() { _vetcoders_skill claude marbles "$@"; }
-gemini-marbles() { _vetcoders_skill gemini marbles "$@"; }
+_vetcoders_marbles() {
+  local tool="$1"
+  shift
+  local script
+  script="$(_vetcoders_spawn_script "$tool" "marbles_spawn.sh")" || return 1
+  bash "$script" --agent "$tool" "$@" --runtime "$(_vetcoders_default_runtime)"
+}
+
+codex-marbles() { _vetcoders_marbles codex "$@"; }
+claude-marbles() { _vetcoders_marbles claude "$@"; }
+gemini-marbles() { _vetcoders_marbles gemini "$@"; }
 
 codex-decorate() { _vetcoders_skill codex decorate "$@"; }
 claude-decorate() { _vetcoders_skill claude decorate "$@"; }

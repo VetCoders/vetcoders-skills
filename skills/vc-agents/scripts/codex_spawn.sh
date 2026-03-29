@@ -22,6 +22,8 @@ runtime="terminal"
 root=""
 plan_file=""
 dry_run=0
+success_hook_extra=""
+failure_hook_extra=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -42,6 +44,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       dry_run=1
+      ;;
+    --success-hook)
+      shift
+      [[ $# -gt 0 ]] || spawn_die "Missing value for --success-hook"
+      success_hook_extra="$1"
+      ;;
+    --failure-hook)
+      shift
+      [[ $# -gt 0 ]] || spawn_die "Missing value for --failure-hook"
+      failure_hook_extra="$1"
       ;;
     -h|--help)
       usage
@@ -87,8 +99,8 @@ spawn_generate_launcher "$SPAWN_LAUNCHER" \
   "$SCRIPT_DIR/common.sh" \
   "$launch_cmd" \
   "" \
-  "" \
-  ""
+  "$success_hook_extra" \
+  "$failure_hook_extra"
 
 chmod +x "$SPAWN_LAUNCHER"
 spawn_print_launch codex "$mode" "$runtime"

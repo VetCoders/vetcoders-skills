@@ -89,8 +89,12 @@ check:
 	@echo "Check complete."
 
 init-hooks:
-	@echo "Installing custom git hooks..."
-	@git config core.hooksPath scripts/hooks
-	@chmod +x scripts/hooks/pre-commit scripts/hooks/pre-push
-	@echo "Hooks installed to scripts/hooks and activated via core.hooksPath."
+	@if git rev-parse --git-dir >/dev/null 2>&1; then \
+		echo "Installing custom git hooks..."; \
+		git config core.hooksPath scripts/hooks; \
+		chmod +x scripts/hooks/pre-commit scripts/hooks/pre-push; \
+		echo "Hooks installed to scripts/hooks and activated via core.hooksPath."; \
+	else \
+		echo "Not a git repo — skipping hooks."; \
+	fi
 

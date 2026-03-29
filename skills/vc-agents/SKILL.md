@@ -3,7 +3,8 @@ name: vc-agents
 version: 1.4.1
 description: >
   Spawn external subagents via the VibeCraft method using the operator-facing
-  helper launchers in an interactive `eval` shell. Use when the user wants
+  helper launchers through `zsh -ic` so interactive shell rc files load the
+  helper functions. Use when the user wants
   full isolation, visible Terminal agents, durable artifacts in the canonical
   `~/.vibecrafted/artifacts/` store,
   and real delegated implementation instead of in-thread analysis. Trigger
@@ -70,7 +71,7 @@ Then collect their results in `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>
    - Give a clear `[ ]` todo list.
    - Include acceptance criteria and required checks.
    - End with a short call to action.
-4. Spawn subagents through the helper launchers in an interactive `eval` shell.
+4. Spawn subagents through the helper launchers via `zsh -ic` so the interactive shell loads the helper functions from rc files.
 5. Observe progress through artifacts and transcripts.
 6. Synthesize results back into the main thread.
 
@@ -158,28 +159,47 @@ Living tree note:
 
 ## Spawn commands
 
-The only correct operator-facing launch path is an eval helper invocation via `eval`.
-This guarantees the user's real shell environment, aliases, and helper wrappers are loaded.
+The canonical helper launch path for agent-to-agent delegation is `zsh -ic`.
+This forces an interactive zsh session, which sources the user's `~/.zshrc`.
+That is where VetCoders helper functions like `codex-implement`,
+`claude-research`, and `gemini-review` are loaded.
+
+Plain `eval` inside a non-interactive shell is not enough. The Bash tool can
+run in a shell that never sourced `~/.zshrc`, so the helper function may not
+exist and the spawn will fail with `command not found`.
+
+This rule applies to all agent-to-agent helper launches, not just direct user
+terminal calls.
+
+If the environment is bash-only and `zsh` is unavailable, use `bash -ic`
+instead so `~/.bashrc` loads the same helpers.
 
 ### Codex
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-eval "codex-implement $PLAN"
+zsh -ic "codex-implement $PLAN"
 ```
 
 ### Claude
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-eval "claude-implement $PLAN"
+zsh -ic "claude-implement $PLAN"
 ```
 
 ### Gemini
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-eval "gemini-implement $PLAN"
+zsh -ic "gemini-implement $PLAN"
+```
+
+### Bash-only fallback
+
+```bash
+PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
+bash -ic "codex-implement $PLAN"
 ```
 
 If these helper wrappers are unavailable, stop pretending spawn is correctly configured and say so explicitly.

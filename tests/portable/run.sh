@@ -313,7 +313,7 @@ log "skill helper telemetry smoke"
 # shellcheck disable=SC2016
 skill_output="$(
   env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH" VETCODERS_SPAWN_RUNTIME=headless \
-    bash -c 'cd "$1"; source "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh"; codex-marbles telemetry smoke' _ "$work_repo"
+    bash -c 'cd "$1"; source "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh"; codex-marbles --prompt "telemetry smoke" --count 1' _ "$work_repo"
 )"
 skill_report="$(printf '%s\n' "$skill_output" | sed -n 's/^Agent launched\. Report will land at: //p' | tail -n 1)"
 [[ -n "$skill_report" ]] || die "skill helper did not report output path"
@@ -321,7 +321,7 @@ skill_meta="${skill_report%.md}.meta.json"
 require_file "$skill_meta"
 [[ "$(wait_for_meta "$skill_meta")" == "completed" ]] || die "skill helper spawn did not complete"
 jq -e '.skill_code == "marb"' "$skill_meta" >/dev/null || die "skill helper did not wire skill_code"
-jq -e '.run_id == "marb-000"' "$skill_meta" >/dev/null || die "skill helper did not wire run_id"
+jq -e '.run_id | startswith("marb-")' "$skill_meta" >/dev/null || die "skill helper did not wire run_id"
 
 # If zsh is available, also smoke test zsh loading via legacy compat symlink
 if command -v zsh >/dev/null 2>&1; then
