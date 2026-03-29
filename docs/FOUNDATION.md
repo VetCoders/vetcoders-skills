@@ -1,4 +1,4 @@
-# VibeCraft Foundation
+# VibeCrafted Foundation
 
 Foundation packages are infrastructure that all skills depend on.
 They are not skills — they are the senses and memory of the agent layer.
@@ -89,7 +89,7 @@ persistent review artifacts (prview), or visual input (screenscribe).
 
 The recommended install order:
 
-1. VibeCraft framework (`make install`)
+1. VibeCrafted framework (`make install`)
 2. Agent CLIs (claude, codex, gemini)
 3. Loctree + AICX (critical for non-trivial codebases)
 4. PRView (recommended for review workflows)

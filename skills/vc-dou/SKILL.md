@@ -319,7 +319,7 @@ Discovery → Landing → Understanding → Trial → Adoption → Payment
 100 = technically brilliant, commercially invisible
 ```
 
-## Integration with VibeCraft Pipeline
+## Integration with VibeCrafted Pipeline
 
 ```
 Phase 1 — Craft:     scaffold → init → workflow → followup

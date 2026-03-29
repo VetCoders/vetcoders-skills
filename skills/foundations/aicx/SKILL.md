@@ -8,6 +8,7 @@ description: Recover agent output that is too large to Read or unreadable. Works
 ## When To Use
 
 Use when you cannot read an agent's result directly:
+
 - Output too large for Read tool (>10k tokens)
 - Tool-results file is raw JSONL, not human-readable
 - Subagent crashed but left a partial log
@@ -19,9 +20,11 @@ Use when you cannot read an agent's result directly:
 aicx extract --format claude <INPUT_FILE> -o /tmp/aicx-extract-<basename>.md
 ```
 
-`--format claude` parses Claude Code JSONL structure. File extension does not matter — `.jsonl`, `.txt`, `.output` all work the same.
+`--format claude` parses Claude Code JSONL structure. File extension does not matter — `.jsonl`, `.txt`, `.output` all
+work the same.
 
-**Output path**: Derive from input filename. Use the input file's basename (without extension) as the output name: `/tmp/aicx-extract-<basename>.md`. Never ask the user for an output path.
+**Output path**: Derive from input filename. Use the input file's basename (without extension) as the output name:
+`/tmp/aicx-extract-<basename>.md`. Never ask the user for an output path.
 
 ## Where To Find Input Files
 
@@ -34,11 +37,11 @@ aicx extract --format claude <INPUT_FILE> -o /tmp/aicx-extract-<basename>.md
 
 ## Useful Flags
 
-| Flag | Effect |
-|------|--------|
-| `--conversation` | User/assistant only, no tool noise |
-| `--max-message-chars 8000` | Truncate long messages |
-| `--user-only` | Only user messages |
+| Flag                       | Effect                             |
+| -------------------------- | ---------------------------------- |
+| `--conversation`           | User/assistant only, no tool noise |
+| `--max-message-chars 8000` | Truncate long messages             |
+| `--user-only`              | Only user messages                 |
 
 ## Example Recovery Flow
 

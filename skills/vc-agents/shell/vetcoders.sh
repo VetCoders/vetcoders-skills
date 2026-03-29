@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # VetCoders shell helpers (bash/zsh compatible)
 # Source this from your ~/.bashrc or ~/.zshrc to get consistent wrapper commands
-# for the VibeCraft framework installed under your local repository path.
+# for the VibeCrafted framework installed under your local repository path.
 # These are shell functions, not standalone binaries. Non-interactive callers
 # should use `zsh -ic "<helper> ..."` so ~/.zshrc sources this file; fall back
 # to `bash -ic` on bash-only systems.
@@ -279,7 +279,7 @@ gemini-partner() { _vetcoders_skill gemini partner "$@"; }
 vc-help() {
   local crafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
   cat <<'HELP'
-VibeCraft Framework — Skills & Helpers
+VibeCrafted Framework — Skills & Helpers
 
 Pipeline:  scaffold → init → workflow → followup → marbles → dou → decorate → hydrate → release
 Modes:     partner (collaborative) | justdo (autonomous)
@@ -521,10 +521,10 @@ vc-dashboard() {
   if [[ -d "$repo_root/.git" || -d "$repo_root/skills/vc-agents" ]]; then
     (
       cd "$repo_root" || exit 1
-      zellij --layout "$layout" --session vibecraft-mc
+      zellij --layout "$layout" --session vibecrafted-mc
     )
   else
-    zellij --layout "$layout" --session vibecraft-mc
+    zellij --layout "$layout" --session vibecrafted-mc
   fi
 }
 

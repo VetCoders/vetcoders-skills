@@ -19,7 +19,7 @@ scaffold → init → workflow → followup → marbles → dou → decorate →
                                                                              ^^^^^^^^^
 ```
 
-Release is the final skill in the VibeCraft pipeline. It executes after:
+Release is the final skill in the VibeCrafted pipeline. It executes after:
 
 - `vc-dou` has verified the product surface is complete
 - `vc-decorate` has ensured visual coherence

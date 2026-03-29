@@ -13,7 +13,7 @@ The bootstrap is non-destructive and stages its local control plane under `~/.vi
 Then the orchestrator becomes interactive. It tells you what it does before it does it.
 It asks before touching your shell config. Everything is reversible with `make -C ~/.vibecrafted/tools/vibecrafted-current uninstall`.
 
-After install, open a new terminal (or `source ~/.zshrc`).
+After install, open a new terminal (or `source "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh"`).
 
 ## 2. Verify
 
@@ -94,7 +94,7 @@ claude-observe --last
 
 ## 7. Keep iterating
 
-VibeCraft is not a one-shot tool. It's a loop:
+VibeCrafted is not a one-shot tool. It's a loop:
 
 ```
 Build something → Check what broke → Fix it → Check again → Ship when clean
@@ -115,7 +115,7 @@ The framework does this for you. You provide the vision. Agents provide the labo
 
 ```
 ~/.vibecrafted/
-  skills/        17 VibeCraft skills, readable by all your agents
+  skills/        17 VibeCrafted skills, readable by all your agents
   artifacts/     Plans, reports, transcripts — organized by project and date
   tools/         Staged control plane used by the bootstrap installer
   helpers/       Shell commands (codex-implement, claude-plan, etc.)
@@ -139,4 +139,4 @@ Symlinks in `~/.agents/skills/`, `~/.claude/skills/`, and `~/.codex/skills/` poi
 
 ---
 
-VibeCrafted by VetCoders | vibecrafted.io
+VibeCrafted by VetCoders | https://vetcoders.github.io/vibecrafted/

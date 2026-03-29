@@ -12,7 +12,7 @@ description: >
   Implement (subagents). Each phase feeds context to the next.
 ---
 
-# VibeCraft Workflow — ERi Pipeline
+# VibeCrafted Workflow — ERi Pipeline
 
 **Examine. Research. Implement.**
 
@@ -178,7 +178,7 @@ Use loctree MCP tools as your primary exploration layer:
 Never edit code without mapping it first.
 ```
 
-3. **Living tree rule** — standard VibeCraft preamble
+3. **Living tree rule** — standard VibeCrafted preamble
 4. **Quality gate** — repo-specific test/lint commands
 
 ### Spawn Pattern

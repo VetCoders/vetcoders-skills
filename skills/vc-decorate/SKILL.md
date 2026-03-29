@@ -96,7 +96,7 @@ too thin to explain how the experience actually feels in motion.
 
 ### Unicode Toolkit for CLI
 
-VibeCraft ships a Unicode database (2601 characters, 13 categories) and a
+VibeCrafted ships a Unicode database (2601 characters, 13 categories) and a
 unicode-puzzles-mcp server. Use them for CLI decoration instead of
 guessing code points or hardcoding ANSI escape sequences.
 

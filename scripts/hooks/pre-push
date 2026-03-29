@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# VibeCraft custom pre-push hook
+# VibeCrafted custom pre-push hook
 set -e
 
-echo "⚒  Running VibeCraft pre-push hooks..."
+echo "⚒  Running VibeCrafted pre-push hooks..."
 
 ALL_FILES=$(git ls-files)
 

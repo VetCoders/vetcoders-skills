@@ -26,7 +26,7 @@ compatibility:
     - js_repl
 ---
 
-# VibeCraft Partner
+# VibeCrafted Partner
 
 Two modes, one skill. The difference is who holds the steering wheel.
 

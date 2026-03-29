@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vibecraft — single entrypoint for the VibeCraft framework
+# vibecrafted — single entrypoint for the VibeCrafted framework
 # VibeCrafted with AI Agents (c)2026 VetCoders
 set -euo pipefail
 
@@ -44,7 +44,7 @@ cmd_help() {
   local ver
   ver="$(_version)"
   printf '\n'
-  printf '%b⚒  VibeCraft %s%b\n' "$_bold$_copper" "$ver" "$_reset"
+  printf '%b⚒  VibeCrafted %s%b\n' "$_bold$_copper" "$ver" "$_reset"
   printf '%b─────────────────────────────────────────%b\n' "$_steel" "$_reset"
   printf '\n'
   printf '%bPipeline:%b  scaffold → init → workflow → followup → marbles → dou → decorate → hydrate → release\n' "$_bold" "$_reset"
@@ -68,11 +68,11 @@ cmd_help() {
   printf '            decorate · release · prune · justdo · partner · observe\n'
   printf '\n'
   printf '%bExamples:%b\n' "$_dim" "$_reset"
-  printf '  vibecraft init claude\n'
-  printf '  vibecraft codex implement plan.md\n'
-  printf '  vibecraft claude research "state of auth libraries 2026"\n'
-  printf '  vibecraft codex marbles "fix all P0 findings"\n'
-  printf '  vibecraft gemini followup\n'
+  printf '  vibecrafted init claude\n'
+  printf '  vibecrafted codex implement plan.md\n'
+  printf '  vibecrafted claude research "state of auth libraries 2026"\n'
+  printf '  vibecrafted codex marbles "fix all P0 findings"\n'
+  printf '  vibecrafted gemini followup\n'
   printf '\n'
   printf '%bPaths:%b\n' "$_dim" "$_reset"
   printf '  Skills:     %s/skills/\n' "$VIBECRAFT_HOME"
@@ -146,7 +146,7 @@ cmd_doctor() {
   done
 
   if [[ -z "$makefile" ]]; then
-    printf '%b[error]%b Makefile not found. Is VibeCraft installed?\n' "$_red" "$_reset" >&2
+    printf '%b[error]%b Makefile not found. Is VibeCrafted installed?\n' "$_red" "$_reset" >&2
     return 1
   fi
 
@@ -165,10 +165,10 @@ cmd_dashboard() {
       [[ -f "$candidate" ]] && layout="$candidate" && break
     done
     if [[ -n "${layout:-}" ]]; then
-      zellij --layout "$layout" --session vibecraft-mc
+      zellij --layout "$layout" --session vibecrafted-mc
     else
       printf '%b[warn]%b Mission control layout not found.\n' "$_yellow" "$_reset" >&2
-      printf '  Run: vibecraft doctor\n'
+      printf '  Run: vibecrafted doctor\n'
     fi
   else
     printf '%b[warn]%b zellij not installed. Install it for Mission Control.\n' "$_yellow" "$_reset" >&2
@@ -180,7 +180,7 @@ cmd_stats() {
   today_dir="$(date +%Y_%m%d)"
   artifacts_dir="$VIBECRAFT_HOME/artifacts"
 
-  printf '\n%b⚒  VibeCraft Stats — %s%b\n' "$_bold$_copper" "$(date +%Y-%m-%d)" "$_reset"
+  printf '\n%b⚒  VibeCrafted Stats — %s%b\n' "$_bold$_copper" "$(date +%Y-%m-%d)" "$_reset"
   printf '%b─────────────────────────────────────────%b\n' "$_steel" "$_reset"
 
   if [[ ! -d "$artifacts_dir" ]]; then
@@ -296,14 +296,14 @@ main() {
       cmd_uninstall
       ;;
     version|--version|-v)
-      printf 'vibecraft %s\n' "$(_version)"
+      printf 'vibecrafted %s\n' "$(_version)"
       ;;
 
-    # Agent dispatch: vibecraft <agent> <skill> [args]
+    # Agent dispatch: vibecrafted <agent> <skill> [args]
     claude|codex|gemini)
       local skill="${1:-}"
       if [[ -z "$skill" ]]; then
-        printf '%b[error]%b Missing skill. Usage: vibecraft %s <skill> [args]\n' "$_red" "$_reset" "$cmd" >&2
+        printf '%b[error]%b Missing skill. Usage: vibecrafted %s <skill> [args]\n' "$_red" "$_reset" "$cmd" >&2
         printf '  Skills: %s\n' "${_skills[*]}"
         return 1
       fi

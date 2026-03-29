@@ -1432,7 +1432,7 @@ def print_doctor(findings: List[DoctorFinding]) -> int:
             f"\n{bold('\U0001d54d\U0001d55a\U0001d553\U0001d556\U0001d554\U0001d563\U0001d552\U0001d557\U0001d565 Doctor')}\n"
         )
     else:
-        print(f"\n{bold('VibeCraft Doctor')}\n")
+        print(f"\n{bold('VibeCrafted Doctor')}\n")
 
     fails = 0
     warns = 0
@@ -1490,7 +1490,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
 
     # --- Header ---
     print()
-    print(bold("  \u2692  VibeCraft Installer"))
+    print(bold("  \u2692  VibeCrafted Installer"))
     print(
         dim(
             "  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
@@ -1865,7 +1865,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
             print(f"  {WARN} Shell installer not found: {shell_script}")
         print()
 
-    # --- Execute: vibecraft launcher ---
+    # --- Execute: vibecrafted launcher ---
     _install_launcher(repo_root, dry_run)
 
     # --- Fix Gemini plan.directory if it points into .vibecrafted ---
@@ -1914,12 +1914,12 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
 
 
 def _install_launcher(repo_root: Path, dry_run: bool) -> None:
-    """Install vibecraft launcher to ~/.vibecrafted/bin/."""
-    launcher_src = repo_root / "scripts" / "vibecraft"
+    """Install vibecrafted launcher to ~/.vibecrafted/bin/."""
+    launcher_src = repo_root / "scripts" / "vibecrafted"
     launcher_bin_dir = (
         Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")) / "bin"
     )
-    launcher_dst = launcher_bin_dir / "vibecraft"
+    launcher_dst = launcher_bin_dir / "vibecrafted"
     if launcher_src.exists():
         if not dry_run:
             launcher_bin_dir.mkdir(parents=True, exist_ok=True)
@@ -1937,7 +1937,7 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
                 ):
                     if not dry_run:
                         with rcfile.open("a") as f:
-                            f.write(f"\n# VibeCraft launcher\n{path_line}\n")
+                            f.write(f"\n# VibeCrafted launcher\n{path_line}\n")
         print()
 
 
@@ -1992,9 +1992,9 @@ def _print_unicode_summary(
         f"\u2713 Store        {store_display}",
         "",
         sep,
-        "  Start        vibecraft help",
-        "  Verify       vibecraft doctor",
-        "  Reverse      vibecraft uninstall",
+        "  Start        vibecrafted help",
+        "  Verify       vibecrafted doctor",
+        "  Reverse      vibecrafted uninstall",
         "",
         f"  {sq_framework}",
     ]
@@ -2050,7 +2050,7 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
     # --- All verbose output goes to log; compact lines go to real stdout ---
     with compact_logging(log_path, quiet=True) as out:
         # Log header
-        print(f"VibeCraft Installer v{fw_ver} — compact mode")
+        print(f"VibeCrafted Installer v{fw_ver} — compact mode")
         print(f"Source: {repo_root}")
         print(f"Timestamp: {datetime.now(timezone.utc).isoformat()}")
         print()
@@ -2255,9 +2255,9 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
     print()
     print(f"  {mono_sub} ({mono_cli}) \U0001d69f{fw_ver_display}")
     print(f"  {sep}")
-    print("    Start        vibecraft help")
-    print("    Verify       vibecraft doctor")
-    print("    Reverse      vibecraft uninstall")
+    print("    Start        vibecrafted help")
+    print("    Verify       vibecrafted doctor")
+    print("    Reverse      vibecrafted uninstall")
     print()
     print(f"    {sq_framework}")
     print()
@@ -2481,7 +2481,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     print()
 
     if _IS_TTY and not dry_run:
-        if not ask_yn("Remove the installed VibeCraft bundle?", default=False):
+        if not ask_yn("Remove the installed VibeCrafted bundle?", default=False):
             print("Uninstall cancelled.")
             return 0
         print()

@@ -5,7 +5,7 @@ layout {
         }
         children
     }
-    tab name="VibeCraft MC" split_direction="horizontal" {
+    tab name="VibeCrafted MC" split_direction="horizontal" {
         pane split_direction="vertical" size="50%" {
             pane name="agents" focus=true command="bash" {
                 args "-lc" "for root in \"${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/skills/vc-agents\" \"${VIBECRAFT_ROOT:-}/skills/vc-agents\" \"./skills/vc-agents\"; do if [[ -n \"$root\" && -x \"$root/scripts/mission-control/active-agents.sh\" ]]; then exec \"$root/scripts/mission-control/active-agents.sh\"; fi; done; printf 'Mission control helper not found: active-agents.sh\\n'; sleep 3600"

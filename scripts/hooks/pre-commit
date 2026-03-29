@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# VibeCraft custom pre-commit hook
+# VibeCrafted custom pre-commit hook
 set -e
 
-echo "⚒  Running VibeCraft pre-commit hooks..."
+echo "⚒  Running VibeCrafted pre-commit hooks..."
 
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
 

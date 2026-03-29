@@ -4,7 +4,7 @@
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
   Craftsmanship is about making things useful, handy and
-  beautiful. Vibecraft is a craft for the code.
+  beautiful. VibeCrafted is a craft for the code.
   We mainly use the cli for the daily coding.
   We believe though that the cli shouldn't be
   unfriendly.

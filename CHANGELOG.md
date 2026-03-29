@@ -1,7 +1,34 @@
 # Changelog
 
-All notable changes to VibeCraft are documented here.
+All notable changes to VibeCrafted are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
+
+## 1.0.4 — 2026-03-29
+
+### Added
+
+- VibeCrafted framework overview and README branding
+- Marbles orchestration skill and hook/runtime fixes
+- AICX extract skill documentation
+- Mission-control layout for Zellij
+- Compact install mode and enhanced logging
+- ScreenScribe foundation setup
+- GitHub Pages onboarding pages for Quick Start and answered FAQ
+- Marketplace listing draft for the framework
+- GitHub issue templates for bugs and workflow requests
+
+### Changed
+
+- Refactored installer UI and polished docs
+- Reset Gemini plan dir on install
+- Uses `VIBECRAFTED_HOME` with Gemini include dir
+
+### Fixed
+
+- Canonical URL, sitemap, and robots alignment for the public presence surface
+- Public docs updated to match the current shell-agnostic helper path and non-interactive install flow
+- Installer issues and UI
+- Gemini and MCP stream filters
 
 ## 1.0.3 — 2026-03-27
 

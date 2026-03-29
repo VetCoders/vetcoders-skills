@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF_USAGE'
 Usage: install.sh [--ref <branch>] [--archive-url <url> | --archive-file <path>] [--tools-dir <dir>] [make-target]
 
-Bootstrap a local VibeCraft source snapshot into ~/.vibecrafted/tools and then
+Bootstrap a local VibeCrafted source snapshot into ~/.vibecrafted/tools and then
 run a local make target from that staged copy.
 
 Examples:
@@ -73,7 +73,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$target" in
-  install|vibecraft)
+  install|vibecrafted)
     target="vibecrafted"
     ;;
 esac
@@ -110,7 +110,7 @@ if [[ -n "$archive_file" ]]; then
   info "Unpacking local archive: $archive_file"
   tar -xzf "$archive_file" -C "$extract_root"
 else
-  info "Downloading VibeCraft snapshot: $archive_url"
+  info "Downloading VibeCrafted snapshot: $archive_url"
   curl -fsSL "$archive_url" | tar -xzf - -C "$extract_root"
 fi
 

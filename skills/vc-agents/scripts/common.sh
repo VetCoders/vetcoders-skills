@@ -255,7 +255,7 @@ spawn_prepare_paths() {
 
 spawn_scan_active() {
   local reports_dir="$1"
-  local marker="${TMPDIR:-/tmp}/.vibecraft-scan-marker"
+  local marker="${TMPDIR:-/tmp}/.vibecrafted-scan-marker"
   local recent_active=""
 
   [[ -d "$reports_dir" ]] || {
@@ -296,7 +296,7 @@ PY
   touch "$marker"
   [[ -n "$recent_active" ]] || return 0
 
-  printf '\033[2mRecent active VibeCraft runs:\n%s\033[0m\n' "$recent_active"
+  printf '\033[2mRecent active VibeCrafted runs:\n%s\033[0m\n' "$recent_active"
 }
 
 spawn_build_runtime_prompt() {
@@ -543,13 +543,13 @@ spawn_print_launch() {
   local mode="$2"
   local runtime="${3:-terminal}"
 
-  # ── VibeCraft branded spawn output ──────────────────────────────
+  # ── VibeCrafted branded spawn output ──────────────────────────────
   local _dim='\033[2m'    _bold='\033[1m'
   local _copper='\033[38;5;173m'  _steel='\033[38;5;247m'
   local _reset='\033[0m'
   local _bar="${_steel}──────────────────────────────────${_reset}"
 
-  printf '\n%b ⚒  VibeCraft · %s-%s%b\n' "$_bold$_copper" "$agent" "$mode" "$_reset"
+  printf '\n%b ⚒  VibeCrafted · %s-%s%b\n' "$_bold$_copper" "$agent" "$mode" "$_reset"
   printf '%b\n' "$_bar"
   printf '%b  plan:    %b%s%b\n'   "$_steel" "$_reset" "${SPAWN_PLAN:-—}" "$_reset"
   printf '%b  report:  %b%s%b\n'   "$_steel" "$_reset" "${SPAWN_REPORT:-—}" "$_reset"

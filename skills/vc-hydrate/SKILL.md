@@ -415,7 +415,7 @@ Target: Plague Score reduction of at least 20 points.
 <things only a human can do: DNS, API keys, marketplace submit button>
 ```
 
-## Integration with VibeCraft Pipeline
+## Integration with VibeCrafted Pipeline
 
 ```
 Phase 1 — Craft:     scaffold → init → workflow → followup

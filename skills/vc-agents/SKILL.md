@@ -2,7 +2,7 @@
 name: vc-agents
 version: 1.4.1
 description: >
-  Spawn external subagents via the VibeCraft method using the operator-facing
+  Spawn external subagents via the VibeCrafted method using the operator-facing
   helper launchers through `zsh -ic` so interactive shell rc files load the
   helper functions. Use when the user wants
   full isolation, visible Terminal agents, durable artifacts in the canonical
@@ -12,7 +12,7 @@ description: >
   "deleguj przez terminal", "codex agents", "power agents".
 ---
 
-# VibeCraft Agents
+# VibeCrafted Agents
 
 ## When to use
 
@@ -25,7 +25,7 @@ Trigger when the user asks to delegate work, especially phrases like:
 ## Why use agents
 
 - Your context is precious and built through many sessions, so you should delegate precisely and minimize context bloat.
-- Spawning through the VibeCraft method requires a strict execution pattern.
+- Spawning through the VibeCrafted method requires a strict execution pattern.
 - The command shape is canonical and obligatory without exceptions. If you hesitate to use it as provided, do not use this skill.
 - Agents are copies of yourself: same smart, same capable, just lighter and more agile because they do not carry your full context window.
 - Spawn exists so field teams can implement, research, review, and converge outside the main thread while still leaving durable artifacts in the canonical store.
@@ -113,12 +113,12 @@ needs it:
   another `vc-agents` worker for the next plan, commit locally for
   preservation, and continue.
 
-## Vibecraft doctrine
+## VibeCrafted doctrine
 
 - Do not treat agents like couriers or report printers. Treat them like artists and implementers.
 - Do not over-restrict them into tiny bureaucratic slices when the task wants a real rewrite.
 - Sometimes a full replacement is cleaner than patching scar tissue.
-- VibeCraft builders ship real products through vibeguiding. Agents should be trusted to do the same.
+- VibeCrafted builders ship real products through vibeguiding. Agents should be trusted to do the same.
 
 ## Plan template
 
@@ -225,7 +225,7 @@ Use the equivalent agent observer when needed.
 
 ## Quality gate expectations
 
-Keep the standard VibeCraft quality bar:
+Keep the standard VibeCrafted quality bar:
 
 - loctree-mcp as first-choice exploration and search tool with fail-fast if inaccessible
 - semgrep as first-choice security guard when available

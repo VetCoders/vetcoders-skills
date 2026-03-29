@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://vetcoders.github.io/vetcoders-skills/sitemap.xml
+Sitemap: https://vetcoders.github.io/vibecrafted/sitemap.xml

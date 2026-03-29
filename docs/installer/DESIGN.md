@@ -2,7 +2,7 @@
 
 ## Goal
 
-Transform the VibeCraft installer from a 3-screen wall of text into a
+Transform the VibeCrafted installer from a 3-screen wall of text into a
 compact, progressive build-up that fits on ONE terminal screen. Like how
 `uv` (Astral's Python package manager) installs — the output IS the result,
 not the log of the process.
@@ -11,7 +11,7 @@ not the log of the process.
 
 `make vibecrafted` currently outputs ~80 lines across:
 
-- VibeCraft Framework Setup header + plan (8 lines)
+- VibeCrafted Framework Setup header + plan (8 lines)
 - Y/n prompt
 - "Installing the shared skill store" block (3 lines)
 - "Running Core Installer..."
@@ -50,7 +50,7 @@ Total: ~80+ lines. User scrolls past everything to see the result.
 ```bash
  make setup-dev
 
-  ⚒  VibeCraft Installer
+  ⚒  VibeCrafted Installer
   ─────────────────────────────────
   Source: /Users/maciejgad/hosted/VetCoders/vetcoders-skills
   Version: 1.0.4
@@ -203,9 +203,9 @@ Verification:
   ✓ Store        ~/.vibecrafted/skills
 
   ─────────────────────────────────────
-    Start        vibecraft help
-    Verify       vibecraft doctor
-    Reverse      vibecraft uninstall
+    Start        vibecrafted help
+    Verify       vibecrafted doctor
+    Reverse      vibecrafted uninstall
 
     🅵·🅁·🄰·🄼·🄴·🅆·🅞·🅡·🅺
 ```
@@ -224,7 +224,7 @@ Verification:
 - II. Middle section - dynamic
 
 ```bash
-  Welcome to The VibeCraft
+  Welcome to The VibeCrafted
 
   This setup will install and configure The Framework
   and all of its required foundation packages and
@@ -273,7 +273,7 @@ III. Action prompt or progress bar
               ⚒ ＶｉｂｅＣｒａｆｔｅｄ ⚒
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
-  Welcome to The VibeCraft
+  Welcome to The VibeCrafted
 
   This setup will install and configure The Framework
   and all of its required foundation packages and
@@ -310,7 +310,7 @@ III. Action prompt or progress bar
               𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝 (𝚟𝚌-𝚌𝚕𝚒) 𝚟1.0.4
 ─────────────────────────────────────────────────────────
   Craftsmanship is about making things useful, handy and
-  beautiful. Vibecraft is a craft for the code.
+  beautiful. VibeCrafted is a craft for the code.
   We mainly use the cli for the daily coding.
   We believe though that the cli shouldn't be
   unfriendly.

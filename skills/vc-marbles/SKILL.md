@@ -381,7 +381,7 @@ At this point, DoU transforms into DoD:
   ~~DoU~~ → **DoD**
 ```
 
-## Integration with VibeCraft Pipeline
+## Integration with VibeCrafted Pipeline
 
 ```
 scaffold → init → workflow → followup → [MARBLES] ↻ → dou → decorate → hydrate → release
