@@ -2,7 +2,16 @@
 # VibeCrafted command deck
 set -euo pipefail
 
-crafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
+_expand_home_path() {
+  local raw="${1:-}"
+  case "$raw" in
+    "~") printf '%s\n' "$HOME" ;;
+    "~/"*) printf '%s/%s\n' "$HOME" "${raw:2}" ;;
+    *) printf '%s\n' "$raw" ;;
+  esac
+}
+
+crafted_home="$(_expand_home_path "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}")"
 crafted_skills="$crafted_home/skills"
 crafted_tools="$crafted_home/tools/vibecrafted-current"
 
@@ -50,6 +59,41 @@ _has_skill() {
   for skill in "${_skills[@]}"; do
     [[ "$candidate" == "$skill" ]] && return 0
   done
+  return 1
+}
+
+_skill_candidates() {
+  local skill="$1"
+  local runtime="${2:-}"
+  local script_dir repo_root
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_root="$(cd "$script_dir/.." && pwd)"
+
+  if [[ -n "$runtime" ]]; then
+    printf '%s\n' "$HOME/.${runtime}/skills/${skill}/SKILL.md"
+  fi
+
+  printf '%s\n' \
+    "$HOME/.agents/skills/${skill}/SKILL.md" \
+    "$crafted_skills/${skill}/SKILL.md" \
+    "$crafted_tools/skills/${skill}/SKILL.md" \
+    "$repo_root/skills/${skill}/SKILL.md"
+}
+
+_resolve_skill_path() {
+  local skill="$1"
+  local runtime="${2:-}"
+  local candidate
+
+  while IFS= read -r candidate; do
+    [[ -r "$candidate" ]] || continue
+    printf '%s\n' "$candidate"
+    return 0
+  done < <(_skill_candidates "$skill" "$runtime")
+
+  printf '%b[error]%b Could not find %s.\n' "$_red" "$_reset" "$skill" >&2
+  printf '  Expected one of:\n' >&2
+  _skill_candidates "$skill" "$runtime" | sed 's/^/    - /' >&2
   return 1
 }
 
@@ -136,6 +180,7 @@ cmd_help() {
 
 cmd_init() {
   local agent="${1:-claude}"
+  local init_prompt skill_path
   _has_agent "$agent" || {
     printf '%b[error]%b Unknown agent: %s\n' "$_red" "$_reset" "$agent" >&2
     return 1
@@ -147,11 +192,14 @@ cmd_init() {
     gemini) command -v gemini >/dev/null 2>&1 || return 1 ;;
   esac
 
+  skill_path="$(_resolve_skill_path "vc-init" "$agent")" || return 1
+  printf -v init_prompt 'Use [$vc-init](%s) on this repository and give me full operating context.' "$skill_path"
+
   printf '%b⚒%b  Starting %b%s%b with vc-init...\n' "$_copper" "$_reset" "$_bold" "$agent" "$_reset"
   case "$agent" in
-    claude) claude -i 'Use [$vc-init](/Users/maciejgad/.vibecrafted/skills/vc-init/SKILL.md) on this repository and give me full operating context.' ;;
-    codex) codex -i 'Use [$vc-init](/Users/maciejgad/.vibecrafted/skills/vc-init/SKILL.md) on this repository and give me full operating context.' ;;
-    gemini) gemini -i 'Use [$vc-init](/Users/maciejgad/.vibecrafted/skills/vc-init/SKILL.md) on this repository and give me full operating context.' ;;
+    claude) claude -i "$init_prompt" ;;
+    codex) codex -i "$init_prompt" ;;
+    gemini) gemini -i "$init_prompt" ;;
   esac
 }
 

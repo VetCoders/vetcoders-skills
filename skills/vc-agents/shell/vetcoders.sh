@@ -3,7 +3,7 @@
 # Source this from your ~/.bashrc or ~/.zshrc to get consistent wrapper commands
 # for the VibeCrafted framework installed under your local repository path.
 # These are shell functions, not standalone binaries. Non-interactive callers
-# should use `zsh -ic "<helper> ..."` so ~/.zshrc sources this file; fall back
+# should use an interactive shell so ~/.zshrc sources this file; fall back
 # to `bash -ic` on bash-only systems.
 
 _vetcoders_spawn_home() {

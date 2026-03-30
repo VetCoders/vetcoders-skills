@@ -198,10 +198,10 @@ Ship it clean. Ship it documented. Ship it with a plan for what comes next.
 
 - Publishing without running `vc-dou` first (shipping an incomplete product surface)
 - Skipping `vc-hydrate` artifacts (no install path, no SEO, no onboarding)
-- Tagging without a changelog (users cannot evaluate the upgrade)
+- Tagging without a changelog (users cannot assess the upgrade)
 - Deploying without post-release verification (install path test is mandatory)
 - Treating release as a one-time event (it is a repeatable process)
-- Running release on a dirty tree or unmerged branch without explicit user approval
+- Running release on a chaotic tree or unmerged branch without explicit user approval
 
 ---
 

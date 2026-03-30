@@ -445,7 +445,7 @@ EOF_LAUNCH
   cat >> "$launcher" <<'EOF_LAUNCH'
 spawn_export_frontier_sidecars
 
-if eval "$SPAWN_CMD"; then
+if bash -c "$SPAWN_CMD"; then
 EOF_LAUNCH
 
   if [[ -n "$success_hook" ]]; then

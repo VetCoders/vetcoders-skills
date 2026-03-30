@@ -430,6 +430,21 @@ def get_repo_url(repo_root: Path) -> str:
         return ""
 
 
+def resolve_env_path(name: str, default: Path) -> Path:
+    raw = os.environ.get(name)
+    if raw:
+        return Path(raw).expanduser()
+    return default.expanduser()
+
+
+def xdg_config_home() -> Path:
+    return resolve_env_path("XDG_CONFIG_HOME", Path.home() / ".config")
+
+
+def vibecrafted_home() -> Path:
+    return resolve_env_path("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")
+
+
 # ---------------------------------------------------------------------------
 # Skill discovery
 # ---------------------------------------------------------------------------
@@ -871,16 +886,12 @@ def create_backup(
 
 
 def _helper_target_path() -> Path:
-    config_dir = (
-        Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "vetcoders"
-    )
+    config_dir = xdg_config_home() / "vetcoders"
     return config_dir / "vc-skills.sh"
 
 
 def _helper_legacy_path() -> Path:
-    config_dir = (
-        Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "zsh"
-    )
+    config_dir = xdg_config_home() / "zsh"
     return config_dir / "vc-skills.zsh"
 
 
@@ -936,7 +947,7 @@ def scan_helper_conflicts() -> Dict[Path, List[HelperConflict]]:
     conflicts: Dict[Path, List[HelperConflict]] = {}
 
     search_dirs = []
-    config_base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    config_base = xdg_config_home()
     for subdir in ("vetcoders", "zsh"):
         candidate = config_base / subdir
         if candidate.is_dir():
@@ -1121,11 +1132,7 @@ def prune_legacy_skills(
             ):
                 legacy.append((rt, entry))
 
-    old_helper = (
-        Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-        / "zsh"
-        / OLD_HELPER_NAME
-    )
+    old_helper = xdg_config_home() / "zsh" / OLD_HELPER_NAME
     if old_helper.exists():
         legacy.append(("helper", old_helper))
 
@@ -1805,7 +1812,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
                 print(dim("  (Cannot go back further)"))
 
     # --- Confirm ---
-    shared_home = Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted"))
+    shared_home = vibecrafted_home()
     store_path = shared_home / "skills"
 
     print(bold("Plan:"))
@@ -1947,9 +1954,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
 def _install_launcher(repo_root: Path, dry_run: bool) -> None:
     """Install vibecrafted launcher to ~/.vibecrafted/bin/."""
     launcher_src = repo_root / "scripts" / "vibecrafted"
-    launcher_bin_dir = (
-        Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")) / "bin"
-    )
+    launcher_bin_dir = vibecrafted_home() / "bin"
     launcher_dst = launcher_bin_dir / "vibecrafted"
     if launcher_src.exists():
         if not dry_run:
@@ -2043,7 +2048,7 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
     cli_with_shell = args.with_shell
     fw_ver = get_framework_version(repo_root)
 
-    shared_home = Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted"))
+    shared_home = vibecrafted_home()
     store_path = shared_home / "skills"
     log_path = shared_home / "install.log"
 
@@ -2321,7 +2326,7 @@ def _known_bundle_names() -> List[str]:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    shared_home = Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted"))
+    shared_home = vibecrafted_home()
     store_path = shared_home / "skills"
     state = InstallState.load(store_path)
     has_manifest = bool(state.skills)
@@ -2472,7 +2477,7 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 
 def cmd_uninstall(args: argparse.Namespace) -> int:
-    shared_home = Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted"))
+    shared_home = vibecrafted_home()
     store_path = shared_home / "skills"
     state = InstallState.load(store_path)
     dry_run = args.dry_run
@@ -2607,7 +2612,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
 
 
 def cmd_restore(args: argparse.Namespace) -> int:
-    shared_home = Path(os.environ.get("VIBECRAFTED_HOME", Path.home() / ".vibecrafted"))
+    shared_home = vibecrafted_home()
     store_path = shared_home / "skills"
     dry_run = args.dry_run
     backup_root = _backup_root(store_path)

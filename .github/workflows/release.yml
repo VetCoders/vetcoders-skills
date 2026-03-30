@@ -13,6 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - name: Run shell checks
+        run: make check
+      - name: Install pytest
+        run: python3 -m pip install pytest
+
+      - name: Run installer tests
+        run: make test
+
+      - name: Check marketplace bundle drift
+        run: make bundle-check
 
       - name: Read version
         id: version
@@ -25,11 +39,20 @@ jobs:
           echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
           echo "version=$tag" >> "$GITHUB_OUTPUT"
 
+      - name: Build marketplace bundle
+        run: |
+          mkdir -p dist
+          python3 scripts/build_marketplace_bundle.py --output dist/vibecraft-framework.plugin
+          sha256sum dist/vibecraft-framework.plugin > dist/vibecraft-framework.plugin.sha256
+
       - name: Build release archive
         run: |
           archive_name="vibecrafted-${{ steps.version.outputs.version }}"
           mkdir -p dist
           tar -czf "dist/${archive_name}.tar.gz" \
+            --exclude='./dist' \
+            --exclude='./vibecraft-framework.plugin' \
+            --exclude='./.pytest_cache' \
             --exclude='./presence' \
             --exclude='./.github' \
             --exclude='./.git' \
@@ -69,5 +92,6 @@ jobs:
           files: |
             dist/*.tar.gz
             dist/*.sha256
+            dist/*.plugin
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, '-') }}

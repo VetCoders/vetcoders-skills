@@ -2,9 +2,8 @@
 name: vc-agents
 version: 1.4.1
 description: >
-  Spawn external subagents via the VibeCrafted method using the operator-facing
-  helper launchers through `zsh -ic` so interactive shell rc files load the
-  helper functions. Use when the user wants
+  Spawn external subagents via the VibeCrafted method using the portable spawn
+  scripts. Use when the user wants
   full isolation, visible Terminal agents, durable artifacts in the canonical
   `~/.vibecrafted/artifacts/` store,
   and real delegated implementation instead of in-thread analysis. Trigger
@@ -35,11 +34,11 @@ Trigger when the user asks to delegate work, especially phrases like:
 Use `vc-agents` as the default first choice whenever the task benefits from model-specific strengths.
 Reach for native `vc-delegate` only when the task is small, bounded, and model-agnostic.
 
-| Model  | Why choose it                                                                   | Best for                                                                                              | Avoid when                                                                                                   |
-| ------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Codex  | Precision, implementation purity, and highly reliable code surgery.             | Critical implementations, exact refactors, test-gated fixes, and bounded engineering execution.       | The repo is dirty, the brief is vague, or you are really asking someone to explore and clean up chaos first. |
-| Claude | Investigative depth, stubborn logic tracing, and exhaustive research instincts. | Bug hunts, codebase forensics, audits, architecture research, and SoTA framework evaluation.          | The work is mostly straightforward code surgery and does not need a full investigative pass.                 |
-| Gemini | Bold reframing, creative system redesign, and fearless simplification.          | Architecture leaps, radical cleanup ideas, product reframing, and high-variance creative exploration. | The task only needs predictable, surgical implementation and low-variance execution.                         |
+| Model  | Why choose it                                                                   | Best for                                                                                              | Avoid when                                                                                                                |
+| ------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Codex  | Precision, implementation purity, and highly reliable code surgery.             | Critical implementations, exact refactors, test-gated fixes, and bounded engineering execution.       | The repo is in a chaotic state, the brief is vague, or you are really asking someone to explore and clean up chaos first. |
+| Claude | Investigative depth, stubborn logic tracing, and exhaustive research instincts. | Bug hunts, codebase forensics, audits, architecture research, and SoTA framework assessment.          | The work is mostly straightforward code surgery and does not need a full investigative pass.                              |
+| Gemini | Bold reframing, creative system redesign, and fearless simplification.          | Architecture leaps, radical cleanup ideas, product reframing, and high-variance creative exploration. | The task only needs predictable, surgical implementation and low-variance execution.                                      |
 
 If the task wants one of these strengths, external agents win by default because you can route work to the right mind instead of forcing a generic in-thread delegation path.
 
@@ -71,7 +70,7 @@ Then collect their results in `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>
    - Give a clear `[ ]` todo list.
    - Include acceptance criteria and required checks.
    - End with a short call to action.
-4. Spawn subagents through the helper launchers via `zsh -ic` so the interactive shell loads the helper functions from rc files.
+4. Spawn subagents through the portable spawn scripts.
 5. Observe progress through artifacts and transcripts.
 6. Synthesize results back into the main thread.
 
@@ -159,50 +158,32 @@ Living tree note:
 
 ## Spawn commands
 
-The canonical helper launch path for agent-to-agent delegation is `zsh -ic`.
-This forces an interactive zsh session, which sources the user's `~/.zshrc`.
-That is where VetCoders helper functions like `codex-implement`,
-`claude-research`, and `gemini-review` are loaded.
+The canonical launch path for agent-to-agent delegation is through the portable spawn scripts.
 
-Plain `eval` inside a non-interactive shell is not enough. The Bash tool can
-run in a shell that never sourced `~/.zshrc`, so the helper function may not
-exist and the spawn will fail with `command not found`.
-
-This rule applies to all agent-to-agent helper launches, not just direct user
-terminal calls.
-
-If the environment is bash-only and `zsh` is unavailable, use `bash -ic`
-instead so `~/.bashrc` loads the same helpers.
+If the environment has optional shell aliases (like `codex-implement`), those are just convenience wrappers around these exact same scripts. Always use the portable scripts to ensure maximum compatibility.
 
 ### Codex
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-zsh -ic "codex-implement $PLAN"
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/codex_spawn.sh "$PLAN" --mode implement
 ```
 
 ### Claude
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-zsh -ic "claude-implement $PLAN"
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/claude_spawn.sh "$PLAN" --mode implement
 ```
 
 ### Gemini
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-zsh -ic "gemini-implement $PLAN"
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/gemini_spawn.sh "$PLAN" --mode implement
 ```
 
-### Bash-only fallback
-
-```bash
-PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
-bash -ic "codex-implement $PLAN"
-```
-
-If these helper wrappers are unavailable, stop pretending spawn is correctly configured and say so explicitly.
+If these tools are unavailable, stop pretending spawn is correctly configured and say so explicitly.
 
 ## Output convention
 
@@ -246,5 +227,8 @@ Keep the standard VibeCrafted quality bar:
 
 Spawn is not for outsourcing thought.
 Spawn is for deploying equally capable front-line agents through a strict, canonical launch path.
+Use them to implement, not merely to comment on implementation.
+lementation.
+nch path.
 Use them to implement, not merely to comment on implementation.
 lementation.

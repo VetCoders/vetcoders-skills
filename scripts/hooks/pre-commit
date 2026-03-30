@@ -27,7 +27,7 @@ done <<< "$STAGED_FILES"
 
 if [ ${#SH_FILES[@]} -gt 0 ]; then
     echo "▸ shellcheck"
-    shellcheck -e SC1090,SC1091,SC2155,SC2034,SC2154 "${SH_FILES[@]}"
+    python3 scripts/check_shell.py "${SH_FILES[@]}"
 fi
 
 if [ ${#PY_FILES[@]} -gt 0 ]; then

@@ -33,7 +33,7 @@ need an external face that lets a stranger:
 - discover the product
 - understand what it does
 - see how it works
-- evaluate whether it matters
+- assess whether it matters
 - and know how to install, try, or adopt it
 
 Hydrate should scaffold that layer when it is missing.

@@ -9,6 +9,46 @@ ALL_FILES=$(git ls-files)
 SH_FILES=()
 PY_FILES=()
 MD_YAML_FILES=()
+REWRITTEN_FILES=()
+HASHED_FILES=()
+HASH_VALUES=()
+
+file_sha() {
+    shasum -a 256 "$1" | awk '{print $1}'
+}
+
+track_hashes() {
+    local file
+    for file in "$@"; do
+        HASHED_FILES+=("$file")
+        HASH_VALUES+=("$(file_sha "$file")")
+    done
+}
+
+find_tracked_hash() {
+    local needle="$1"
+    local i
+
+    for ((i=0; i<${#HASHED_FILES[@]}; i++)); do
+        if [[ "${HASHED_FILES[$i]}" == "$needle" ]]; then
+            printf '%s' "${HASH_VALUES[$i]}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+collect_rewrites() {
+    local file before after
+    for file in "$@"; do
+        before="$(find_tracked_hash "$file" || true)"
+        after="$(file_sha "$file")"
+        if [[ -n "$before" && "$before" != "$after" ]]; then
+            REWRITTEN_FILES+=("$file")
+        fi
+    done
+}
 
 while IFS= read -r file; do
     # Skip empty lines
@@ -23,17 +63,31 @@ done <<< "$ALL_FILES"
 
 if [ ${#SH_FILES[@]} -gt 0 ]; then
     echo "▸ shellcheck (full)"
-    shellcheck -e SC1090,SC1091,SC2155,SC2034,SC2154 "${SH_FILES[@]}"
+    python3 scripts/check_shell.py --require-shellcheck "${SH_FILES[@]}"
 fi
 
 if [ ${#PY_FILES[@]} -gt 0 ]; then
-    echo "▸ ruff check (full)"
+    echo "▸ ruff fix + format (full)"
+    track_hashes "${PY_FILES[@]}"
+    ruff check --fix "${PY_FILES[@]}"
+    ruff format "${PY_FILES[@]}"
     ruff check "${PY_FILES[@]}"
+    collect_rewrites "${PY_FILES[@]}"
 fi
 
 if [ ${#MD_YAML_FILES[@]} -gt 0 ]; then
-    echo "▸ prettier check (full)"
+    echo "▸ prettier write + check (full)"
+    track_hashes "${MD_YAML_FILES[@]}"
+    npx prettier --write "${MD_YAML_FILES[@]}"
     npx prettier --check "${MD_YAML_FILES[@]}"
+    collect_rewrites "${MD_YAML_FILES[@]}"
+fi
+
+if [ ${#REWRITTEN_FILES[@]} -gt 0 ]; then
+    git add "${REWRITTEN_FILES[@]}"
+    echo "✕ Pre-push rewrote and re-staged files. Commit the fixes and push again:"
+    printf '  - %s\n' "${REWRITTEN_FILES[@]}"
+    exit 1
 fi
 
 echo "✓ All pre-push checks passed. Ready to push!"

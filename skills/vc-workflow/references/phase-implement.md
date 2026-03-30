@@ -34,7 +34,6 @@ Grep/rg is for local detail only — after structural mapping.
 Each agent plan should include relevant sections from:
 
 1. **CONTEXT.md** (Examination):
-
    - Critical files relevant to agent's scope
    - Risk map for files agent will touch
    - Existing symbols to reuse
@@ -133,7 +132,7 @@ Repo-local `.vibecrafted/plans` and `.vibecrafted/reports` are convenience symli
 ## Spawn Commands
 
 Use the portable scripts from `vc-agents/scripts/`. These handle artifact
-generation, launch mode selection (visible Terminal or headless), and `eval`
+generation, launch mode selection (visible Terminal or headless), and execution
 environment setup automatically.
 
 ### Codex (default for implementation)

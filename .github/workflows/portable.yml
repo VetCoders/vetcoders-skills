@@ -13,10 +13,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install rsync on Ubuntu
+      - name: Install shellcheck on Ubuntu
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - name: Install shellcheck on macOS
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+      - name: Run shell checks
+        run: make check
+      - name: Install pytest
+        run: python3 -m pip install pytest
+      - name: Run installer tests
+        run: make test
+      - name: Check marketplace bundle drift
+        run: make bundle-check
+      - name: Install rsync on Ubuntu
+        if: runner.os == 'Linux'
+        run: |
           sudo apt-get install -y rsync
       - name: Run portable checks
         run: bash scripts/check-portable.sh

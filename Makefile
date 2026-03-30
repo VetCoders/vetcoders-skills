@@ -6,7 +6,7 @@ SHELL_INSTALLER := skills/vc-agents/scripts/install-shell.sh
 SOURCE   := $(CURDIR)
 BRANCH   ?= main
 
-.PHONY: help vibecrafted check install skills helpers setup-dev dry-run doctor list update uninstall restore migrate init-hooks
+.PHONY: help vibecrafted check test install skills helpers setup-dev dry-run doctor list update uninstall restore migrate migrate-dry init-hooks bundle bundle-check
 
 help:
 	@printf "\n"
@@ -25,6 +25,9 @@ help:
 	@printf "  \033[32m✓\033[0m  make doctor        \033[2mVerify installation health\033[0m\n"
 	@printf "  \033[32m↻\033[0m  make update        \033[2mPull latest + re-install\033[0m\n"
 	@printf "  \033[32m◇\033[0m  make list          \033[2mShow bundle + runtime foundations\033[0m\n"
+	@printf "  \033[32m◇\033[0m  make bundle        \033[2mRefresh marketplace plugin bundle\033[0m\n"
+	@printf "  \033[32m✓\033[0m  make bundle-check  \033[2mFail if marketplace bundle drifted\033[0m\n"
+	@printf "  \033[32m✓\033[0m  make test          \033[2mRun installer + marketplace pytest gates\033[0m\n"
 	@printf "  \033[32m✓\033[0m  make check         \033[2mRun basic linters on shell scripts\033[0m\n"
 	@printf "\n"
 	@printf "  \033[33m◆\033[0m  make migrate       \033[2mMigrate .ai-agents/ to ~/.vibecrafted/artifacts/\033[0m\n"
@@ -62,6 +65,15 @@ doctor:
 list:
 	@$(PYTHON) $(INSTALLER) list --source "$(SOURCE)"
 
+bundle:
+	@$(PYTHON) scripts/build_marketplace_bundle.py --output "$(SOURCE)/vibecraft-framework.plugin"
+
+bundle-check:
+	@$(PYTHON) scripts/build_marketplace_bundle.py --check
+
+test:
+	@$(PYTHON) -m pytest tests/tui -q
+
 update:
 	@printf "Pulling origin/$(BRANCH)...\n"
 	@git fetch origin
@@ -82,8 +94,7 @@ migrate-dry:
 	@bash scripts/migrate_agents_workspace.sh --dry-run
 
 check:
-	@echo "Checking shell scripts..."
-	@find skills scripts -name "*.sh" -o -name "*.zsh" | xargs shellcheck -e SC1090,SC1091,SC2155,SC2034,SC2154 || true
+	@$(PYTHON) scripts/check_shell.py
 	@echo "Check complete."
 
 init-hooks:

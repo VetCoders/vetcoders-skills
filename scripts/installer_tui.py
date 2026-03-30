@@ -84,15 +84,23 @@ def read_framework_version(source_dir: str) -> str:
     return "unknown"
 
 
-def xdg_config_home() -> Path:
-    raw = os.environ.get("XDG_CONFIG_HOME")
+def resolve_env_path(name: str, default: Path) -> Path:
+    raw = os.environ.get(name)
     if raw:
         return Path(raw).expanduser()
-    return Path.home() / ".config"
+    return default.expanduser()
+
+
+def xdg_config_home() -> Path:
+    return resolve_env_path("XDG_CONFIG_HOME", Path.home() / ".config")
+
+
+def vibecrafted_home() -> Path:
+    return resolve_env_path("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")
 
 
 def framework_store_dir() -> Path:
-    return Path.home() / ".vibecrafted" / "skills"
+    return vibecrafted_home() / "skills"
 
 
 def helper_layer_path() -> Path:
@@ -100,7 +108,7 @@ def helper_layer_path() -> Path:
 
 
 def install_log_path() -> Path:
-    return Path.home() / ".vibecrafted" / "install.log"
+    return vibecrafted_home() / "install.log"
 
 
 def runtime_skill_views() -> dict[str, Path]:
@@ -685,13 +693,14 @@ def _render_footer(console: Any, width: int) -> None:
 
 
 def _render_welcome(console: Any, state: InstallerState, width: int) -> None:
+    home_display = str(vibecrafted_home()).replace(str(Path.home()), "~")
     console.print("  Welcome")
     console.print("")
     _print_block(
         console,
         width,
         [
-            f"{PRODUCT_LINE} This setup stages VibeCrafted inside ~/.vibecrafted and prepares the framework for daily work with agent CLIs.",
+            f"{PRODUCT_LINE} This setup stages VibeCrafted inside {home_display} and prepares the framework for daily work with agent CLIs.",
             "Nothing outside your VibeCrafted home changes until you approve the install step.",
             "Each screen shows what changes, why it matters, and what stays reversible before we touch your shell or runtime views.",
             "If you need product context instead of setup context, the public surface lives at https://vibecrafted.io.",
@@ -700,13 +709,14 @@ def _render_welcome(console: Any, state: InstallerState, width: int) -> None:
 
 
 def _render_explain(console: Any, state: InstallerState, width: int) -> None:
+    home_display = str(vibecrafted_home()).replace(str(Path.home()), "~")
     console.print("  How this setup works")
     console.print("")
     _print_block(
         console,
         width,
         [
-            "The framework keeps its control plane in ~/.vibecrafted so the install stays isolated from the rest of your machine.",
+            f"The framework keeps its control plane in {home_display} so the install stays isolated from the rest of your machine.",
             "If you enable shell helpers, we add one source line to your rc file. Frontier configs load as sidecars, not as a takeover of your personal prompt or session manager.",
             "This installer is here to be clear and predictable. It will not lecture you, but it will tell you what it is doing.",
         ],

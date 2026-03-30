@@ -586,18 +586,15 @@ available pair.
 ### Resume the same sessions into implementation
 
 Resume helpers (`codex-resume`, `gemini-resume`) are environment-specific
-aliases. If they are available, invoke them through `zsh -ic` so the
-interactive shell sources `~/.zshrc` and loads the helper definitions.
-Plain `eval` from a non-interactive shell is not enough and can fail with
-`command not found`. If `zsh` is unavailable, use `bash -ic`.
+aliases. If they are available, invoke them to maintain session continuity.
 
 If the resume helpers are not available in your environment, start a fresh
 implementation agent carrying the planner report + chosen synthesis as context.
 
 ```bash
 # If resume helpers are available:
-zsh -ic "codex-resume <session-uuid> '<continuation prompt>'"
-zsh -ic "gemini-resume <session-uuid> '<continuation prompt>'"
+codex-resume <session-uuid> '<continuation prompt>'
+gemini-resume <session-uuid> '<continuation prompt>'
 
 # If not, use portable scripts with the synthesis as the new plan:
 bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/codex_spawn.sh "$PLAN" --mode implement

@@ -7,12 +7,12 @@ description: >
   same questions. Three independent reports come back. Synthesize into one
   gap-free research document ready for implementation. Use whenever the team
   needs ground truth before coding: unknown APIs, architecture decisions, library
-  evaluation, protocol research, best-practice survey, competitive analysis,
+  assessment, protocol research, best-practice survey, competitive analysis,
   or any situation where one agent's perspective is not enough. Trigger phrases:
   "research this", "zbadaj to", "triple research", "research swarm", "3 agenty
   research", "gap-free research", "zbadaj przed implementacją", "co mówi
   dokumentacja", "state of the art", "SoTA research", "porównaj podejścia",
-  "evaluate options", "research plan", "plan researchu".
+  "analyze options", "research plan", "plan researchu".
 compatibility:
   tools:
     - Bash
@@ -40,7 +40,7 @@ skill and upgraded with triple-agent triangulation.
 - Unknown API, protocol, or library
 - Architecture decision with multiple valid approaches
 - "What is the current best practice for X?"
-- Library evaluation (A vs B vs C)
+- Library assessment (A vs B vs C)
 - Integration research (how does X talk to Y?)
 - Any moment where guessing would be cheaper than being wrong
 
@@ -127,44 +127,17 @@ gets ALL plans — they are independent researchers, not specialists.
 
 ### Step 3 — Spawn triple research swarm
 
-Runtime truth beats repo spec. Always use the helper surface that actually
-exists in the user's interactive shell, and always launch helper functions
-through `zsh -ic`.
-
-Why: VetCoders helpers are shell functions sourced by `~/.zshrc` (and
-`~/.bashrc`). Plain `eval` in a non-interactive shell does not guarantee those
-rc files were loaded, so helper calls can fail with `command not found`.
-This applies to all agent-to-agent helper launches, not just direct user
-terminal calls.
-
-If `zsh` is unavailable, use `bash -ic` as the fallback.
-
-Canonical path when `*-research` helpers exist:
+Canonical launch path is through the portable spawn scripts:
 
 ```bash
 PLAN="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_research-plan.md"
 
-zsh -ic "claude-research $PLAN"
-zsh -ic "codex-research $PLAN"
-zsh -ic "gemini-research $PLAN"
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/claude_spawn.sh "$PLAN" --mode research
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/codex_spawn.sh "$PLAN" --mode research
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/gemini_spawn.sh "$PLAN" --mode research
 ```
 
-Quick verification if needed:
-
-```bash
-zsh -ic 'for c in claude-research codex-research gemini-research; do command -v "$c" >/dev/null 2>&1 && echo "OK $c" || echo "MISSING $c"; done'
-```
-
-Compatibility fallback when the shell exposes only `*-implement` helpers:
-
-```bash
-zsh -ic "claude-implement $PLAN"
-zsh -ic "codex-implement $PLAN"
-zsh -ic "gemini-implement $PLAN"
-```
-
-Raw `*_spawn.sh` is last-resort plumbing only. Reach for it only when neither
-`*-research` nor `*-implement` helpers exist through `zsh -ic` or `bash -ic`.
+If your environment has the shell aliases (e.g. `claude-research`), those are convenience wrappers that point to these exact scripts.
 
 All three get the same plan. All three work independently. This is intentional —
 divergence between reports reveals blind spots.
@@ -179,12 +152,12 @@ Reports land in:
 ~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_gemini.md
 ```
 
-Wait for all three. Use `{agent}-observe --last` through `zsh -ic`:
+Wait for all three. Use the observe scripts:
 
 ```bash
-zsh -ic 'claude-observe --last'
-zsh -ic 'codex-observe --last'
-zsh -ic 'gemini-observe --last'
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/observe.sh claude --last
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/observe.sh codex --last
+bash $VIBECRAFT_ROOT/skills/vc-agents/scripts/observe.sh gemini --last
 ```
 
 ### Step 5 — Synthesize
