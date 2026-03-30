@@ -1,3 +1,5 @@
+<img width="1536" height="677" alt="image" src="https://github.com/user-attachments/assets/4c238bf2-3087-472a-a420-1f68f717f5ad" />
+
 # VibeCrafted Framework
 
 The definitive toolkit for AI-guided engineering.
