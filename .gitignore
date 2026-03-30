@@ -21,3 +21,10 @@ CLAUDE.md
 AGENTS.md
 /tests/tui/__pycache__
 aicx-dashboard.html
+/*.md
+!README.md
+!CHANGELOG.md
+!VERSION
+!VIBECRAFTED.md
+!CONTRIBUTING.md
+!SECURITY.md
