@@ -152,9 +152,9 @@ export VIBECRAFT_RUN_ID="${marbles_run_id}-001"
 spawn_args=(
   --mode marbles
   --runtime "$runtime"
+  --root "$root_dir"
   --success-hook "$success_hook"
   --failure-hook "$failure_hook"
 )
-[[ -z "$root" ]] || spawn_args+=(--root "$root_dir")
 
 VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"

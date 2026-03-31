@@ -329,7 +329,7 @@ spawn_build_runtime_prompt() {
   cat >> "$runtime_file" <<EOF_PROMPT
 
 At the end of the task, write your final human-readable report to this exact path:
-$report_path
+Report path: $report_path
 
 Keep streaming useful progress to stdout while you work. If you cannot write a
 standalone report file, finish normally and let the transcript act as the fallback
@@ -436,6 +436,9 @@ export SPAWN_LOOP_NR=$q_loop_nr
 export SPAWN_SKILL_CODE=$q_skill_code
 
 rm -f "\$transcript" "\$report"
+if [[ -n "\${SPAWN_ROOT:-}" ]]; then
+  cd "\$SPAWN_ROOT"
+fi
 EOF_LAUNCH
 
   if [[ -n "$pre_hook" ]]; then
@@ -482,13 +485,18 @@ spawn_open_terminal() {
   command -v osascript >/dev/null 2>&1 || spawn_die "osascript is required for visible Terminal spawns."
 
   local command_json
-  command_json="$(python3 - "$launcher" <<'PY'
+  command_json="$(python3 - "$launcher" "${SPAWN_ROOT:-}" <<'PY'
 import json
 import shlex
 import sys
 
 launcher = sys.argv[1]
-print(json.dumps("bash " + shlex.quote(launcher)))
+root = sys.argv[2] if len(sys.argv) > 2 else ""
+parts = []
+if root:
+    parts.append("cd " + shlex.quote(root))
+parts.append("bash " + shlex.quote(launcher))
+print(json.dumps(" && ".join(parts)))
 PY
 )"
 

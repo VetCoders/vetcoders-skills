@@ -308,6 +308,10 @@ run_skill() {
 run_wrapper() {
   local wrapper="$1"
   shift
+  if [[ "$wrapper" == "vc-help" ]]; then
+    cmd_help
+    return
+  fi
   if [[ "$wrapper" == "vc-init" ]]; then
     cmd_init "$@"
     return

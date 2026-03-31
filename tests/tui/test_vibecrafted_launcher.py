@@ -80,3 +80,19 @@ def test_init_falls_back_to_repo_skill_path_when_store_missing(tmp_path: Path) -
     args = capture_file.read_text(encoding="utf-8").splitlines()
     assert args[0] == "-i"
     assert str(REPO_ROOT / "skills" / "vc-init" / "SKILL.md") in args[1]
+
+
+def test_vc_help_wrapper_symlink_renders_main_help(tmp_path: Path) -> None:
+    wrapper = tmp_path / "vc-help"
+    wrapper.symlink_to(LAUNCHER)
+
+    result = subprocess.run(
+        ["bash", str(wrapper)],
+        check=True,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "VibeCrafted" in result.stdout
+    assert "Front door:" in result.stdout

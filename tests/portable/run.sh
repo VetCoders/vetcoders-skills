@@ -124,6 +124,9 @@ HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" \
 require_file "$home_dir/.vibecrafted/skills/vc-agents/scripts/codex_spawn.sh"
 require_file "$home_dir/.vibecrafted/skills/vc-agents/scripts/claude_spawn.sh"
 require_file "$home_dir/.vibecrafted/skills/vc-agents/scripts/gemini_spawn.sh"
+require_file "$home_dir/.vibecrafted/bin/vibecrafted"
+require_symlink "$home_dir/.vibecrafted/bin/vc-help"
+require_symlink "$home_dir/.vibecrafted/bin/vc-marbles"
 require_symlink "$home_dir/.codex/skills/vc-agents"
 require_symlink "$home_dir/.claude/skills/vc-agents"
 require_symlink "$home_dir/.gemini/skills/vc-agents"
@@ -133,6 +136,7 @@ require_file "$home_dir/.gemini/skills/vc-agents/scripts/gemini_spawn.sh"
 # Canonical + legacy helper locations
 require_file "$config_dir/vetcoders/vc-skills.sh"
 require_file "$config_dir/zsh/vc-skills.zsh"
+assert_contains "$config_dir/vetcoders/vc-skills.sh" 'VibeCrafted helper shim'
 # At least one rcfile must have the source line (depends on SHELL/platform)
 rc_found=0
 for rcfile in "$home_dir/.zshrc" "$home_dir/.bashrc"; do
@@ -306,8 +310,8 @@ jq -e '.completed_at != null and .duration_s != null' "$codex_meta" >/dev/null |
 
 log "helper bash smoke"
 # shellcheck disable=SC2016
-env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH" \
-  bash -c 'source "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh"; command -v codex-implement >/dev/null && command -v claude-implement >/dev/null && command -v gemini-implement >/dev/null && command -v skills-sync >/dev/null && echo helper-ok' \
+env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$home_dir/.vibecrafted/bin:$fake_bin:$PATH" \
+  bash -c 'source "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh"; command -v codex-implement >/dev/null && command -v claude-implement >/dev/null && command -v gemini-implement >/dev/null && command -v vc-marbles >/dev/null && command -v skills-sync >/dev/null && echo helper-ok' \
   | grep -Fq 'helper-ok' || die 'bash helper layer not loaded'
 log "skill helper telemetry smoke"
 # shellcheck disable=SC2016
@@ -327,8 +331,8 @@ jq -e '.run_id | startswith("marb-")' "$skill_meta" >/dev/null || die "skill hel
 if command -v zsh >/dev/null 2>&1; then
   log "helper zsh smoke (bonus)"
   # shellcheck disable=SC2016
-  env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH" \
-    zsh -c 'source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/vc-skills.zsh"; command -v codex-implement >/dev/null && command -v claude-implement >/dev/null && command -v gemini-implement >/dev/null && command -v skills-sync >/dev/null && echo helper-ok' \
+  env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$home_dir/.vibecrafted/bin:$fake_bin:$PATH" \
+    zsh -c 'source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/vc-skills.zsh"; command -v codex-implement >/dev/null && command -v claude-implement >/dev/null && command -v gemini-implement >/dev/null && command -v vc-marbles >/dev/null && command -v skills-sync >/dev/null && echo helper-ok' \
     | grep -Fq 'helper-ok' || die 'zsh helper layer not loaded'
 fi
 
