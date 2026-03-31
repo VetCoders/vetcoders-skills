@@ -904,6 +904,44 @@ def _old_zshrc_source_line() -> str:
     return '[[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/vc-skills.zsh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/vc-skills.zsh"'
 
 
+def _launcher_path_line() -> str:
+    return 'export PATH="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin:$PATH"'
+
+
+def _strip_rc_entry(
+    content: str, line: str, comment: Optional[str] = None
+) -> Tuple[str, int]:
+    raw_lines = content.splitlines()
+    kept: List[str] = []
+    removed = 0
+    idx = 0
+
+    while idx < len(raw_lines):
+        current = raw_lines[idx]
+        stripped = current.strip()
+        if comment and stripped == f"# {comment}":
+            next_idx = idx + 1
+            if next_idx < len(raw_lines) and raw_lines[next_idx].strip() == line:
+                removed += 2
+                idx += 2
+                continue
+        if stripped == line:
+            removed += 1
+            idx += 1
+            continue
+        kept.append(current)
+        idx += 1
+
+    rebuilt = "\n".join(kept)
+    if content.endswith("\n"):
+        rebuilt += "\n"
+    return rebuilt, removed
+
+
+def _rc_has_vibecrafted_bin_path(content: str) -> bool:
+    return "vibecrafted/bin" in content or ".vibecrafted/bin" in content
+
+
 # ---------------------------------------------------------------------------
 # Helper conflict detection
 # ---------------------------------------------------------------------------
@@ -1962,18 +2000,22 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
             shutil.copy2(launcher_src, launcher_dst)
             launcher_dst.chmod(0o755)
         # Ensure ~/.vibecrafted/bin is in PATH via shell rc files
-        path_line = 'export PATH="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin:$PATH"'
+        path_line = _launcher_path_line()
+        path_comment = "VibeCrafted launcher"
         for rcname in (".bashrc", ".zshrc"):
             rcfile = Path.home() / rcname
             if rcfile.exists():
                 content = rcfile.read_text()
-                if (
-                    "vibecrafted/bin" not in content
-                    and ".vibecrafted/bin" not in content
-                ):
-                    if not dry_run:
-                        with rcfile.open("a") as f:
-                            f.write(f"\n# VibeCrafted launcher\n{path_line}\n")
+                cleaned, removed = _strip_rc_entry(content, path_line, path_comment)
+                has_path = _rc_has_vibecrafted_bin_path(cleaned)
+                changed = removed > 0
+                if not has_path:
+                    if cleaned and not cleaned.endswith("\n"):
+                        cleaned += "\n"
+                    cleaned += f"\n# {path_comment}\n{path_line}\n"
+                    changed = True
+                if changed and not dry_run:
+                    rcfile.write_text(cleaned)
         print()
 
 
@@ -2563,28 +2605,30 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
                     print(f"  {dim('-')} {hf}")
 
         # Remove source lines from both .zshrc and .bashrc
-        source_lines = [_shell_source_line(), _old_zshrc_source_line()]
+        source_entries = [
+            (_shell_source_line(), "VetCoders shell helpers"),
+            (_old_zshrc_source_line(), "VetCoders shell helpers"),
+            (_launcher_path_line(), "VibeCrafted launcher"),
+        ]
         for rcname in (".zshrc", ".bashrc"):
             rcfile = Path.home() / rcname
             if not rcfile.exists():
                 continue
             content = rcfile.read_text()
             changed = False
-            for sl in source_lines:
-                if sl in content:
-                    if not _is_writable(rcfile):
-                        print(
-                            f"  {WARN} {rcfile} is locked — cannot remove source line"
-                        )
-                        break
-                    elif dry_run:
-                        print(f"  {dim('remove source line from')} {rcfile}")
-                    else:
-                        content = content.replace(
-                            f"\n# VetCoders shell helpers\n{sl}\n", "\n"
-                        )
-                        content = content.replace(sl, "")
-                        changed = True
+            for line, comment in source_entries:
+                if line not in content and (
+                    not comment or f"# {comment}" not in content
+                ):
+                    continue
+                if not _is_writable(rcfile):
+                    print(f"  {WARN} {rcfile} is locked — cannot remove source line")
+                    break
+                elif dry_run:
+                    print(f"  {dim('remove source line from')} {rcfile}")
+                else:
+                    content, removed = _strip_rc_entry(content, line, comment)
+                    changed = changed or removed > 0
             if changed and not dry_run:
                 rcfile.write_text(content)
                 print(f"  {dim('-')} source line from {rcfile}")

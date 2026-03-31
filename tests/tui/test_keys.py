@@ -72,3 +72,50 @@ def test_vetcoders_install_env_paths_expand_user(
         vetcoders_install._helper_legacy_path()
         == home / ".portable-config" / "zsh" / "vc-skills.zsh"
     )
+
+
+def test_strip_rc_entry_removes_duplicate_launcher_blocks() -> None:
+    path_line = vetcoders_install._launcher_path_line()
+    content = (
+        f"# VibeCrafted launcher\n{path_line}\n"
+        f"{path_line}\n"
+        'export PATH="$HOME/.cargo/bin:$PATH"\n'
+    )
+
+    cleaned, removed = vetcoders_install._strip_rc_entry(
+        content, path_line, "VibeCrafted launcher"
+    )
+
+    assert removed == 3
+    assert path_line not in cleaned
+    assert "cargo/bin" in cleaned
+
+
+def test_install_launcher_dedupes_zshrc_path_entries(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    home = tmp_path / "home"
+    repo_root = tmp_path / "repo"
+    launcher_src = repo_root / "scripts" / "vibecrafted"
+    zshrc = home / ".zshrc"
+    bashrc = home / ".bashrc"
+
+    launcher_src.parent.mkdir(parents=True)
+    launcher_src.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    home.mkdir()
+
+    path_line = vetcoders_install._launcher_path_line()
+    zshrc.write_text(
+        f"# VibeCrafted launcher\n{path_line}\n{path_line}\n",
+        encoding="utf-8",
+    )
+    bashrc.write_text("", encoding="utf-8")
+
+    monkeypatch.setenv("HOME", str(home))
+
+    vetcoders_install._install_launcher(repo_root, dry_run=False)
+
+    zshrc_content = zshrc.read_text(encoding="utf-8")
+    assert zshrc_content.count(path_line) == 1
+    assert zshrc_content.count("# VibeCrafted launcher") == 1
+    assert (home / ".vibecrafted" / "bin" / "vibecrafted").exists()

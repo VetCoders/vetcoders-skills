@@ -7,19 +7,39 @@
             name: 'scaffold',
             label: 'Scaffold',
             eyebrow: 'Phase 0 · Setup',
-            title: 'Define the board geometry',
-            description: 'Choose the foundation. Before any code runs, we must agree on the shape and capacity of the workspace.',
-            detail: 'Board shape · density configuration',
+            title: 'Trace the outer frame',
+            description: 'Set the boundary first. Scaffold is only about the silhouette of the board before we decide how many grooves it can carry.',
+            detail: 'Layout shell · geometry lock',
             duration: 1500,
             snapshotRatio: 0.28
+        },
+        {
+            name: 'init',
+            label: 'Init',
+            eyebrow: 'Phase 1 · Craft',
+            title: 'Etch the first grooves',
+            description: 'Init anchors the board in reality. History and structure start cutting true grooves into the frame so later work has somewhere real to land.',
+            detail: 'Context load · first grooves',
+            duration: 1600,
+            snapshotRatio: 0.48
+        },
+        {
+            name: 'research',
+            label: 'Research',
+            eyebrow: 'Phase 1 · Craft',
+            title: 'Map the plausible lanes',
+            description: 'Research explores the option space before we commit to throughput. The board starts highlighting which grooves matter, which are decoys, and where the next pressure should go.',
+            detail: 'Option scan · route discovery',
+            duration: 1800,
+            snapshotRatio: 0.68
         },
         {
             name: 'workflow',
             label: 'Workflow',
             eyebrow: 'Phase 1 · Craft',
-            title: 'Reveal the grooves',
-            description: 'The lanes emerge from the center out. Structure shows up before content so the next moves have somewhere true to land.',
-            detail: 'Groove reveal · shape before filling',
+            title: 'Set groove density',
+            description: 'Now define capacity. Workflow decides how many grooves the board exposes, so later work lands into a real operating model instead of empty texture.',
+            detail: 'Groove count · density tuning',
             duration: 2000,
             snapshotRatio: 0.74
         },
@@ -44,24 +64,14 @@
             snapshotRatio: 0.58
         },
         {
-            name: 'overflow',
-            label: 'Overflow',
+            name: 'review',
+            label: 'Review',
             eyebrow: 'Phase 2 · Converge',
-            title: 'See what spills beyond the grooves',
-            description: 'Too much energy creates excess. The board overfills, exposing the difference between apparent progress and real fit.',
-            detail: 'Coverage can overshoot 100%',
+            title: 'Stress the moving board',
+            description: 'Review checks whether the landed pattern really matches the intent. Weak fits, spillover, and suspicious placements become visible under pressure.',
+            detail: 'Quality gate · weak-fit detection',
             duration: 2500,
             snapshotRatio: 0.62
-        },
-        {
-            name: 'error',
-            label: 'P0',
-            eyebrow: 'Phase 2 · Converge',
-            title: 'Surface the red truth',
-            description: 'The cycle pauses on a failure signal. Better to stop on reality than glide past a blocker because the animation looked convincing.',
-            detail: 'P0 flash · convergence interrupted',
-            duration: 1000,
-            snapshotRatio: 0.48
         },
         {
             name: 'followup',
@@ -84,14 +94,14 @@
             snapshotRatio: 0.34
         },
         {
-            name: 'hydrate',
-            label: 'Hydrate',
-            eyebrow: 'Phase 3 · Ship',
-            title: 'Fill the exact missing slots',
-            description: 'Now the motion changes tone. The remaining gaps are handled deterministically, one launch-critical hole at a time.',
-            detail: 'Precise fill · market-facing completion',
-            duration: 2500,
-            snapshotRatio: 0.68
+            name: 'dou',
+            label: 'DoU',
+            eyebrow: 'Phase 3 · Audit',
+            title: 'Definition of Undone',
+            description: 'Surface the red truth. Run a systematic gap analysis across the entire product surface to expose what still blocks shipping.',
+            detail: 'Plague check · readiness audit',
+            duration: 1500,
+            snapshotRatio: 0.48
         },
         {
             name: 'decorate',
@@ -104,10 +114,20 @@
             snapshotRatio: 0.72
         },
         {
-            name: 'ship',
-            label: 'Ship',
+            name: 'hydrate',
+            label: 'Hydrate',
+            eyebrow: 'Phase 3 · Ship',
+            title: 'Fill the exact missing slots',
+            description: 'Now the motion changes tone. The remaining gaps are handled deterministically, one launch-critical hole at a time.',
+            detail: 'Precise fill · market-facing completion',
+            duration: 2500,
+            snapshotRatio: 0.68
+        },
+        {
+            name: 'release',
+            label: 'Release',
             eyebrow: 'Final Step · Release',
-            title: 'Release the finished surface',
+            title: 'Ship code to market',
             description: 'The board glows, holds, and then fades for the next cycle. Shipping is not the absence of motion; it is a completed loop ready to start again.',
             detail: 'Stable board · reset for next cycle',
             duration: 3000,
@@ -231,41 +251,39 @@
     }
 
     function phaseCommand(phaseDef) {
-        switch (phaseDef.name) {
-        case 'scaffold':
-            return 'vc-scaffold';
-        case 'workflow':
-            return 'vc-workflow';
-        case 'agents':
-            return 'vc-agents';
-        case 'marbles':
-            return 'vc-marbles';
-        case 'overflow':
-        case 'error':
-        case 'followup':
-            return 'vc-followup';
-        case 'prune':
-            return 'vc-prune';
-        case 'hydrate':
-            return 'vc-hydrate';
-        case 'decorate':
-            return 'vc-decorate';
-        case 'ship':
-            return 'vc-release';
-        default:
-            return 'vibecrafted';
-        }
+        return 'vc-' + phaseDef.name;
     }
 
     function phaseHint(phaseDef) {
+        if (phaseDef.name === 'workflow') {
+            return 'Tune groove density until the board exposes the right amount of working capacity.';
+        }
+        if (phaseDef.name === 'init') {
+            return 'Bootstrap context so the first true grooves are cut from history instead of guessed from nothing.';
+        }
+        if (phaseDef.name === 'research') {
+            return 'Probe the lane choices before committing force. Research narrows the search space and marks the promising paths.';
+        }
         if (phaseDef.name === 'marbles') {
-            return 'Adjust throw power and batch size, then throw to converge the board.';
+            return 'Set the marbles count and force, then let the board run the convergence sequence by itself.';
         }
         if (phaseDef.name === 'agents') {
             return 'Select specialist count and spawn them into the grooves.';
         }
         if (phaseDef.name === 'scaffold') {
-            return 'Configure the board geometry and density before starting the loop.';
+            return 'Choose the outer frame first. Capacity comes later, once the board shape is real.';
+        }
+        if (phaseDef.name === 'review') {
+            return 'Run a stress pass on the first placements before the noisy convergence loops begin.';
+        }
+        if (phaseDef.name === 'followup') {
+            return 'Shake the board and see which claims of progress were never truly anchored.';
+        }
+        if (phaseDef.name === 'prune') {
+            return 'Remove weak or unnecessary fits so the board can converge around the stronger core.';
+        }
+        if (phaseDef.name === 'dou') {
+            return 'Flash the undone truth in red and expose what still blocks shipping.';
         }
         if (phaseDef.name === 'hydrate') {
             return 'Fill the remaining critical gaps with deterministic precision.';
@@ -273,7 +291,7 @@
         if (phaseDef.name === 'decorate') {
             return 'Apply final polish pass to saturate colors and sharpen the finish.';
         }
-        if (phaseDef.name === 'ship') {
+        if (phaseDef.name === 'release') {
             return 'Launch the finished surface and release the loop to the market.';
         }
         return phaseDef.description;
@@ -285,16 +303,16 @@
             '  <div class="framework-playground__meta">',
             '    <div class="framework-playground__meta-copy">',
             '      <p class="framework-playground__kicker">Framework Playground</p>',
-            '      <h3 class="framework-playground__heading">Manual teaching surface</h3>',
-            '      <p class="framework-playground__lede">Board-first, manual-only. Choose a phase and use the operators to command the board.</p>',
+            '      <h3 class="framework-playground__heading">Command the convergence board</h3>',
+            '      <p class="framework-playground__lede">Board-first teaching surface. Trace the frame, tune the grooves, invite specialists, then let Marbles run the convergence batches.</p>',
             '    </div>',
             '  </div>',
             '  <div class="framework-playground__body">',
+            '    <p class="framework-playground__pressline">',
+            '      <span class="framework-playground__press-kicker" data-framework-phase-eyebrow>Phase 0 · Setup</span>',
+            '      <span class="framework-playground__press-copy" data-framework-phase-press>Define the board geometry.</span>',
+            '    </p>',
             '    <section class="framework-playground__board-column">',
-            '      <p class="framework-playground__pressline">',
-            '        <span class="framework-playground__press-kicker" data-framework-phase-eyebrow>Phase 0 · Setup</span>',
-            '        <span class="framework-playground__press-copy" data-framework-phase-press>Define the board geometry.</span>',
-            '      </p>',
             '      <div class="framework-playground__stage">',
             '        <canvas class="framework-playground__canvas" aria-hidden="true"></canvas>',
             '        <div class="framework-playground__overlay" aria-hidden="true">',
@@ -310,12 +328,12 @@
             '    </section>',
             '    <aside class="framework-playground__side-column">',
             '      <p class="framework-playground__side-kicker">Operators</p>',
+            '      <p class="framework-playground__side-copy" data-framework-phase-hint></p>',
             '      <div class="framework-playground__controls" data-framework-controls></div>',
-            '      <p class="framework-playground__side-kicker" style="margin-top: 1rem;">Choose Phase</p>',
+            '      <p class="framework-playground__side-kicker" style="margin-top: 0.35rem;">Choose Phase</p>',
             '      <div class="framework-playground__rail-shell">',
             '        <div class="framework-playground__rail framework-playground__rail--stack" data-framework-rail></div>',
             '      </div>',
-            '      <p class="framework-playground__side-copy" data-framework-phase-hint style="margin-top: 1rem;"></p>',
             '    </aside>',
             '  </div>',
             '</div>'
@@ -378,11 +396,46 @@
         var boardShape = 0; // index in SHAPES
         var boardDensity = 1.0;
         var marbleBatchSize = 8;
+        var marbleRunCount = 4;
+        var marbleRunRemaining = 0;
         var agentBatchSize = 3;
         var hydrateBatchSize = 5;
         var polishIntensity = 0.0;
         var marblePower = 1.0;
         var shipGlow = 0;
+
+        function currentPhaseCommand() {
+            var phaseDef = PHASES[phase];
+            if (phaseDef.name === 'scaffold') {
+                return 'vc-scaffold --shape ' + SHAPES[boardShape];
+            }
+            if (phaseDef.name === 'workflow') {
+                return 'vc-workflow --density ' + boardDensity.toFixed(1);
+            }
+            if (phaseDef.name === 'agents') {
+                return 'vc-agents --count ' + agentBatchSize;
+            }
+            if (phaseDef.name === 'marbles') {
+                return 'vc-marbles --count ' + marbleRunCount;
+            }
+            return phaseCommand(phaseDef);
+        }
+
+        function countVisibleSlots() {
+            return slots.filter(function (slot) {
+                return slot.visible;
+            }).length;
+        }
+
+        function countFilledSlots() {
+            return slots.filter(function (slot) {
+                return slot.filled;
+            }).length;
+        }
+
+        function setRangePct(input, pct) {
+            input.style.setProperty('--range-pct', pct + '%');
+        }
 
         function resolvePhaseIndex(name) {
             for (var i = 0; i < PHASES.length; i++) {
@@ -462,6 +515,56 @@
             ctx.lineWidth = 0.8;
             ctx.stroke();
             ctx.globalAlpha = 1;
+        }
+
+        function traceBoardShape(radiusScale) {
+            var shape = SHAPES[boardShape];
+            var radius = boardRadius * (radiusScale || 1);
+
+            if (shape === 'circle' || shape === 'spiral' || shape === 'waves') {
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                return;
+            }
+
+            if (shape === 'square' || shape === 'grid') {
+                ctx.rect(centerX - radius * 0.92, centerY - radius * 0.92, radius * 1.84, radius * 1.84);
+                return;
+            }
+
+            if (shape === 'hexagon') {
+                for (var i = 0; i < 6; i++) {
+                    var angle = (i * Math.PI) / 3 - Math.PI / 6;
+                    var hx = centerX + radius * Math.cos(angle);
+                    var hy = centerY + radius * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+                }
+                ctx.closePath();
+                return;
+            }
+
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        }
+
+        function drawBoardFrame(alpha, frameOnly) {
+            if (alpha <= 0) return;
+
+            ctx.save();
+            if (!frameOnly) {
+                ctx.beginPath();
+                traceBoardShape(1);
+                var interior = ctx.createRadialGradient(centerX, centerY, boardRadius * 0.18, centerX, centerY, boardRadius * 1.02);
+                interior.addColorStop(0, 'rgba(12, 12, 13,' + (0.42 * alpha) + ')');
+                interior.addColorStop(1, 'rgba(6, 7, 9,' + (0.22 * alpha) + ')');
+                ctx.fillStyle = interior;
+                ctx.fill();
+            }
+
+            ctx.beginPath();
+            traceBoardShape(1);
+            ctx.strokeStyle = frameOnly ? 'rgba(242, 239, 221,' + (0.18 * alpha) + ')' : 'rgba(242, 239, 221,' + (0.1 * alpha) + ')';
+            ctx.lineWidth = frameOnly ? Math.max(1.2, marbleRadius * 0.08) : Math.max(1.4, marbleRadius * 0.12);
+            ctx.stroke();
+            ctx.restore();
         }
 
         function drawPing(p, dt) {
@@ -546,12 +649,8 @@
         }
 
         function updateCoverage() {
-            var filled = slots.filter(function (slot) {
-                return slot.filled;
-            }).length;
-            var total = slots.filter(function (slot) {
-                return slot.visible;
-            }).length;
+            var filled = countFilledSlots();
+            var total = countVisibleSlots();
             var overflow = overflowMarbles.filter(function (m) {
                 return m.settled;
             }).length;
@@ -576,11 +675,9 @@
         function renderPhaseControls(phaseIdx) {
             var p = PHASES[phaseIdx];
             controlsEl.innerHTML = '';
-            
+
             var wrap = document.createElement('div');
             wrap.className = 'framework-playground__controls-inner';
-            wrap.style.display = 'grid';
-            wrap.style.gap = '0.75rem';
 
             if (p.name === 'scaffold') {
                 var shapeRow = document.createElement('div');
@@ -629,18 +726,48 @@
                 var densityRow = document.createElement('div');
                 densityRow.style.display = 'grid';
                 densityRow.style.gap = '0.35rem';
-                densityRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">DENSITY: ' + boardDensity.toFixed(1) + '</label>';
+                densityRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">FRAME: ' + SHAPES[boardShape].toUpperCase() + '</label>';
+                var frameNote = document.createElement('div');
+                frameNote.className = 'framework-playground__side-copy';
+                frameNote.textContent = 'Lock the boundary first. Groove count belongs to Workflow.';
+                densityRow.appendChild(frameNote);
+                wrap.appendChild(densityRow);
+
+                var acceptBtn = document.createElement('button');
+                acceptBtn.className = 'framework-playground__action-btn';
+                acceptBtn.textContent = 'ACCEPT FRAME';
+                acceptBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(acceptBtn);
+            } else if (p.name === 'init') {
+                var initBtn = document.createElement('button');
+                initBtn.className = 'framework-playground__action-btn';
+                initBtn.textContent = 'BOOTSTRAP CONTEXT';
+                initBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(initBtn);
+            } else if (p.name === 'research') {
+                var researchBtn = document.createElement('button');
+                researchBtn.className = 'framework-playground__action-btn';
+                researchBtn.textContent = 'RUN RESEARCH';
+                researchBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(researchBtn);
+            } else if (p.name === 'workflow') {
+                var densityRow = document.createElement('div');
+                densityRow.style.display = 'grid';
+                densityRow.style.gap = '0.35rem';
+                densityRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">DENSITY: ' + boardDensity.toFixed(1) + ' · GROOVES: ' + slots.length + '</label>';
                 var densitySlider = document.createElement('input');
                 densitySlider.type = 'range';
                 densitySlider.min = '0.5';
                 densitySlider.max = '2.0';
                 densitySlider.step = '0.1';
                 densitySlider.value = boardDensity;
-                densitySlider.style.setProperty('--range-pct', ((boardDensity - 0.5) / 1.5 * 100) + '%');
+                setRangePct(densitySlider, (boardDensity - 0.5) / 1.5 * 100);
                 densitySlider.oninput = function() {
                     boardDensity = parseFloat(this.value);
-                    this.style.setProperty('--range-pct', ((boardDensity - 0.5) / 1.5 * 100) + '%');
+                    setRangePct(this, (boardDensity - 0.5) / 1.5 * 100);
                     buildSlots();
+                    grooveRevealProgress = 1;
+                    syncSlotVisibility();
                     render();
                     renderPhaseControls(phaseIdx);
                 };
@@ -649,7 +776,7 @@
 
                 var acceptBtn = document.createElement('button');
                 acceptBtn.className = 'framework-playground__action-btn';
-                acceptBtn.textContent = 'ACCEPT GEOMETRY';
+                acceptBtn.textContent = 'LOCK GROOVES';
                 acceptBtn.onclick = function() { showPhase(phaseIdx + 1); };
                 wrap.appendChild(acceptBtn);
             } else if (p.name === 'agents') {
@@ -662,10 +789,10 @@
                 agentSlider.min = '1';
                 agentSlider.max = '10';
                 agentSlider.value = agentBatchSize;
-                agentSlider.style.setProperty('--range-pct', ((agentBatchSize - 1) / 9 * 100) + '%');
+                setRangePct(agentSlider, (agentBatchSize - 1) / 9 * 100);
                 agentSlider.oninput = function() {
                     agentBatchSize = parseInt(this.value);
-                    this.style.setProperty('--range-pct', ((agentBatchSize - 1) / 9 * 100) + '%');
+                    setRangePct(this, (agentBatchSize - 1) / 9 * 100);
                     renderPhaseControls(phaseIdx);
                 };
                 agentBatchRow.appendChild(agentSlider);
@@ -674,38 +801,42 @@
                 var spawnBtn = document.createElement('button');
                 spawnBtn.className = 'framework-playground__action-btn';
                 spawnBtn.textContent = 'SPAWN AGENTS';
-                spawnBtn.onclick = function() {
-                    var empty = slots.filter(function (s) { return s.visible && !s.filled; });
-                    for (var i = 0; i < Math.min(agentBatchSize, empty.length); i++) {
-                        var idx = Math.floor(Math.random() * empty.length);
-                        marbles.push(spawnMarble(empty[idx], 0.1, 'ocean'));
-                        empty.splice(idx, 1);
-                    }
-                    startMotionLoop();
-                };
+                spawnBtn.onclick = runAgentSpawn;
                 wrap.appendChild(spawnBtn);
 
                 var nextBtn = document.createElement('button');
-                nextBtn.className = 'framework-playground__action-btn';
-                nextBtn.style.background = 'rgba(163, 184, 199, 0.12)';
+                nextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 nextBtn.textContent = 'PROCEED TO MARBLES';
                 nextBtn.onclick = function() { showPhase(phaseIdx + 1); };
                 wrap.appendChild(nextBtn);
+            } else if (p.name === 'review') {
+                var reviewBtn = document.createElement('button');
+                reviewBtn.className = 'framework-playground__action-btn';
+                reviewBtn.textContent = 'RUN REVIEW';
+                reviewBtn.onclick = runReviewPass;
+                wrap.appendChild(reviewBtn);
+
+                var reviewNextBtn = document.createElement('button');
+                reviewNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                reviewNextBtn.textContent = 'PROCEED TO FOLLOWUP';
+                reviewNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(reviewNextBtn);
             } else if (p.name === 'marbles') {
                 var batchRow = document.createElement('div');
                 batchRow.style.display = 'grid';
                 batchRow.style.gap = '0.35rem';
-                batchRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">BATCH SIZE: ' + marbleBatchSize + '</label>';
+                batchRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">--COUNT: ' + marbleRunCount + '</label>';
                 var batchSlider = document.createElement('input');
                 batchSlider.type = 'range';
                 batchSlider.min = '1';
-                batchSlider.max = '30';
-                batchSlider.value = marbleBatchSize;
-                batchSlider.style.setProperty('--range-pct', ((marbleBatchSize - 1) / 29 * 100) + '%');
+                batchSlider.max = '8';
+                batchSlider.value = marbleRunCount;
+                setRangePct(batchSlider, (marbleRunCount - 1) / 7 * 100);
                 batchSlider.oninput = function() {
-                    marbleBatchSize = parseInt(this.value);
-                    this.style.setProperty('--range-pct', ((marbleBatchSize - 1) / 29 * 100) + '%');
+                    marbleRunCount = parseInt(this.value);
+                    setRangePct(this, (marbleRunCount - 1) / 7 * 100);
                     renderPhaseControls(phaseIdx);
+                    commandEl.textContent = currentPhaseCommand();
                 };
                 batchRow.appendChild(batchSlider);
                 wrap.appendChild(batchRow);
@@ -720,10 +851,10 @@
                 powerSlider.max = '3.0';
                 powerSlider.step = '0.1';
                 powerSlider.value = marblePower;
-                powerSlider.style.setProperty('--range-pct', ((marblePower - 0.5) / 2.5 * 100) + '%');
+                setRangePct(powerSlider, (marblePower - 0.5) / 2.5 * 100);
                 powerSlider.oninput = function() {
                     marblePower = parseFloat(this.value);
-                    this.style.setProperty('--range-pct', ((marblePower - 0.5) / 2.5 * 100) + '%');
+                    setRangePct(this, (marblePower - 0.5) / 2.5 * 100);
                     renderPhaseControls(phaseIdx);
                 };
                 powerRow.appendChild(powerSlider);
@@ -731,16 +862,52 @@
 
                 var throwBtn = document.createElement('button');
                 throwBtn.className = 'framework-playground__action-btn';
-                throwBtn.textContent = 'THROW BATCH';
-                throwBtn.onclick = function() { throwManualBatch(); };
+                throwBtn.textContent = 'RUN MARBLES';
+                throwBtn.dataset.frameworkAction = 'run-marbles';
+                throwBtn.onclick = runMarblesSequence;
                 wrap.appendChild(throwBtn);
 
                 var nextBtn = document.createElement('button');
-                nextBtn.className = 'framework-playground__action-btn';
-                nextBtn.style.background = 'rgba(163, 184, 199, 0.12)';
-                nextBtn.textContent = 'PROCEED TO OVERFLOW';
+                nextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                nextBtn.textContent = 'PROCEED TO REVIEW';
                 nextBtn.onclick = function() { showPhase(phaseIdx + 1); };
                 wrap.appendChild(nextBtn);
+            } else if (p.name === 'followup') {
+                var followBtn = document.createElement('button');
+                followBtn.className = 'framework-playground__action-btn';
+                followBtn.textContent = 'RUN FOLLOWUP';
+                followBtn.onclick = rerunCurrentPhase;
+                wrap.appendChild(followBtn);
+
+                var followNextBtn = document.createElement('button');
+                followNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                followNextBtn.textContent = 'PROCEED TO PRUNE';
+                followNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(followNextBtn);
+            } else if (p.name === 'prune') {
+                var pruneBtn = document.createElement('button');
+                pruneBtn.className = 'framework-playground__action-btn';
+                pruneBtn.textContent = 'PRUNE WEAK FITS';
+                pruneBtn.onclick = rerunCurrentPhase;
+                wrap.appendChild(pruneBtn);
+
+                var pruneNextBtn = document.createElement('button');
+                pruneNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                pruneNextBtn.textContent = 'PROCEED TO DOU';
+                pruneNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(pruneNextBtn);
+            } else if (p.name === 'dou') {
+                var douBtn = document.createElement('button');
+                douBtn.className = 'framework-playground__action-btn';
+                douBtn.textContent = 'SURFACE DOU';
+                douBtn.onclick = rerunCurrentPhase;
+                wrap.appendChild(douBtn);
+
+                var douNextBtn = document.createElement('button');
+                douNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                douNextBtn.textContent = 'PROCEED TO DECORATE';
+                douNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(douNextBtn);
             } else if (p.name === 'hydrate') {
                 var hydroBatchRow = document.createElement('div');
                 hydroBatchRow.style.display = 'grid';
@@ -749,9 +916,9 @@
                 var hydroSlider = document.createElement('input');
                 hydroSlider.type = 'range'; hydroSlider.min = '1'; hydroSlider.max = '10';
                 hydroSlider.value = hydrateBatchSize;
-                hydroSlider.style.setProperty('--range-pct', ((hydrateBatchSize - 1) / 9 * 100) + '%');
+                setRangePct(hydroSlider, (hydrateBatchSize - 1) / 9 * 100);
                 hydroSlider.oninput = function() { 
-                    this.style.setProperty('--range-pct', ((this.value - 1) / 9 * 100) + '%');
+                    setRangePct(this, (this.value - 1) / 9 * 100);
                     hydrateBatchSize = parseInt(this.value); 
                     renderPhaseControls(phaseIdx); 
                 };
@@ -761,19 +928,12 @@
                 var fillBtn = document.createElement('button');
                 fillBtn.className = 'framework-playground__action-btn';
                 fillBtn.textContent = 'FILL GAPS';
-                fillBtn.onclick = function() {
-                    var gaps = slots.filter(function (s) { return s.visible && !s.filled; });
-                    for (var i = 0; i < Math.min(hydrateBatchSize, gaps.length); i++) {
-                        marbles.push(spawnMarble(gaps[i], 0.05, 'forest'));
-                    }
-                    startMotionLoop();
-                };
+                fillBtn.onclick = runHydratePass;
                 wrap.appendChild(fillBtn);
 
                 var nextBtn = document.createElement('button');
-                nextBtn.className = 'framework-playground__action-btn';
-                nextBtn.style.background = 'rgba(163, 184, 199, 0.12)';
-                nextBtn.textContent = 'PROCEED TO DECORATE';
+                nextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                nextBtn.textContent = 'PROCEED TO RELEASE';
                 nextBtn.onclick = function() { showPhase(phaseIdx + 1); };
                 wrap.appendChild(nextBtn);
             } else if (p.name === 'decorate') {
@@ -784,10 +944,10 @@
                 var polishSlider = document.createElement('input');
                 polishSlider.type = 'range'; polishSlider.min = '0'; polishSlider.max = '1'; polishSlider.step = '0.01';
                 polishSlider.value = polishIntensity;
-                polishSlider.style.setProperty('--range-pct', (polishIntensity * 100) + '%');
+                setRangePct(polishSlider, polishIntensity * 100);
                 polishSlider.oninput = function() { 
                     polishIntensity = parseFloat(this.value); 
-                    this.style.setProperty('--range-pct', (polishIntensity * 100) + '%');
+                    setRangePct(this, polishIntensity * 100);
                     marbles.forEach(function(m) { if(m.settled) m.saturation = 0.6 + polishIntensity * 0.4; });
                     render();
                     renderPhaseControls(phaseIdx); 
@@ -798,15 +958,21 @@
                 var applyBtn = document.createElement('button');
                 applyBtn.className = 'framework-playground__action-btn';
                 applyBtn.textContent = 'APPLY FINISH';
-                applyBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                applyBtn.onclick = rerunCurrentPhase;
                 wrap.appendChild(applyBtn);
-            } else if (p.name === 'ship') {
+
+                var decorateNextBtn = document.createElement('button');
+                decorateNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
+                decorateNextBtn.textContent = 'PROCEED TO HYDRATE';
+                decorateNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                wrap.appendChild(decorateNextBtn);
+            } else if (p.name === 'release') {
                 var launchBtn = document.createElement('button');
                 launchBtn.className = 'framework-playground__action-btn';
                 launchBtn.style.borderColor = 'var(--patina)';
                 launchBtn.style.color = 'var(--patina)';
                 launchBtn.style.background = 'rgba(90, 163, 163, 0.12)';
-                launchBtn.textContent = 'LAUNCH PRODUCT';
+                launchBtn.textContent = 'RELEASE LOOP';
                 launchBtn.onclick = function() { 
                     shipGlow = 1.0;
                     startMotionLoop();
@@ -814,7 +980,6 @@
                 };
                 wrap.appendChild(launchBtn);
             } else {
-
                 var nextBtn = document.createElement('button');
                 nextBtn.className = 'framework-playground__action-btn';
                 nextBtn.textContent = phaseIdx < PHASES.length - 1 ? 'PROCEED TO ' + PHASES[phaseIdx + 1].label.toUpperCase() : 'RESTART LOOP';
@@ -832,7 +997,7 @@
             marblesEl.textContent = marbles.length + overflowMarbles.length;
             eyebrowEl.textContent = phaseDef.eyebrow;
             pressEl.textContent = phaseDef.title + '.';
-            commandEl.textContent = phaseCommand(phaseDef);
+            commandEl.textContent = currentPhaseCommand();
             hintEl.textContent = phaseHint(phaseDef);
             coverageEl.classList.toggle('is-hot', coveragePct > 100);
             commandEl.classList.toggle('is-live', phaseDef.name === 'marbles' || phaseDef.name === 'agents' || phaseDef.name === 'hydrate');
@@ -843,32 +1008,112 @@
         function triggerPhaseAction() {
             var p = PHASES[phase];
             if (p.name === 'agents') {
-                var empty = slots.filter(function (s) { return s.visible && !s.filled; });
-                if (empty.length > 0) {
-                    for (var i = 0; i < Math.min(agentBatchSize, empty.length); i++) {
-                        var idx = Math.floor(Math.random() * empty.length);
-                        marbles.push(spawnMarble(empty[idx], 0.1, 'ocean'));
-                        empty.splice(idx, 1);
-                    }
-                    startMotionLoop();
-                }
+                runAgentSpawn();
+            } else if (p.name === 'review') {
+                runReviewPass();
             } else if (p.name === 'marbles') {
-                throwManualBatch();
+                runMarblesSequence();
             } else if (p.name === 'hydrate') {
-                var gaps = slots.filter(function (s) { return s.visible && !s.filled; });
-                if (gaps.length > 0) {
-                    for (var i = 0; i < Math.min(hydrateBatchSize, gaps.length); i++) {
-                        marbles.push(spawnMarble(gaps[i], 0.05, 'forest'));
-                    }
-                    startMotionLoop();
-                }
-            } else if (p.name === 'scaffold' || p.name === 'workflow' || p.name === 'decorate') {
+                runHydratePass();
+            } else if (p.name === 'followup' || p.name === 'prune' || p.name === 'dou' || p.name === 'decorate') {
+                rerunCurrentPhase();
+            } else if (p.name === 'scaffold' || p.name === 'init' || p.name === 'research' || p.name === 'workflow') {
                 showPhase(phase + 1);
-            } else if (p.name === 'ship') {
+            } else if (p.name === 'release') {
                 shipGlow = 1.0;
                 startMotionLoop();
                 setTimeout(function() { showPhase(0, true); }, 2000);
             }
+        }
+
+        function rerunCurrentPhase() {
+            phaseTime = 0;
+            throwTimer = 0;
+            errorFlash = 0;
+            if (PHASES[phase].name === 'release') {
+                shipGlow = 1;
+            }
+            render();
+            updateUi(false);
+            startMotionLoop();
+        }
+
+        function runAgentSpawn() {
+            var empty = slots.filter(function (s) {
+                return s.visible && !s.filled;
+            });
+            for (var i = 0; i < Math.min(agentBatchSize, empty.length); i++) {
+                var idx = Math.floor(Math.random() * empty.length);
+                marbles.push(spawnMarble(empty[idx], 0.1, 'ocean'));
+                empty.splice(idx, 1);
+            }
+            render();
+            updateUi(false);
+            startMotionLoop();
+        }
+
+        function runReviewPass() {
+            var candidates = slots.filter(function (s) {
+                return s.visible && !s.filled;
+            });
+            var reviewThrows = Math.min(Math.max(2, agentBatchSize), candidates.length);
+            for (var i = 0; i < reviewThrows; i++) {
+                var idx = Math.floor(Math.random() * candidates.length);
+                marbles.push(spawnMarble(candidates[idx], 0.32, 'smoke'));
+                candidates.splice(idx, 1);
+            }
+            overflowMarbles.push(spawnOverflow());
+            if (Math.random() > 0.45) {
+                overflowMarbles.push(spawnOverflow());
+            }
+            render();
+            updateUi(false);
+            startMotionLoop();
+        }
+
+        function runHydratePass() {
+            var gaps = slots.filter(function (s) {
+                return s.visible && !s.filled;
+            });
+            for (var i = 0; i < Math.min(hydrateBatchSize, gaps.length); i++) {
+                marbles.push(spawnMarble(gaps[i], 0.05, 'forest'));
+            }
+            render();
+            updateUi(false);
+            startMotionLoop();
+        }
+
+        function spawnMarbleWave() {
+            var empty = slots.filter(function (slot) {
+                return slot.visible && !slot.filled;
+            });
+            var visible = countVisibleSlots();
+            var filled = countFilledSlots();
+            var fillRatio = visible > 0 ? filled / visible : 0;
+            var batchSize = marbleBatchSize;
+
+            for (var i = 0; i < batchSize; i++) {
+                if (empty.length > 0) {
+                    var idx = Math.floor(Math.random() * empty.length);
+                    marbles.push(spawnMarble(empty[idx], 0.42 + fillRatio * 0.4));
+                    empty.splice(idx, 1);
+                } else {
+                    overflowMarbles.push(spawnOverflow());
+                }
+            }
+
+            if (fillRatio > 0.8) {
+                overflowMarbles.push(spawnOverflow());
+            }
+        }
+
+        function runMarblesSequence() {
+            if (PHASES[phase].name !== 'marbles') return;
+            marbleRunRemaining = marbleRunCount;
+            throwTimer = 0;
+            render();
+            updateUi(false);
+            startMotionLoop();
         }
 
         function resetCycle(hardReset) {
@@ -876,6 +1121,7 @@
             throwTimer = 0;
             errorFlash = 0;
             shipGlow = 0;
+            marbleRunRemaining = 0;
             pings = [];
             if (hardReset) {
                 grooveRevealProgress = 0;
@@ -899,15 +1145,13 @@
         function updatePhase(dt, isSimulating) {
             var p = PHASES[phase];
             phaseTime += dt;
-            if (isSimulating) {
-                throwTimer -= dt;
-            }
+            throwTimer -= dt;
             syncSlotVisibility();
 
             switch (p.name) {
             case 'scaffold':
                 boardAlpha = Math.min(1, phaseTime / 400);
-                grooveRevealProgress = 1; // Always show grooves in scaffold for configuration feedback
+                grooveRevealProgress = 0;
                 if (phaseTime < 200) {
                     shakeX = (Math.random() - 0.5) * 4 * (1 - phaseTime / 200);
                     shakeY = (Math.random() - 0.5) * 4 * (1 - phaseTime / 200);
@@ -916,8 +1160,17 @@
                     shakeY = 0;
                 }
                 break;
+            case 'init':
+                boardAlpha = Math.max(boardAlpha, 1);
+                grooveRevealProgress = Math.min(0.18, phaseTime / p.duration * 0.18);
+                break;
+            case 'research':
+                boardAlpha = Math.max(boardAlpha, 1);
+                grooveRevealProgress = Math.min(0.42, phaseTime / p.duration * 0.42);
+                break;
             case 'workflow':
-                grooveRevealProgress = Math.min(1, phaseTime / (p.duration * 0.85));
+                boardAlpha = Math.max(boardAlpha, 1);
+                grooveRevealProgress = Math.min(1, phaseTime / (p.duration * 0.65));
                 break;
             case 'agents':
                 if (isSimulating && throwTimer <= 0) {
@@ -931,20 +1184,13 @@
                 }
                 break;
             case 'marbles':
-                var progress = phaseTime / p.duration;
-                if (isSimulating && throwTimer <= 0) {
-                    var empty = slots.filter(function (s) {
-                        return !s.filled && s.visible;
-                    });
-                    for (var i = 0; i < Math.min(marbleBatchSize, empty.length); i++) {
-                        var idx = Math.floor(Math.random() * empty.length);
-                        marbles.push(spawnMarble(empty[idx], 0.3 + progress * 0.5));
-                        empty.splice(idx, 1);
-                    }
-                    throwTimer = 300 - progress * 150;
+                if (!isSimulating && marbleRunRemaining > 0 && throwTimer <= 0) {
+                    spawnMarbleWave();
+                    marbleRunRemaining--;
+                    throwTimer = Math.max(260, 720 - marblePower * 140);
                 }
                 break;
-            case 'overflow':
+            case 'review':
                 if (isSimulating && throwTimer <= 0) {
                     var overflowSlots = slots.filter(function (s) {
                         return !s.filled && s.visible;
@@ -958,7 +1204,7 @@
                     throwTimer = 200;
                 }
                 break;
-            case 'error':
+            case 'dou':
                 errorFlash = Math.sin(phaseTime * 0.015) * 0.5 + 0.5;
                 break;
             case 'followup':
@@ -1029,7 +1275,7 @@
                     if (m.settled) m.saturation = Math.min(1, 0.6 + polishIntensity * 0.4 + phaseTime * 0.0001);
                 });
                 break;
-            case 'ship':
+            case 'release':
                 if (shipGlow > 0) {
                     shipGlow = Math.max(0, shipGlow - 0.015);
                 }
@@ -1051,6 +1297,8 @@
             ctx.clearRect(0, 0, width, height);
             ctx.save();
             ctx.translate(shakeX, shakeY);
+
+            drawBoardFrame(Math.max(boardAlpha, phase === 0 ? 0.88 : boardAlpha));
 
             if (boardAlpha > 0) {
                 // High coverage glow
@@ -1162,7 +1410,8 @@
         function hasMovingBodies() {
             var p = PHASES[phase];
             if (phaseTime < p.duration) return true;
-            if (p.name === 'error') return true;
+            if (p.name === 'dou') return true;
+            if (p.name === 'marbles' && marbleRunRemaining > 0) return true;
             if (pings.length > 0) return true;
             var all = marbles.concat(overflowMarbles);
             for (var i = 0; i < all.length; i++) {
@@ -1210,41 +1459,6 @@
             frameHandle = window.requestAnimationFrame(tick);
         }
 
-        function throwManualBatch() {
-            if (PHASES[phase].name !== 'marbles') return;
-
-            var empty = slots.filter(function (slot) {
-                return slot.visible && !slot.filled;
-            });
-            var visible = slots.filter(function (slot) {
-                return slot.visible;
-            }).length;
-            var filled = slots.filter(function (slot) {
-                return slot.filled;
-            }).length;
-            var fillRatio = visible > 0 ? filled / visible : 0;
-            var batchSize = marbleBatchSize;
-
-            for (var i = 0; i < batchSize; i++) {
-                if (empty.length > 0) {
-                    var idx = Math.floor(Math.random() * empty.length);
-                    marbles.push(spawnMarble(empty[idx], 0.42 + fillRatio * 0.4));
-                    empty.splice(idx, 1);
-                } else {
-                    overflowMarbles.push(spawnOverflow());
-                }
-            }
-
-            if (fillRatio > 0.8) {
-                overflowMarbles.push(spawnOverflow());
-            }
-
-            updateCoverage();
-            render();
-            updateUi(false);
-            startMotionLoop();
-        }
-
         function showPhase(target, hardReset) {
             target = Math.max(0, Math.min(PHASES.length - 1, target));
             resetCycle(hardReset);
@@ -1270,14 +1484,15 @@
             return JSON.stringify({
                 phase: PHASES[phase].name,
                 phaseIndex: phase,
-                command: phaseCommand(PHASES[phase]),
+                command: currentPhaseCommand(),
                 converge: coveragePct,
                 marbles: marbles.length,
                 overflow: overflowMarbles.length,
+                marbleRunCount: marbleRunCount,
+                marbleRunsRemaining: marbleRunRemaining,
                 slots: slots.length,
-                filled: slots.filter(function (slot) {
-                    return slot.filled;
-                }).length,
+                visibleSlots: countVisibleSlots(),
+                filled: countFilledSlots(),
                 shape: SHAPES[boardShape],
                 density: boardDensity
             }, null, 2);
@@ -1299,6 +1514,7 @@
             centerY = height / 2;
             boardRadius = Math.min(width, height) * (layout === 'standalone' ? 0.43 : 0.38);
             marbleRadius = Math.max(6, boardRadius * (layout === 'standalone' ? 0.056 : 0.065));
+            buildSlots();
             var currentPhase = phase;
             showPhase(currentPhase);
         }
@@ -1307,14 +1523,11 @@
             var button = document.createElement('button');
             button.className = 'framework-playground__chip';
             button.type = 'button';
+            button.dataset.frameworkPhase = phaseDef.name;
             button.dataset.frameworkTooltip = phaseDef.title + ' — ' + phaseDef.description;
             button.setAttribute('aria-label', phaseDef.label + '. ' + phaseDef.title + '. ' + phaseDef.description);
             button.innerHTML = '<span class="framework-playground__chip-label">' + phaseDef.label + '</span>';
             button.addEventListener('click', function () {
-                if (index === phase && phaseDef.name === 'marbles') {
-                    throwManualBatch();
-                    return;
-                }
                 showPhase(index);
             });
             rail.appendChild(button);
@@ -1322,10 +1535,6 @@
         });
 
         window.addEventListener('resize', resize);
-        stage.addEventListener('click', function(e) {
-            e.preventDefault();
-            triggerPhaseAction();
-        });
         phase = resolvePhaseIndex(startPhaseName);
         resize();
         updateUi(true);
