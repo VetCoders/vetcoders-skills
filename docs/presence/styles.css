@@ -81,7 +81,7 @@ body {
     font-family: var(--font-body);
     background-color: var(--stone-deep);
     background-image:
-        linear-gradient(180deg, rgba(7, 8, 10, 0.76) 0%, rgba(7, 8, 10, 0.88) 100%),
+        linear-gradient(180deg, rgba(7, 8, 10, 0.38) 0%, rgba(7, 8, 10, 0.52) 100%),
         url('background-stone.webp');
     background-position: center top;
     background-size: cover;
@@ -92,25 +92,26 @@ body {
     overflow-x: hidden;
 }
 
-body::before {
+body:not(.framework-page)::before {
     content: "";
     position: fixed;
     inset: 0;
     background:
-        radial-gradient(circle at 18% 18%, rgba(184, 115, 51, 0.08), transparent 32%),
-        radial-gradient(circle at 82% 12%, rgba(163, 184, 199, 0.06), transparent 28%),
-        radial-gradient(circle at 56% 76%, rgba(90, 138, 122, 0.05), transparent 34%);
-    opacity: 0.7;
-    mix-blend-mode: overlay;
+        linear-gradient(180deg, rgba(232, 223, 201, 0.06) 0%, rgba(232, 223, 201, 0) 24%),
+        radial-gradient(circle at 18% 18%, rgba(184, 115, 51, 0.1), transparent 32%),
+        radial-gradient(circle at 82% 12%, rgba(212, 198, 171, 0.08), transparent 26%),
+        radial-gradient(circle at 56% 76%, rgba(90, 138, 122, 0.04), transparent 34%);
+    opacity: 0.68;
+    mix-blend-mode: soft-light;
     pointer-events: none;
     z-index: -1;
 }
 
-body::after {
+body:not(.framework-page)::after {
     content: "";
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at 50% 30%, transparent 18%, rgba(9, 10, 12, 0.9) 100%);
+    background: radial-gradient(circle at 50% 30%, transparent 24%, rgba(9, 10, 12, 0.52) 100%);
     pointer-events: none;
     z-index: -1;
 }
@@ -372,7 +373,7 @@ h1, h2, h3, h4, h5, h6 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-lg);
-    align-items: center;
+    align-items: stretch;
     height: var(--view-inner);
     padding: calc(var(--view-offset) + var(--space-lg)) 0 var(--space-lg);
     scroll-snap-align: start;
@@ -391,6 +392,8 @@ h1, h2, h3, h4, h5, h6 {
     backdrop-filter: blur(14px) saturate(112%);
     -webkit-backdrop-filter: blur(14px) saturate(112%);
     box-shadow: inset 0 0 60px rgba(0,0,0,0.5), var(--shadow);
+    transform-origin: left center;
+    transform: perspective(1120px) rotateY(-14deg) scaleX(1.04);
 }
 
 .hero-canvas canvas {
@@ -425,7 +428,15 @@ h1, h2, h3, h4, h5, h6 {
 .hero-copy {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    align-self: start;
+    padding-top: clamp(3.25rem, 10.5vh, 6.75rem);
+}
+
+.hero-canvas {
+    align-self: center;
+    justify-self: end;
+    width: min(100%, 34rem);
 }
 
 .manifesto-title {
@@ -523,6 +534,8 @@ h1, h2, h3, h4, h5, h6 {
     }
     .hero-copy {
         text-align: center;
+        align-self: auto;
+        padding-top: 0;
     }
     .manifesto-title__rule {
         margin-left: auto;
@@ -542,6 +555,10 @@ h1, h2, h3, h4, h5, h6 {
         max-height: 360px;
         aspect-ratio: auto;
         height: 320px;
+        width: 100%;
+        justify-self: stretch;
+        transform: none;
+        transform-origin: center;
     }
 }
 
@@ -881,7 +898,7 @@ section {
 
 /* PIPELINE */
 .pipeline-section {
-    background: var(--stone-deep)
+    background: linear-gradient(180deg, rgba(10, 11, 13, 0.16), rgba(10, 11, 13, 0.26))
 }
 
 .mmd-shell {
@@ -1064,7 +1081,7 @@ section {
 
 /* DIFFUSION */
 .diffusion-section {
-    background: linear-gradient(180deg, var(--stone-deep) 0%, var(--stone-mid) 100%)
+    background: linear-gradient(180deg, rgba(10, 11, 13, 0.12) 0%, rgba(10, 11, 13, 0.24) 100%)
 }
 
 .diffusion-visual {
@@ -1291,7 +1308,7 @@ section {
 
 /* MANIFESTO */
 .manifesto-section {
-    background: var(--stone-mid)
+    background: linear-gradient(180deg, rgba(10, 11, 13, 0.14), rgba(10, 11, 13, 0.24))
 }
 
 .manifesto-block {
@@ -1351,7 +1368,7 @@ section {
 
 /* INSTALL */
 .install-section {
-    background: var(--stone-deep)
+    background: linear-gradient(180deg, rgba(10, 11, 13, 0.16), rgba(10, 11, 13, 0.28))
 }
 
 .install-flow {
@@ -1771,7 +1788,7 @@ footer {
 
 /* SCIENCE VIEW */
 .science-view {
-    background: linear-gradient(180deg, rgba(18, 20, 24, .94), var(--stone-deep));
+    background: linear-gradient(180deg, rgba(10, 11, 13, 0.16), rgba(10, 11, 13, 0.28));
 }
 
 .science-view .container {
@@ -1811,7 +1828,7 @@ footer {
 
 /* DA SIE VIEW */
 .dasie-view {
-    background: var(--stone-deep);
+    background: linear-gradient(180deg, rgba(10, 11, 13, 0.16), rgba(10, 11, 13, 0.28));
 }
 
 .dasie-view .container {

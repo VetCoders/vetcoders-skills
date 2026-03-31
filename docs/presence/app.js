@@ -231,16 +231,17 @@ var MarbleFactory = (function () {
 
         // Glass internal refraction — subtle secondary highlight at bottom
         var rfl = g.createRadialGradient(cx + r * 0.2, cy + r * 0.35, r * 0.02, cx + r * 0.15, cy + r * 0.3, r * 0.45);
-        rfl.addColorStop(0, 'rgba(255,255,255,0.18)');
+        rfl.addColorStop(0, 'rgba(255,255,255,0.26)');
         rfl.addColorStop(1, 'rgba(255,255,255,0)');
         g.fillStyle = rfl;
         g.fillRect(0, 0, s, s);
 
         // Top specular highlight — the signature glass shine
         var hl = g.createRadialGradient(cx - r * 0.28, cy - r * 0.32, r * 0.02, cx - r * 0.15, cy - r * 0.2, r * 0.5);
-        hl.addColorStop(0, 'rgba(255,255,255,0.95)');
-        hl.addColorStop(0.15, 'rgba(255,255,255,0.55)');
-        hl.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+        hl.addColorStop(0, 'rgba(255,255,255,0.98)');
+        hl.addColorStop(0.12, 'rgba(255,255,255,0.72)');
+        hl.addColorStop(0.34, 'rgba(255,255,255,0.24)');
+        hl.addColorStop(0.62, 'rgba(255,255,255,0.08)');
         hl.addColorStop(1, 'rgba(255,255,255,0)');
         g.fillStyle = hl;
         g.fillRect(0, 0, s, s);

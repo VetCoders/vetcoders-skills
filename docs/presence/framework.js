@@ -231,9 +231,10 @@
         g.restore();
 
         var hl = g.createRadialGradient(cx - r * 0.28, cy - r * 0.32, r * 0.02, cx - r * 0.15, cy - r * 0.2, r * 0.5);
-        hl.addColorStop(0, 'rgba(255,255,255,0.9)');
-        hl.addColorStop(0.15, 'rgba(255,255,255,0.5)');
-        hl.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+        hl.addColorStop(0, 'rgba(255,255,255,0.98)');
+        hl.addColorStop(0.12, 'rgba(255,255,255,0.7)');
+        hl.addColorStop(0.34, 'rgba(255,255,255,0.22)');
+        hl.addColorStop(0.62, 'rgba(255,255,255,0.08)');
         hl.addColorStop(1, 'rgba(255,255,255,0)');
         g.fillStyle = hl;
         g.fillRect(0, 0, s, s);
