@@ -1,6 +1,153 @@
 (function () {
     var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var DPR_CAP = prefersReducedMotion ? 1.25 : 2;
+    var frameworkLocale = /^pl\b/i.test(document.documentElement.lang || '') ? 'pl' : 'en';
+    var FRAMEWORK_I18N = {
+        en: {
+            overlayPhase: 'Phase',
+            overlayConverge: 'Converge',
+            overlayMarbles: 'Marbles',
+            showcaseKicker: 'Framework Playground',
+            showcaseHeading: 'Command the convergence board',
+            showcaseLead: 'Board-first teaching surface. Trace the frame, tune the grooves, invite specialists, then let Marbles run the convergence batches.',
+            defaultEyebrow: 'Phase 0 · Setup',
+            defaultPressCopy: 'Define the board geometry.',
+            operators: 'Operators',
+            choosePhase: 'Choose Phase',
+            alerts: {
+                dou: { title: 'DoU', detail: 'Blockers surfaced' },
+                review: { title: 'Review', detail: 'Weak fits exposed' }
+            },
+            hints: {
+                workflow: 'Tune groove density until the board exposes the right amount of working capacity.',
+                init: 'Bootstrap context so the first true grooves are cut from history instead of guessed from nothing.',
+                research: 'Probe the lane choices before committing force. Research narrows the search space and marks the promising paths.',
+                marbles: 'Set the marbles count and force, then let the board run the convergence sequence by itself.',
+                agents: 'Select specialist count and spawn them into the grooves.',
+                scaffold: 'Choose the outer frame first. Capacity comes later, once the board shape is real.',
+                review: 'Run a stress pass on the first placements before the noisy convergence loops begin.',
+                followup: 'Shake the board and see which claims of progress were never truly anchored.',
+                prune: 'Remove weak or unnecessary fits so the board can converge around the stronger core.',
+                dou: 'Flash the undone truth in red and expose what still blocks shipping.',
+                hydrate: 'Fill the remaining critical gaps with deterministic precision.',
+                decorate: 'Apply final polish pass to saturate colors and sharpen the finish.',
+                release: 'Launch the finished surface and release the loop to the market.'
+            },
+            phaseOverrides: {}
+        },
+        pl: {
+            overlayPhase: 'Faza',
+            overlayConverge: 'Domknięcie',
+            overlayMarbles: 'Marbles',
+            showcaseKicker: 'Playground frameworku',
+            showcaseHeading: 'Steruj planszą konwergencji',
+            showcaseLead: 'Plansza jako powierzchnia nauki. Wyznacz ramę, dostrój rowki, zaproś specjalistów, a potem pozwól Marbles uruchomić batchowe domykanie.',
+            defaultEyebrow: 'Faza 0 · Setup',
+            defaultPressCopy: 'Zdefiniuj geometrię planszy.',
+            operators: 'Operator',
+            choosePhase: 'Wybierz fazę',
+            alerts: {
+                dou: { title: 'DoU', detail: 'Blokery ujawnione' },
+                review: { title: 'Review', detail: 'Słabe dopasowania ujawnione' }
+            },
+            hints: {
+                workflow: 'Dostrój gęstość rowków, aż plansza pokaże właściwą pojemność roboczą.',
+                init: 'Zainicjuj kontekst, żeby pierwsze prawdziwe rowki były wycinane z historii zamiast zgadywane od zera.',
+                research: 'Przetestuj możliwe tory, zanim dołożysz siłę. Research zawęża przestrzeń szukania i zaznacza obiecujące ścieżki.',
+                marbles: 'Ustaw liczbę kulek i siłę, a potem pozwól planszy samodzielnie uruchomić sekwencję konwergencji.',
+                agents: 'Wybierz liczbę specjalistów i wpuść ich w rowki.',
+                scaffold: 'Najpierw wybierz zewnętrzną ramę. Pojemność przychodzi później, gdy kształt planszy jest już prawdziwy.',
+                review: 'Uruchom pass stresowy dla pierwszych ułożeń, zanim zaczną się głośniejsze pętle domykania.',
+                followup: 'Potrząśnij planszą i sprawdź, które deklaracje postępu nigdy nie były naprawdę osadzone.',
+                prune: 'Usuń słabe albo zbędne dopasowania, żeby plansza mogła domknąć się wokół mocniejszego rdzenia.',
+                dou: 'Pokaż na czerwono prawdę o niedomknięciu i ujawnij, co nadal blokuje release.',
+                hydrate: 'Wypełnij pozostałe krytyczne luki z deterministyczną precyzją.',
+                decorate: 'Nałóż końcowy polish pass, żeby nasycić kolory i wyostrzyć finish.',
+                release: 'Wypuść gotową powierzchnię i uwolnij pętlę na rynek.'
+            },
+            phaseOverrides: {
+                scaffold: {
+                    eyebrow: 'Faza 0 · Setup',
+                    title: 'Wyznacz zewnętrzną ramę',
+                    description: 'Najpierw wyznacz granicę. Scaffold dotyczy tylko sylwetki planszy, zanim zdecydujemy, ile rowków ma unieść.',
+                    detail: 'Szkielet układu · blokada geometrii'
+                },
+                init: {
+                    eyebrow: 'Faza 1 · Twórz',
+                    title: 'Wytraw pierwsze rowki',
+                    description: 'Init zakotwicza planszę w rzeczywistości. Historia i struktura zaczynają wycinać prawdziwe rowki, żeby późniejsza praca miała gdzie lądować.',
+                    detail: 'Ładowanie kontekstu · pierwsze rowki'
+                },
+                research: {
+                    eyebrow: 'Faza 1 · Twórz',
+                    title: 'Zmapuj wiarygodne tory',
+                    description: 'Research bada przestrzeń opcji, zanim wejdziemy w throughput. Plansza zaczyna podświetlać, które rowki mają znaczenie, które są zmyłką i gdzie dołożyć kolejne ciśnienie.',
+                    detail: 'Skan opcji · odkrywanie trasy'
+                },
+                workflow: {
+                    eyebrow: 'Faza 1 · Twórz',
+                    title: 'Ustaw gęstość rowków',
+                    description: 'Tutaj definiujemy pojemność. Workflow decyduje, ile rowków plansza wystawi, żeby dalsza praca wpadała w prawdziwy model operacyjny zamiast pustej tekstury.',
+                    detail: 'Liczba rowków · strojenie gęstości'
+                },
+                agents: {
+                    eyebrow: 'Faza 1 · Twórz',
+                    title: 'Wpuść pierwszych specjalistów',
+                    description: 'Kilka celowych kulek ląduje czysto. Wczesna praca agentów ma być precyzyjna, a nie jak chaos rozpylony po planszy.',
+                    detail: 'Niski chaos · oceaniczne kulki'
+                },
+                marbles: {
+                    eyebrow: 'Faza 2 · Domykaj',
+                    title: 'Dodaj siłę i zaakceptuj wariancję',
+                    description: 'Docierają kolejne batch’e i rośnie entropia. To uczciwy środek: throughput przyspiesza, ale rośnie też szum.',
+                    detail: 'Rzuty batchowe · rosnąca entropia'
+                },
+                review: {
+                    eyebrow: 'Faza 2 · Domykaj',
+                    title: 'Dociśnij poruszającą się planszę',
+                    description: 'Review sprawdza, czy ułożony wzór naprawdę odpowiada intencji. Słabe dopasowania, spillover i podejrzane ułożenia stają się widoczne pod presją.',
+                    detail: 'Brama jakości · wykrywanie słabych dopasowań'
+                },
+                followup: {
+                    eyebrow: 'Faza 2 · Domykaj',
+                    title: 'Strząśnij fałszywe sukcesy',
+                    description: 'Luźne kulki zaczynają odpadać. Followup to moment, w którym głośne deklaracje sukcesu zderzają się z tym, co naprawdę się trzyma.',
+                    detail: 'Grawitacyjne czyszczenie · nadmiar odpada'
+                },
+                prune: {
+                    eyebrow: 'Faza 2 · Domykaj',
+                    title: 'Przytnij do runtime’owego rdzenia',
+                    description: 'Część pozornie solidnych elementów jest usuwana celowo. Prune otwiera luki na nowo, żeby plansza mogła domknąć się wokół mocniejszego kształtu.',
+                    detail: 'Celowe luki · martwy ciężar znika'
+                },
+                dou: {
+                    eyebrow: 'Faza 3 · Audyt',
+                    title: 'Definition of Undone',
+                    description: 'Wyciągnij na czerwono prawdę. Uruchom systematyczną analizę luk na całej powierzchni produktu, żeby zobaczyć, co nadal blokuje wysyłkę.',
+                    detail: 'Plague check · audyt gotowości'
+                },
+                decorate: {
+                    eyebrow: 'Faza 3 · Wdrażaj',
+                    title: 'Zamień spójność w wykończenie',
+                    description: 'Osadzone kulki zyskują nasycenie i ostrość. Decorate nie jest przypadkową ornamentyką; to końcowy pass spójności, który sprawia, że system czuje się intencjonalny.',
+                    detail: 'Podbicie nasycenia · pass wykończenia'
+                },
+                hydrate: {
+                    eyebrow: 'Faza 3 · Wdrażaj',
+                    title: 'Wypełnij dokładnie brakujące szczeliny',
+                    description: 'Tutaj ruch zmienia ton. Pozostałe luki są domykane deterministycznie, po jednym krytycznym dla launchu otworze naraz.',
+                    detail: 'Precyzyjne wypełnienie · domknięcie pod rynek'
+                },
+                release: {
+                    eyebrow: 'Krok końcowy · Release',
+                    title: 'Wypuść kod na rynek',
+                    description: 'Plansza rozświetla się, utrzymuje wzór, a potem blednie przed kolejnym cyklem. Shipping nie jest brakiem ruchu; to domknięta pętla gotowa, by zacząć od nowa.',
+                    detail: 'Stabilna plansza · reset na kolejny cykl'
+                }
+            }
+        }
+    };
+    var FRAMEWORK_TEXT = FRAMEWORK_I18N[frameworkLocale];
 
     var PHASES = [
         {
@@ -134,6 +281,9 @@
             snapshotRatio: 0.34
         }
     ];
+    PHASES = PHASES.map(function (phaseDef) {
+        return Object.assign({}, phaseDef, FRAMEWORK_TEXT.phaseOverrides[phaseDef.name] || {});
+    });
 
     var SHAPES = ['circle', 'square', 'hexagon', 'spiral', 'waves', 'grid'];
     var PAL = {
@@ -257,43 +407,43 @@
 
     function phaseHint(phaseDef) {
         if (phaseDef.name === 'workflow') {
-            return 'Tune groove density until the board exposes the right amount of working capacity.';
+            return FRAMEWORK_TEXT.hints.workflow;
         }
         if (phaseDef.name === 'init') {
-            return 'Bootstrap context so the first true grooves are cut from history instead of guessed from nothing.';
+            return FRAMEWORK_TEXT.hints.init;
         }
         if (phaseDef.name === 'research') {
-            return 'Probe the lane choices before committing force. Research narrows the search space and marks the promising paths.';
+            return FRAMEWORK_TEXT.hints.research;
         }
         if (phaseDef.name === 'marbles') {
-            return 'Set the marbles count and force, then let the board run the convergence sequence by itself.';
+            return FRAMEWORK_TEXT.hints.marbles;
         }
         if (phaseDef.name === 'agents') {
-            return 'Select specialist count and spawn them into the grooves.';
+            return FRAMEWORK_TEXT.hints.agents;
         }
         if (phaseDef.name === 'scaffold') {
-            return 'Choose the outer frame first. Capacity comes later, once the board shape is real.';
+            return FRAMEWORK_TEXT.hints.scaffold;
         }
         if (phaseDef.name === 'review') {
-            return 'Run a stress pass on the first placements before the noisy convergence loops begin.';
+            return FRAMEWORK_TEXT.hints.review;
         }
         if (phaseDef.name === 'followup') {
-            return 'Shake the board and see which claims of progress were never truly anchored.';
+            return FRAMEWORK_TEXT.hints.followup;
         }
         if (phaseDef.name === 'prune') {
-            return 'Remove weak or unnecessary fits so the board can converge around the stronger core.';
+            return FRAMEWORK_TEXT.hints.prune;
         }
         if (phaseDef.name === 'dou') {
-            return 'Flash the undone truth in red and expose what still blocks shipping.';
+            return FRAMEWORK_TEXT.hints.dou;
         }
         if (phaseDef.name === 'hydrate') {
-            return 'Fill the remaining critical gaps with deterministic precision.';
+            return FRAMEWORK_TEXT.hints.hydrate;
         }
         if (phaseDef.name === 'decorate') {
-            return 'Apply final polish pass to saturate colors and sharpen the finish.';
+            return FRAMEWORK_TEXT.hints.decorate;
         }
         if (phaseDef.name === 'release') {
-            return 'Launch the finished surface and release the loop to the market.';
+            return FRAMEWORK_TEXT.hints.release;
         }
         return phaseDef.description;
     }
@@ -304,9 +454,9 @@
             : [
                 '  <div class="framework-playground__meta">',
                 '    <div class="framework-playground__meta-copy">',
-                '      <p class="framework-playground__kicker">Framework Playground</p>',
-                '      <h3 class="framework-playground__heading">Command the convergence board</h3>',
-                '      <p class="framework-playground__lede">Board-first teaching surface. Trace the frame, tune the grooves, invite specialists, then let Marbles run the convergence batches.</p>',
+                '      <p class="framework-playground__kicker">' + FRAMEWORK_TEXT.showcaseKicker + '</p>',
+                '      <h3 class="framework-playground__heading">' + FRAMEWORK_TEXT.showcaseHeading + '</h3>',
+                '      <p class="framework-playground__lede">' + FRAMEWORK_TEXT.showcaseLead + '</p>',
                 '    </div>',
                 '  </div>'
             ].join('');
@@ -315,16 +465,16 @@
             metaSection,
             '  <div class="framework-playground__body">',
             '    <p class="framework-playground__pressline">',
-            '      <span class="framework-playground__press-kicker" data-framework-phase-eyebrow>Phase 0 · Setup</span>',
-            '      <span class="framework-playground__press-copy" data-framework-phase-press>Define the board geometry.</span>',
+            '      <span class="framework-playground__press-kicker" data-framework-phase-eyebrow>' + FRAMEWORK_TEXT.defaultEyebrow + '</span>',
+            '      <span class="framework-playground__press-copy" data-framework-phase-press>' + FRAMEWORK_TEXT.defaultPressCopy + '</span>',
             '    </p>',
             '    <div class="framework-playground__board-column">',
             '      <div class="framework-playground__stage">',
             '        <canvas class="framework-playground__canvas" aria-hidden="true"></canvas>',
             '        <div class="framework-playground__overlay" aria-hidden="true">',
-            '          <span>Phase <strong data-framework-phase-label>Scaffold</strong></span>',
-            '          <span>Converge <strong data-framework-coverage>0%</strong></span>',
-            '          <span>Marbles <strong data-framework-marbles>0</strong></span>',
+            '          <span>' + FRAMEWORK_TEXT.overlayPhase + ' <strong data-framework-phase-label>Scaffold</strong></span>',
+            '          <span>' + FRAMEWORK_TEXT.overlayConverge + ' <strong data-framework-coverage>0%</strong></span>',
+            '          <span>' + FRAMEWORK_TEXT.overlayMarbles + ' <strong data-framework-marbles>0</strong></span>',
             '        </div>',
             '        <p class="framework-playground__prompt" aria-hidden="true">',
             '          <span class="framework-playground__prompt-mark">$ &gt;</span>',
@@ -333,10 +483,10 @@
             '      </div>',
             '    </div>',
             '    <aside class="framework-playground__side-column">',
-            '      <p class="framework-playground__side-kicker">Operators</p>',
+            '      <p class="framework-playground__side-kicker">' + FRAMEWORK_TEXT.operators + '</p>',
             '      <p class="framework-playground__side-copy" data-framework-phase-hint></p>',
             '      <div class="framework-playground__controls" data-framework-controls></div>',
-            '      <p class="framework-playground__side-kicker" style="margin-top: 0.35rem;">Choose Phase</p>',
+            '      <p class="framework-playground__side-kicker" style="margin-top: 0.35rem;">' + FRAMEWORK_TEXT.choosePhase + '</p>',
             '      <div class="framework-playground__rail-shell">',
             '        <div class="framework-playground__rail framework-playground__rail--stack" data-framework-rail></div>',
             '      </div>',
@@ -430,16 +580,10 @@
         function currentAlertCopy() {
             var phaseDef = PHASES[phase];
             if (phaseDef.name === 'dou') {
-                return {
-                    title: 'DoU',
-                    detail: 'Blockers surfaced'
-                };
+                return FRAMEWORK_TEXT.alerts.dou;
             }
             if (phaseDef.name === 'review') {
-                return {
-                    title: 'Review',
-                    detail: 'Weak fits exposed'
-                };
+                return FRAMEWORK_TEXT.alerts.review;
             }
             return {
                 title: phaseDef.label,

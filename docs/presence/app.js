@@ -2,6 +2,37 @@ var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-redu
 var supportsIntersectionObserver = 'IntersectionObserver' in window;
 var liveRegion;
 var liveRegionTimer;
+var appLocale = ((document.documentElement && document.documentElement.lang) || 'en').toLowerCase();
+var isPolishLocale = appLocale.indexOf('pl') === 0;
+var uiStrings = isPolishLocale ? {
+    copy: 'Kopiuj',
+    copied: 'Skopiowano',
+    copyFailed: 'Błąd kopiowania',
+    codeCopied: 'Blok kodu został skopiowany do schowka.',
+    copyCodeFallback: 'Kopiowanie się nie udało. Zaznacz polecenie i skopiuj je ręcznie.',
+    installCopied: 'Polecenie instalacji zostało skopiowane do schowka.',
+    copyInstallFallback: 'Kopiowanie się nie udało. Zaznacz polecenie instalacji i skopiuj je ręcznie.',
+    commandCopied: 'Polecenie zostało skopiowane do schowka.',
+    copyCommandFallback: 'Kopiowanie się nie udało. Zaznacz polecenie i skopiuj je ręcznie.',
+    copyCommandAriaPrefix: 'Skopiuj polecenie: ',
+    pipelineCopied: 'Kod pipeline został skopiowany.',
+    tooltipCopy: 'Kopiuj',
+    previewUnavailable: 'Podgląd jest niedostępny.'
+} : {
+    copy: 'Copy',
+    copied: 'Copied',
+    copyFailed: 'Copy failed',
+    codeCopied: 'Code block copied to clipboard.',
+    copyCodeFallback: 'Copy failed. Select the command and copy it manually.',
+    installCopied: 'Install command copied to clipboard.',
+    copyInstallFallback: 'Copy failed. Select the install command and copy it manually.',
+    commandCopied: 'Command copied to clipboard.',
+    copyCommandFallback: 'Copy failed. Select the command and copy it manually.',
+    copyCommandAriaPrefix: 'Copy command: ',
+    pipelineCopied: 'Pipeline code copied.',
+    tooltipCopy: 'Copy',
+    previewUnavailable: 'Preview unavailable.'
+};
 
 function getLiveRegion() {
     if (liveRegion) return liveRegion;
@@ -59,8 +90,8 @@ function copyText(text) {
 
 function flashCopyButton(btn, copied) {
     if (!btn) return;
-    var defaultText = btn.getAttribute('data-default-label') || btn.textContent.trim() || 'Copy';
-    btn.textContent = copied ? 'Copied' : 'Copy failed';
+    var defaultText = btn.getAttribute('data-default-label') || btn.textContent.trim() || uiStrings.copy;
+    btn.textContent = copied ? uiStrings.copied : uiStrings.copyFailed;
     btn.classList.toggle('is-copied', copied);
     btn.classList.toggle('is-error', !copied);
     clearTimeout(btn._copyTimer);
@@ -1029,13 +1060,13 @@ function shuffleArr(a) {
 (function () {
     var buttons = document.querySelectorAll('.copy-btn');
     buttons.forEach(function (btn) {
-        btn.setAttribute('data-default-label', btn.textContent.trim() || 'Copy');
+        btn.setAttribute('data-default-label', btn.textContent.trim() || uiStrings.copy);
         btn.addEventListener('click', function () {
             var code = btn.parentElement && btn.parentElement.querySelector('code');
             var text = code ? code.innerText : '';
             copyText(text).then(function (copied) {
                 flashCopyButton(btn, copied);
-                announceUiMessage(copied ? 'Code block copied to clipboard.' : 'Copy failed. Select the command and copy it manually.');
+                announceUiMessage(copied ? uiStrings.codeCopied : uiStrings.copyCodeFallback);
             });
         });
     });
@@ -1046,12 +1077,12 @@ function shuffleArr(a) {
     var buttons = document.querySelectorAll('.cb-copy');
     if (!buttons.length) return;
     buttons.forEach(function (btn) {
-        btn.setAttribute('data-default-label', btn.getAttribute('data-default-label') || btn.textContent.trim() || 'Copy');
+        btn.setAttribute('data-default-label', btn.getAttribute('data-default-label') || btn.textContent.trim() || uiStrings.copy);
         btn.addEventListener('click', function () {
             var cmd = btn.getAttribute('data-copy');
             copyText(cmd).then(function (copied) {
                 flashCopyButton(btn, copied);
-                announceUiMessage(copied ? 'Install command copied to clipboard.' : 'Copy failed. Select the install command and copy it manually.');
+                announceUiMessage(copied ? uiStrings.installCopied : uiStrings.copyInstallFallback);
             });
         });
     });
@@ -1063,7 +1094,7 @@ function shuffleArr(a) {
     if (!copyables.length) return;
     var tip = document.createElement('div');
     tip.className = 'hterm-tip';
-    tip.textContent = 'Copy';
+    tip.textContent = uiStrings.tooltipCopy;
     tip.setAttribute('aria-hidden', 'true');
     document.body.appendChild(tip);
     var hideTimer;
@@ -1084,8 +1115,8 @@ function shuffleArr(a) {
     function copyFromElement(el, x, y) {
         var value = el.getAttribute('data-copy');
         copyText(value).then(function (copied) {
-            showTip(x, y, copied ? 'Copied' : 'Copy failed', copied ? 'ok' : 'err');
-            announceUiMessage(copied ? 'Command copied to clipboard.' : 'Copy failed. Select the command and copy it manually.');
+            showTip(x, y, copied ? uiStrings.copied : uiStrings.copyFailed, copied ? 'ok' : 'err');
+            announceUiMessage(copied ? uiStrings.commandCopied : uiStrings.copyCommandFallback);
             clearTimeout(hideTimer);
             hideTimer = setTimeout(hideTip, copied ? 1200 : 1600);
         });
@@ -1095,10 +1126,10 @@ function shuffleArr(a) {
         var value = el.getAttribute('data-copy') || '';
         el.setAttribute('role', 'button');
         el.setAttribute('tabindex', '0');
-        el.setAttribute('aria-label', 'Copy command: ' + value);
+        el.setAttribute('aria-label', uiStrings.copyCommandAriaPrefix + value);
         el.addEventListener('mouseenter', function (e) {
             clearTimeout(hideTimer);
-            showTip(e.clientX, e.clientY, 'Copy');
+            showTip(e.clientX, e.clientY, uiStrings.tooltipCopy);
         });
         el.addEventListener('mousemove', function (e) {
             if (tip.classList.contains('ok') || tip.classList.contains('err')) return;
@@ -1107,7 +1138,7 @@ function shuffleArr(a) {
         });
         el.addEventListener('focus', function () {
             var r = el.getBoundingClientRect();
-            showTip(r.left + r.width / 2, r.top, 'Copy');
+            showTip(r.left + r.width / 2, r.top, uiStrings.tooltipCopy);
         });
         el.addEventListener('blur', function () {
             clearTimeout(hideTimer);
@@ -1264,13 +1295,13 @@ function shuffleArr(a) {
 (function () {
     var btn = document.querySelector('.mmd-copy');
     if (!btn) return;
-    btn.setAttribute('data-default-label', 'Copy');
+    btn.setAttribute('data-default-label', uiStrings.copy);
     var code = btn.parentElement && btn.parentElement.querySelector('code');
     if (!code) return;
     btn.addEventListener('click', function () {
         copyText(code.textContent).then(function (ok) {
             flashCopyButton(btn, ok);
-            announceUiMessage(ok ? 'Pipeline code copied.' : 'Copy failed.');
+            announceUiMessage(ok ? uiStrings.pipelineCopied : uiStrings.copyFailed);
         });
     });
 })();
@@ -1339,7 +1370,7 @@ function shuffleArr(a) {
         var svg = parsed.documentElement;
 
         if (parsed.querySelector('parsererror') || !svg || svg.nodeName.toLowerCase() !== 'svg') {
-            previewPane.textContent = 'Preview unavailable.';
+            previewPane.textContent = uiStrings.previewUnavailable;
             lockMermaidShellHeight();
             return;
         }
