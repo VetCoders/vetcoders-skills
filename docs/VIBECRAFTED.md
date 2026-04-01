@@ -1,10 +1,11 @@
-# The VibeCrafted Manifesto
+# The 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Manifesto
 
 We do not treat AI like magic.
 
-We treat it like a stochastic engine that can accelerate craft, multiply leverage, and still produce noise if left without structure.
+We treat it like a stochastic engine that can accelerate craft, multiply leverage, and still produce noise if left
+without structure.
 
-VibeCrafted exists because fragile prompting is not a development methodology.
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. exists because fragile prompting is not a development methodology.
 Shipping requires shape.
 Shipping requires taste.
 Shipping requires pressure against chaos.
@@ -25,7 +26,7 @@ Product truth matters more than internal neatness.
 
 ## We believe real builders can come from anywhere
 
-VibeCrafted was built by people outside the traditional priesthood of software.
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. was built by people outside the traditional priesthood of software.
 That is not an apology.
 That is evidence.
 
@@ -180,14 +181,14 @@ A system can be technically impressive and still commercially unfinished.
 It can be elegant and still unusable.
 It can compile and still be dead.
 
-## VibeCrafted is not anti-science
+## 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is not anti-science
 
 It was born from practice, but it stands on real ground.
 
 We do not choose between intuition and rigor.
 We use intuition to find shape and rigor to prove it.
 
-SHACE, Marbles, Loctree Mapping, and PSCD are original VibeCrafted concepts.
+SHACE, Marbles, Loctree Mapping, and PSCD are original 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. concepts.
 They were discovered under pressure, not borrowed from papers.
 But they did not emerge in a vacuum.
 
@@ -217,7 +218,7 @@ Be radical when radical is cleaner.
 Be practical when practical wins.
 Finish the whole thing, not just the code.
 
-VibeCrafted is for builders who are done pretending that chaos is a process.
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is for builders who are done pretending that chaos is a process.
 We craft.
 We converge.
 We ship.
@@ -231,7 +232,8 @@ We ship.
    Inspiration for the why-loop / how-loop framing, harness design, and human-guided agent workflows.
 
 2. **AST-T5 (2024); GraphCodeBERT (ICLR 2021).**
-   Structure-aware code modeling research showing that models benefit from richer code structure than flat token streams alone.
+   Structure-aware code modeling research showing that models benefit from richer code structure than flat token streams
+   alone.
    GraphCodeBERT uses data flow, not AST. The distinction matters.
 
 3. **Ward Cunningham (1992) and later technical debt literature.**
@@ -240,5 +242,6 @@ We ship.
 4. **CEGIS / counterexample-guided optimization literature (incl. AAAI 2025).**
    Inspiration for iterative refinement driven by failure signals, counterexamples, and convergence pressure.
 
-5. **VibeCrafted / VetCoders.**
-   SHACE, Marbles, Loctree Mapping, and PSCD are original VibeCrafted concepts built from practice, not borrowed labels.
+5. **𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. / VetCoders.**
+   SHACE, Marbles, Loctree Mapping, and PSCD are original 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. concepts built from practice, not borrowed
+   labels.

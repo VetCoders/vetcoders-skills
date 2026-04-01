@@ -233,7 +233,7 @@ what the implementation loops left behind:
 This is the last counterexample class: **the sediment itself.**
 The circle is not full until the debris from filling it is gone too.
 
-## Integration with VibeCrafted Pipeline
+## Integration with 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Pipeline
 
 ```
 scaffold → init → workflow → followup → [MARBLES] ↻ → dou → decorate → hydrate → release

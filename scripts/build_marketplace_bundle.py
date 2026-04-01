@@ -4,10 +4,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import zipfile
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-import zipfile
 
 try:
     from vetcoders_install import discover_skills
@@ -226,7 +226,7 @@ def check_bundle(repo_root: Path, output_path: Path) -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build the VibeCrafted marketplace bundle from current repo state."
+        description="Build the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. marketplace bundle from current repo state."
     )
     parser.add_argument(
         "--output",
@@ -250,7 +250,7 @@ def main(argv: list[str] | None = None) -> int:
 
     write_bundle(REPO_ROOT, output_path)
     print(
-        f"Built {output_path} from VibeCrafted {read_version(REPO_ROOT)} "
+        f"Built {output_path} from 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. {read_version(REPO_ROOT)} "
         f"with {len(discover_bundle_skills(REPO_ROOT))} current skills."
     )
     return 0

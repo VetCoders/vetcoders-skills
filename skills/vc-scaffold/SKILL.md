@@ -20,7 +20,7 @@ PLAN, and PRODUCE an actionable breakdown that vc-workflow can execute.
 ^^^^^^^^^^
 ```
 
-Scaffold is the entry point of the VibeCrafted pipeline. It runs before `vc-init`
+Scaffold is the entry point of the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. pipeline. It runs before `vc-init`
 when the task is new, vague, or requires architectural scoping. If the user
 already has a clear, bounded task, skip scaffold and start with `vc-init`.
 

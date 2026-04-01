@@ -96,7 +96,7 @@ too thin to explain how the experience actually feels in motion.
 
 ### Unicode Toolkit for CLI
 
-VibeCrafted ships a Unicode database (2601 characters, 13 categories) and a
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. ships a Unicode database (2601 characters, 13 categories) and a
 unicode-puzzles-mcp server. Use them for CLI decoration instead of
 guessing code points or hardcoding ANSI escape sequences.
 
@@ -129,12 +129,12 @@ return verified, consistent characters from the same Unicode block.
 | ---------- | --------------------- | -------------------------------- |
 | Box frames | `╭─╮│╰─╯`             | Box Drawing block                |
 | Separators | `·` `─` `━` `┄`       | Box Drawing, General Punctuation |
-| Checkmarks | `✓` `✗` `⚠`           | Dingbats                         |
-| Bullets    | `▸` `▪` `◆` `›`       | Geometric Shapes                 |
+| Checkmarks | `✓` `✗` `⚠`          | Dingbats                         |
+| Bullets    | `▸` `▪` `◆` `›`      | Geometric Shapes                 |
 | Progress   | `⣿⣶⣤⣀` `█▓▒░`         | Braille Patterns, Block Elements |
 | Sparklines | `⣀⣤⣶⣿` (8px per cell) | Braille Patterns (256 combos)    |
 | Arrows     | `→` `←` `↑` `↓` `⟶`   | Arrows block                     |
-| Status     | `⚒` `⚡` `⚙` `⟳`      | Misc Symbols                     |
+| Status     | `⚒` `⚡` `⚙` `⟳`    | Misc Symbols                     |
 | Brands     | `🄵·🅁·🄰·🄼·🄴·🅆·🄾·🅁·🄺`   | Enclosed Alphanumerics           |
 
 **Braille sparklines** deserve special attention. A single Braille character

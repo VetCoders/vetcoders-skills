@@ -1,7 +1,7 @@
 # shellcheck shell=bash
-# VibeCrafted shell helpers (bash/zsh compatible)
+# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helpers (bash/zsh compatible)
 # Source this from your ~/.bashrc or ~/.zshrc to get consistent wrapper commands
-# for the VibeCrafted framework installed under your local repository path.
+# for the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. framework installed under your local repository path.
 # These are shell functions, not standalone binaries. Non-interactive callers
 # should use an interactive shell so ~/.zshrc sources this file; fall back
 # to `bash -ic` on bash-only systems.
@@ -37,7 +37,7 @@ _vetcoders_spawn_script() {
   local base
   base="$(_vetcoders_spawn_home "$tool")"
   [[ -f "$base/scripts/$script_name" ]] || {
-    echo "VibeCrafted spawn script not found: $base/scripts/$script_name" >&2
+    echo "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. spawn script not found: $base/scripts/$script_name" >&2
     return 1
   }
   printf '%s/scripts/%s' "$base" "$script_name"
@@ -78,7 +78,7 @@ _vetcoders_frontier_root() {
     return 0
   fi
 
-  echo "VibeCrafted frontier config not found. Run vc-frontier-install from the repo checkout." >&2
+  echo "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. frontier config not found. Run vc-frontier-install from the repo checkout." >&2
   return 1
 }
 
@@ -447,6 +447,20 @@ _vetcoders_marbles() {
     marbles_args+=(--depth "${_vetcoders_contract_depth:-3}")
   fi
 
+  # Auto-launch zellij if not inside a session and zellij is available
+  if [[ -z "${ZELLIJ:-}" ]] && command -v zellij >/dev/null 2>&1; then
+    local layout_file="${XDG_CONFIG_HOME:-$HOME/.config}/zellij/layouts/marbles-session.kdl"
+    if [[ -f "$layout_file" ]]; then
+      printf '\033[38;5;173m ⚒  Launching marbles workspace in zellij...\033[0m\n'
+      # Re-invoke ourselves inside zellij
+      local self_cmd="bash $(printf '%q' "$script") ${marbles_args[*]}"
+      zellij --layout marbles-session action new-pane -- bash -lc "$self_cmd" 2>/dev/null \
+        || zellij --layout marbles-session 2>/dev/null \
+        || bash "$script" "${marbles_args[@]}"
+      return $?
+    fi
+  fi
+
   bash "$script" "${marbles_args[@]}"
 }
 
@@ -615,7 +629,7 @@ gemini-skill-workflow() { _vetcoders_skill_entry gemini workflow "$@"; }
 vc-help() {
   local crafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
   cat <<'HELP'
-VibeCrafted Framework — Skills & Helpers
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Framework — Skills & Helpers
 
 Pipeline:  scaffold → init → workflow → followup → marbles → dou → decorate → hydrate → release
 Modes:     partner (collaborative) | justdo (autonomous)

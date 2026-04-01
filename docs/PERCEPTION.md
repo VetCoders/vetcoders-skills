@@ -3,7 +3,7 @@
 Language models cannot guess architecture topology.
 And they should not pretend to.
 
-In VibeCrafted, agents do not "read code" — they **perceive** structure
+In 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍., agents do not "read code" — they **perceive** structure
 through instruments. The instruments deliver objective truth.
 The agent delivers interpretation and action.
 
@@ -56,7 +56,7 @@ Agents working in a shared workspace use these senses to avoid collisions,
 understand side-effects, and make safe decisions without demanding constant
 human micromanagement.
 
-When you install VibeCrafted, this perception engine is available by default
+When you install 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍., this perception engine is available by default
 in every AI session.
 
 ---

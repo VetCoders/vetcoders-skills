@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to VibeCrafted are documented here.
+All notable changes to 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## 1.2.1 — 2026-04-01
@@ -36,12 +36,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   - `CONVERGENCE.md` written after final loop (or on failure)
   - Lock files in `~/.vibecrafted/locks/<org>/<repo>/`
 - `--success-hook` and `--failure-hook` flags for all spawn scripts (claude, codex, gemini)
-- Landing page: VibeCraft → VibeCrafted rebrand, sprite caching for Safari performance
+- Landing page: 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. → 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. rebrand, sprite caching for Safari performance
 - Installer TUI wizard (in progress): Rich-based step-by-step flow from docs/installer/ mockups
 
 ### Changed
 
-- Product name: **VibeCrafted** (the product), **VibeCraftsmanship** (the methodology)
+- Product name: **𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍.** (the product), **𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚜𝚖𝚊𝚗𝚜𝚑𝚒𝚙** (the methodology)
 
 ### Fixed
 
@@ -52,7 +52,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   an interactive shell to load. The canonical agent-to-agent invocation remains
   `zsh -ic "codex-implement $PLAN"` (or `bash -ic` on zsh-less systems).
   Skill documentation (vc-agents SKILL.md) updated to reflect this.
-- Marbles board animation: sprite pre-rendering (was creating new canvas per marble per frame — Chrome hid the cost, Safari showed 5fps)
+- Marbles board animation: sprite pre-rendering (was creating new canvas per marble per frame — Chrome hid the cost,
+  Safari showed 5fps)
 - `init-hooks` Makefile target: guard with `git rev-parse --git-dir` for non-git bootstrap contexts
 - Portable test: marbles helper uses new `--prompt` interface, flexible `run_id` check
 
@@ -60,7 +61,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
-- VibeCrafted framework overview and README branding
+- 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. framework overview and README branding
 - Marbles orchestration skill and hook/runtime fixes
 - AICX extract skill documentation
 - Mission-control layout for Zellij

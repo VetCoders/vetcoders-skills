@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import argparse
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SHELLCHECK_EXCLUDES = ("SC1090", "SC1091", "SC2155", "SC2034", "SC2154", "SC2015")
@@ -137,7 +137,7 @@ def run_syntax_fallback(files: list[Path]) -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run the VibeCrafted shell quality gate across tracked files."
+        description="Run the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell quality gate across tracked files."
     )
     parser.add_argument(
         "paths",

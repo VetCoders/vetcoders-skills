@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="1536" height="677" alt="VibeCrafted" src="https://github.com/user-attachments/assets/4c238bf2-3087-472a-a420-1f68f717f5ad" />
+  <img width="1536" height="677" alt="𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍." src="https://github.com/user-attachments/assets/4c238bf2-3087-472a-a420-1f68f717f5ad" />
 </p>
 
 <h1 align="center">A framework that created itself؞</h1>
@@ -18,16 +18,16 @@
 
 ---
 
-## What is VibeCrafted
+## What is 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍.
 
-VibeCrafted is a convergence framework for AI-assisted software development.
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is a convergence framework for AI-assisted software development.
 
 It does not write code for you. It gives you a **system** where AI-written code
 is systematically improved until it meets production quality — through closed
 verification loops, structural analysis tools, and multi-agent orchestration.
 
 Every other tool says: _"AI will write your code."_
-VibeCrafted says: _"AI will write your code — then prove it is good, or fix it until it is."_
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. says: _"AI will write your code — then prove it is good, or fix it until it is."_
 
 That is not a promise of intelligence.
 That is a promise of **process that converges to quality.**
@@ -42,13 +42,13 @@ Meta-recursive. Every commit is evidence.
 
 ## The Three Marks
 
-VibeCrafted has three typographic signatures — one for each layer of craft:
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. has three typographic signatures — one for each layer of craft:
 
-| Mark                       | Layer              | When to use                              |
-| -------------------------- | ------------------ | ---------------------------------------- |
+| Mark                        | Layer              | When to use                              |
+| --------------------------- | ------------------ | ---------------------------------------- |
 | `⚒🅅·🄸·🄱·🄴·🄲·🅡·🄰·🄵·🅃·🄴·🄳·؞` | **Produced with**  | Full product built through the framework |
-| `𝓥𝓲𝓫𝓮𝓬𝓻𝓪𝓯𝓽𝓮𝓭؞`             | **Designed with**  | Design, UI, visual identity, brand work  |
-| `// 𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍؞`          | **Developed with** | Source code, engineering, infrastructure |
+| `𝓥𝓲𝓫𝓮𝓬𝓻𝓪𝓯𝓽𝓮𝓭؞`              | **Designed with**  | Design, UI, visual identity, brand work  |
+| `// 𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍؞`           | **Developed with** | Source code, engineering, infrastructure |
 
 The `؞` is not decoration. It is the mark.
 

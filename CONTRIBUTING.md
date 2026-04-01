@@ -1,4 +1,4 @@
-# Contributing to VibeCrafted
+# Contributing to 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍.
 
 We build tools for AI agents to build tools.
 This framework created itself. You can help it create the next version.
@@ -23,7 +23,8 @@ The codebase is alive. When contributing:
 ## Pull Requests
 
 1. **Be decisive.** If a rewrite is cheaper than a rescue, do it.
-2. **DoU is law.** Green tests are necessary, but not sufficient. The product surface must be finished, documented, and ready for end-users.
+2. **DoU is law.** Green tests are necessary, but not sufficient. The product surface must be finished, documented, and
+   ready for end-users.
 3. **Run your own audits.** Use `vc-dou` on your changes before submitting.
 4. **Evidence over opinion.** Cite tool output, not aesthetic preference.
 
@@ -33,11 +34,11 @@ We value aggressive simplification and bold moves over timid preservation.
 
 When signing contributions or generated artifacts, use the appropriate mark:
 
-| Context      | Mark                       |
-| ------------ | -------------------------- |
+| Context      | Mark                        |
+| ------------ | --------------------------- |
 | Full product | `⚒🅅·🄸·🄱·🄴·🄲·🅡·🄰·🄵·🅃·🄴·🄳·؞` |
-| Design work  | `𝓥𝓲𝓫𝓮𝓬𝓻𝓪𝓯𝓽𝓮𝓭؞`             |
-| Source code  | `// 𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍؞`          |
+| Design work  | `𝓥𝓲𝓫𝓮𝓬𝓻𝓪𝓯𝓽𝓮𝓭؞`              |
+| Source code  | `// 𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍؞`           |
 
 ---
 

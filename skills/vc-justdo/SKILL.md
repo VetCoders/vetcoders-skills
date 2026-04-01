@@ -71,7 +71,8 @@ ask questions at all. Make the reasonable call and go.
 
 ### 2. Get your bearings
 
-Bootstrap context quietly. No init report to the user. Use the **Foundation Tools** (loctree, aicx, prview, screenscribe) as your eyes and ears.
+Bootstrap context quietly. No init report to the user. Use the **Foundation Tools** (loctree, aicx, prview,
+screenscribe) as your eyes and ears.
 
 - `repo-view` / `focus` / `slice` / `impact` (loctree) for structure and risk
 - `aicx extract` if previous output is too large to read

@@ -75,7 +75,7 @@ def main():
     # --- Compact header ---
     sep = "\u2500" * 37
     print()
-    print(f"  {Colors.BOLD}\u2692  VibeCrafted Installer v{fw_ver}{Colors.ENDC}")
+    print(f"  {Colors.BOLD}\u2692  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Installer v{fw_ver}{Colors.ENDC}")
     print(f"  {sep}")
     print()
 

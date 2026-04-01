@@ -11,7 +11,7 @@ run = "make init-hooks"
 
 [tasks.install]
 depends = ["init-hooks"]
-description = "Run VibeCrafted interactive installer"
+description = "Run 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. interactive installer"
 run = "python3 \"$MISE_PROJECT_ROOT/scripts/setup_vibecrafted.py\""
 
 [tasks.skills]
@@ -19,7 +19,7 @@ description = "Install skills only"
 run = "python3 \"$MISE_PROJECT_ROOT/scripts/vetcoders_install.py\" install --source \"$MISE_PROJECT_ROOT\""
 
 [tasks.doctor]
-description = "Run VibeCrafted health check"
+description = "Run 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. health check"
 run = "python3 \"$MISE_PROJECT_ROOT/scripts/vetcoders_install.py\" doctor"
 
 [tasks.list]

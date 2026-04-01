@@ -15,8 +15,8 @@
             operators: 'Operators',
             choosePhase: 'Choose Phase',
             alerts: {
-                dou: { title: 'DoU', detail: 'Blockers surfaced' },
-                review: { title: 'Review', detail: 'Weak fits exposed' }
+                dou: {title: 'DoU', detail: 'Blockers surfaced'},
+                review: {title: 'Review', detail: 'Weak fits exposed'}
             },
             hints: {
                 workflow: 'Tune groove density until the board exposes the right amount of working capacity.',
@@ -47,8 +47,8 @@
             operators: 'Operator',
             choosePhase: 'Wybierz fazę',
             alerts: {
-                dou: { title: 'DoU', detail: 'Blokery ujawnione' },
-                review: { title: 'Review', detail: 'Słabe dopasowania ujawnione' }
+                dou: {title: 'DoU', detail: 'Blokery ujawnione'},
+                review: {title: 'Review', detail: 'Słabe dopasowania ujawnione'}
             },
             hints: {
                 workflow: 'Dostrój gęstość rowków, aż plansza pokaże właściwą pojemność roboczą.',
@@ -402,7 +402,16 @@
     }
 
     function phaseCommand(phaseDef) {
-        return 'vc-' + phaseDef.name;
+        if (phaseDef.name === 'init') {
+            return 'vibecrafted init claude';
+        }
+        if (phaseDef.name === 'agents') {
+            return 'vibecrafted partner claude';
+        }
+        if (phaseDef.name === 'scaffold' || phaseDef.name === 'research' || phaseDef.name === 'workflow' || phaseDef.name === 'dou') {
+            return 'vibecrafted ' + phaseDef.name + ' claude';
+        }
+        return 'vibecrafted ' + phaseDef.name + ' codex';
     }
 
     function phaseHint(phaseDef) {
@@ -478,7 +487,7 @@
             '        </div>',
             '        <p class="framework-playground__prompt" aria-hidden="true">',
             '          <span class="framework-playground__prompt-mark">$ &gt;</span>',
-            '          <span class="framework-playground__prompt-command" data-framework-command>vc-scaffold</span>',
+            '          <span class="framework-playground__prompt-command" data-framework-command>vibecrafted scaffold claude</span>',
             '        </p>',
             '      </div>',
             '    </div>',
@@ -575,16 +584,16 @@
         function currentPhaseCommand() {
             var phaseDef = PHASES[phase];
             if (phaseDef.name === 'scaffold') {
-                return 'vc-scaffold --shape ' + SHAPES[boardShape];
+                return 'vibecrafted scaffold claude --prompt "Shape the board as ' + SHAPES[boardShape] + '"';
             }
             if (phaseDef.name === 'workflow') {
-                return 'vc-workflow --density ' + boardDensity.toFixed(1);
+                return 'vibecrafted workflow claude --prompt "Tune groove density to ' + boardDensity.toFixed(1) + '"';
             }
             if (phaseDef.name === 'agents') {
-                return 'vc-agents --count ' + agentBatchSize;
+                return 'vibecrafted partner claude --prompt "Spawn ' + agentBatchSize + ' specialist tracks"';
             }
             if (phaseDef.name === 'marbles') {
-                return 'vc-marbles --count ' + marbleRunCount;
+                return 'vibecrafted marbles codex --count ' + marbleRunCount + ' --depth 3';
             }
             return phaseCommand(phaseDef);
         }
@@ -657,9 +666,9 @@
                     } else if (shape === 'square') {
                         isInside = Math.abs(dx) <= boardRadius * 0.85 && Math.abs(dy) <= boardRadius * 0.85;
                     } else if (shape === 'hexagon') {
-                        var q = (2/3 * dx) / (boardRadius * 0.8);
-                        var r = (-1/3 * dx + Math.sqrt(3)/3 * dy) / (boardRadius * 0.8);
-                        var s = -q-r;
+                        var q = (2 / 3 * dx) / (boardRadius * 0.8);
+                        var r = (-1 / 3 * dx + Math.sqrt(3) / 3 * dy) / (boardRadius * 0.8);
+                        var s = -q - r;
                         isInside = Math.abs(q) <= 1 && Math.abs(r) <= 1 && Math.abs(s) <= 1;
                     } else if (shape === 'spiral') {
                         var angle = Math.atan2(dy, dx);
@@ -814,20 +823,20 @@
             var dx = tx - m.x;
             var dy = ty - m.y;
             var dist = Math.sqrt(dx * dx + dy * dy);
-            
+
             // Magnetic pull: stronger as it gets closer
             var pullMagnitude = m.target ? (dist < 40 ? 0.04 : 0.015) : 0.008;
             m.vx += dx * pullMagnitude;
             m.vy += dy * pullMagnitude;
-            
+
             // Damping increases as it gets closer to target
             var damping = m.target && dist < 10 ? 0.75 : 0.88;
             m.vx *= damping;
             m.vy *= damping;
-            
+
             m.x += m.vx * dt;
             m.y += m.vy * dt;
-            
+
             if (dist < 1.5 && Math.abs(m.vx) < 0.5 && Math.abs(m.vy) < 0.5) {
                 m.settled = true;
                 m.x = tx;
@@ -884,7 +893,7 @@
                 var prevShape = document.createElement('button');
                 prevShape.className = 'framework-playground__control-btn';
                 prevShape.textContent = '<';
-                prevShape.onclick = function() {
+                prevShape.onclick = function () {
                     boardShape = (boardShape - 1 + SHAPES.length) % SHAPES.length;
                     buildSlots();
                     render();
@@ -901,7 +910,7 @@
                 var nextShape = document.createElement('button');
                 nextShape.className = 'framework-playground__control-btn';
                 nextShape.textContent = '>';
-                nextShape.onclick = function() {
+                nextShape.onclick = function () {
                     boardShape = (boardShape + 1) % SHAPES.length;
                     buildSlots();
                     render();
@@ -927,19 +936,25 @@
                 var acceptBtn = document.createElement('button');
                 acceptBtn.className = 'framework-playground__action-btn';
                 acceptBtn.textContent = 'ACCEPT FRAME';
-                acceptBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                acceptBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(acceptBtn);
             } else if (p.name === 'init') {
                 var initBtn = document.createElement('button');
                 initBtn.className = 'framework-playground__action-btn';
                 initBtn.textContent = 'BOOTSTRAP CONTEXT';
-                initBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                initBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(initBtn);
             } else if (p.name === 'research') {
                 var researchBtn = document.createElement('button');
                 researchBtn.className = 'framework-playground__action-btn';
                 researchBtn.textContent = 'RUN RESEARCH';
-                researchBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                researchBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(researchBtn);
             } else if (p.name === 'workflow') {
                 var densityRow = document.createElement('div');
@@ -953,7 +968,7 @@
                 densitySlider.step = '0.1';
                 densitySlider.value = boardDensity;
                 setRangePct(densitySlider, (boardDensity - 0.5) / 1.5 * 100);
-                densitySlider.oninput = function() {
+                densitySlider.oninput = function () {
                     boardDensity = parseFloat(this.value);
                     setRangePct(this, (boardDensity - 0.5) / 1.5 * 100);
                     buildSlots();
@@ -968,7 +983,9 @@
                 var acceptBtn = document.createElement('button');
                 acceptBtn.className = 'framework-playground__action-btn';
                 acceptBtn.textContent = 'LOCK GROOVES';
-                acceptBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                acceptBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(acceptBtn);
             } else if (p.name === 'agents') {
                 var agentBatchRow = document.createElement('div');
@@ -981,7 +998,7 @@
                 agentSlider.max = '10';
                 agentSlider.value = agentBatchSize;
                 setRangePct(agentSlider, (agentBatchSize - 1) / 9 * 100);
-                agentSlider.oninput = function() {
+                agentSlider.oninput = function () {
                     agentBatchSize = parseInt(this.value);
                     setRangePct(this, (agentBatchSize - 1) / 9 * 100);
                     renderPhaseControls(phaseIdx);
@@ -998,7 +1015,9 @@
                 var nextBtn = document.createElement('button');
                 nextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 nextBtn.textContent = 'PROCEED TO MARBLES';
-                nextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                nextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(nextBtn);
             } else if (p.name === 'review') {
                 var reviewBtn = document.createElement('button');
@@ -1010,7 +1029,9 @@
                 var reviewNextBtn = document.createElement('button');
                 reviewNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 reviewNextBtn.textContent = 'PROCEED TO FOLLOWUP';
-                reviewNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                reviewNextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(reviewNextBtn);
             } else if (p.name === 'marbles') {
                 var batchRow = document.createElement('div');
@@ -1023,7 +1044,7 @@
                 batchSlider.max = '8';
                 batchSlider.value = marbleRunCount;
                 setRangePct(batchSlider, (marbleRunCount - 1) / 7 * 100);
-                batchSlider.oninput = function() {
+                batchSlider.oninput = function () {
                     marbleRunCount = parseInt(this.value);
                     setRangePct(this, (marbleRunCount - 1) / 7 * 100);
                     renderPhaseControls(phaseIdx);
@@ -1043,7 +1064,7 @@
                 powerSlider.step = '0.1';
                 powerSlider.value = marblePower;
                 setRangePct(powerSlider, (marblePower - 0.5) / 2.5 * 100);
-                powerSlider.oninput = function() {
+                powerSlider.oninput = function () {
                     marblePower = parseFloat(this.value);
                     setRangePct(this, (marblePower - 0.5) / 2.5 * 100);
                     renderPhaseControls(phaseIdx);
@@ -1061,7 +1082,9 @@
                 var nextBtn = document.createElement('button');
                 nextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 nextBtn.textContent = 'PROCEED TO REVIEW';
-                nextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                nextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(nextBtn);
             } else if (p.name === 'followup') {
                 var followBtn = document.createElement('button');
@@ -1073,7 +1096,9 @@
                 var followNextBtn = document.createElement('button');
                 followNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 followNextBtn.textContent = 'PROCEED TO PRUNE';
-                followNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                followNextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(followNextBtn);
             } else if (p.name === 'prune') {
                 var pruneBtn = document.createElement('button');
@@ -1085,7 +1110,9 @@
                 var pruneNextBtn = document.createElement('button');
                 pruneNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 pruneNextBtn.textContent = 'PROCEED TO DOU';
-                pruneNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                pruneNextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(pruneNextBtn);
             } else if (p.name === 'dou') {
                 var douBtn = document.createElement('button');
@@ -1097,7 +1124,9 @@
                 var douNextBtn = document.createElement('button');
                 douNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 douNextBtn.textContent = 'PROCEED TO DECORATE';
-                douNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                douNextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(douNextBtn);
             } else if (p.name === 'hydrate') {
                 var hydroBatchRow = document.createElement('div');
@@ -1105,13 +1134,15 @@
                 hydroBatchRow.style.gap = '0.35rem';
                 hydroBatchRow.appendChild(createControlCaption('PRECISION FILL: ' + hydrateBatchSize));
                 var hydroSlider = document.createElement('input');
-                hydroSlider.type = 'range'; hydroSlider.min = '1'; hydroSlider.max = '10';
+                hydroSlider.type = 'range';
+                hydroSlider.min = '1';
+                hydroSlider.max = '10';
                 hydroSlider.value = hydrateBatchSize;
                 setRangePct(hydroSlider, (hydrateBatchSize - 1) / 9 * 100);
-                hydroSlider.oninput = function() { 
+                hydroSlider.oninput = function () {
                     setRangePct(this, (this.value - 1) / 9 * 100);
-                    hydrateBatchSize = parseInt(this.value); 
-                    renderPhaseControls(phaseIdx); 
+                    hydrateBatchSize = parseInt(this.value);
+                    renderPhaseControls(phaseIdx);
                 };
                 hydroBatchRow.appendChild(hydroSlider);
                 wrap.appendChild(hydroBatchRow);
@@ -1125,7 +1156,9 @@
                 var nextBtn = document.createElement('button');
                 nextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 nextBtn.textContent = 'PROCEED TO RELEASE';
-                nextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                nextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(nextBtn);
             } else if (p.name === 'decorate') {
                 var polishRow = document.createElement('div');
@@ -1133,15 +1166,20 @@
                 polishRow.style.gap = '0.35rem';
                 polishRow.appendChild(createControlCaption('POLISH INTENSITY: ' + Math.round(polishIntensity * 100) + '%'));
                 var polishSlider = document.createElement('input');
-                polishSlider.type = 'range'; polishSlider.min = '0'; polishSlider.max = '1'; polishSlider.step = '0.01';
+                polishSlider.type = 'range';
+                polishSlider.min = '0';
+                polishSlider.max = '1';
+                polishSlider.step = '0.01';
                 polishSlider.value = polishIntensity;
                 setRangePct(polishSlider, polishIntensity * 100);
-                polishSlider.oninput = function() { 
-                    polishIntensity = parseFloat(this.value); 
+                polishSlider.oninput = function () {
+                    polishIntensity = parseFloat(this.value);
                     setRangePct(this, polishIntensity * 100);
-                    marbles.forEach(function(m) { if(m.settled) m.saturation = 0.6 + polishIntensity * 0.4; });
+                    marbles.forEach(function (m) {
+                        if (m.settled) m.saturation = 0.6 + polishIntensity * 0.4;
+                    });
                     render();
-                    renderPhaseControls(phaseIdx); 
+                    renderPhaseControls(phaseIdx);
                 };
                 polishRow.appendChild(polishSlider);
                 wrap.appendChild(polishRow);
@@ -1155,7 +1193,9 @@
                 var decorateNextBtn = document.createElement('button');
                 decorateNextBtn.className = 'framework-playground__action-btn framework-playground__action-btn--muted';
                 decorateNextBtn.textContent = 'PROCEED TO HYDRATE';
-                decorateNextBtn.onclick = function() { showPhase(phaseIdx + 1); };
+                decorateNextBtn.onclick = function () {
+                    showPhase(phaseIdx + 1);
+                };
                 wrap.appendChild(decorateNextBtn);
             } else if (p.name === 'release') {
                 var launchBtn = document.createElement('button');
@@ -1164,17 +1204,21 @@
                 launchBtn.style.color = 'var(--patina)';
                 launchBtn.style.background = 'rgba(90, 163, 163, 0.12)';
                 launchBtn.textContent = 'RELEASE LOOP';
-                launchBtn.onclick = function() { 
+                launchBtn.onclick = function () {
                     shipGlow = 1.0;
                     startMotionLoop();
-                    setTimeout(function() { showPhase(0, true); }, 2000);
+                    setTimeout(function () {
+                        showPhase(0, true);
+                    }, 2000);
                 };
                 wrap.appendChild(launchBtn);
             } else {
                 var nextBtn = document.createElement('button');
                 nextBtn.className = 'framework-playground__action-btn';
                 nextBtn.textContent = phaseIdx < PHASES.length - 1 ? 'PROCEED TO ' + PHASES[phaseIdx + 1].label.toUpperCase() : 'RESTART LOOP';
-                nextBtn.onclick = function() { showPhase((phaseIdx + 1) % PHASES.length); };
+                nextBtn.onclick = function () {
+                    showPhase((phaseIdx + 1) % PHASES.length);
+                };
                 wrap.appendChild(nextBtn);
             }
 
@@ -1213,7 +1257,9 @@
             } else if (p.name === 'release') {
                 shipGlow = 1.0;
                 startMotionLoop();
-                setTimeout(function() { showPhase(0, true); }, 2000);
+                setTimeout(function () {
+                    showPhase(0, true);
+                }, 2000);
             }
         }
 
@@ -1340,143 +1386,143 @@
             syncSlotVisibility();
 
             switch (p.name) {
-            case 'scaffold':
-                boardAlpha = Math.min(1, phaseTime / 400);
-                grooveRevealProgress = 0;
-                if (phaseTime < 200) {
-                    shakeX = (Math.random() - 0.5) * 4 * (1 - phaseTime / 200);
-                    shakeY = (Math.random() - 0.5) * 4 * (1 - phaseTime / 200);
-                } else {
-                    shakeX = 0;
-                    shakeY = 0;
-                }
-                break;
-            case 'init':
-                boardAlpha = Math.max(boardAlpha, 1);
-                grooveRevealProgress = Math.min(0.18, phaseTime / p.duration * 0.18);
-                break;
-            case 'research':
-                boardAlpha = Math.max(boardAlpha, 1);
-                grooveRevealProgress = Math.min(0.42, phaseTime / p.duration * 0.42);
-                break;
-            case 'workflow':
-                boardAlpha = Math.max(boardAlpha, 1);
-                grooveRevealProgress = Math.min(1, phaseTime / (p.duration * 0.65));
-                break;
-            case 'agents':
-                if (isSimulating && throwTimer <= 0) {
-                    var precise = slots.filter(function (s) {
-                        return !s.filled && s.visible;
+                case 'scaffold':
+                    boardAlpha = Math.min(1, phaseTime / 400);
+                    grooveRevealProgress = 0;
+                    if (phaseTime < 200) {
+                        shakeX = (Math.random() - 0.5) * 4 * (1 - phaseTime / 200);
+                        shakeY = (Math.random() - 0.5) * 4 * (1 - phaseTime / 200);
+                    } else {
+                        shakeX = 0;
+                        shakeY = 0;
+                    }
+                    break;
+                case 'init':
+                    boardAlpha = Math.max(boardAlpha, 1);
+                    grooveRevealProgress = Math.min(0.18, phaseTime / p.duration * 0.18);
+                    break;
+                case 'research':
+                    boardAlpha = Math.max(boardAlpha, 1);
+                    grooveRevealProgress = Math.min(0.42, phaseTime / p.duration * 0.42);
+                    break;
+                case 'workflow':
+                    boardAlpha = Math.max(boardAlpha, 1);
+                    grooveRevealProgress = Math.min(1, phaseTime / (p.duration * 0.65));
+                    break;
+                case 'agents':
+                    if (isSimulating && throwTimer <= 0) {
+                        var precise = slots.filter(function (s) {
+                            return !s.filled && s.visible;
+                        });
+                        if (precise.length > 0) {
+                            marbles.push(spawnMarble(precise[Math.floor(Math.random() * precise.length)], 0.15, 'ocean'));
+                        }
+                        throwTimer = 400 + Math.random() * 300;
+                    }
+                    break;
+                case 'marbles':
+                    if (!isSimulating && marbleRunRemaining > 0 && throwTimer <= 0) {
+                        spawnMarbleWave();
+                        marbleRunRemaining--;
+                        throwTimer = Math.max(260, 720 - marblePower * 140);
+                    }
+                    break;
+                case 'review':
+                    if (isSimulating && throwTimer <= 0) {
+                        var overflowSlots = slots.filter(function (s) {
+                            return !s.filled && s.visible;
+                        });
+                        if (overflowSlots.length > 0) {
+                            marbles.push(spawnMarble(overflowSlots[Math.floor(Math.random() * overflowSlots.length)], 0.8));
+                        }
+                        for (var o = 0; o < 3 + Math.floor(Math.random() * 4); o++) {
+                            overflowMarbles.push(spawnOverflow());
+                        }
+                        throwTimer = 200;
+                    }
+                    break;
+                case 'dou':
+                    errorFlash = Math.sin(phaseTime * 0.015) * 0.5 + 0.5;
+                    break;
+                case 'followup':
+                    if (phaseTime < 400) {
+                        shakeX = Math.sin(phaseTime * 0.08) * 3 * (1 - phaseTime / 400);
+                        shakeY = Math.cos(phaseTime * 0.06) * 2 * (1 - phaseTime / 400);
+                    } else {
+                        shakeX *= 0.9;
+                        shakeY *= 0.9;
+                    }
+                    overflowMarbles.forEach(function (m) {
+                        if (m.settled) {
+                            m.vy += 0.5;
+                            m.y += m.vy;
+                            m.alpha = Math.max(0, m.alpha - 0.008);
+                        }
                     });
-                    if (precise.length > 0) {
-                        marbles.push(spawnMarble(precise[Math.floor(Math.random() * precise.length)], 0.15, 'ocean'));
-                    }
-                    throwTimer = 400 + Math.random() * 300;
-                }
-                break;
-            case 'marbles':
-                if (!isSimulating && marbleRunRemaining > 0 && throwTimer <= 0) {
-                    spawnMarbleWave();
-                    marbleRunRemaining--;
-                    throwTimer = Math.max(260, 720 - marblePower * 140);
-                }
-                break;
-            case 'review':
-                if (isSimulating && throwTimer <= 0) {
-                    var overflowSlots = slots.filter(function (s) {
-                        return !s.filled && s.visible;
+                    overflowMarbles = overflowMarbles.filter(function (m) {
+                        return m.alpha > 0.01;
                     });
-                    if (overflowSlots.length > 0) {
-                        marbles.push(spawnMarble(overflowSlots[Math.floor(Math.random() * overflowSlots.length)], 0.8));
-                    }
-                    for (var o = 0; o < 3 + Math.floor(Math.random() * 4); o++) {
-                        overflowMarbles.push(spawnOverflow());
-                    }
-                    throwTimer = 200;
-                }
-                break;
-            case 'dou':
-                errorFlash = Math.sin(phaseTime * 0.015) * 0.5 + 0.5;
-                break;
-            case 'followup':
-                if (phaseTime < 400) {
-                    shakeX = Math.sin(phaseTime * 0.08) * 3 * (1 - phaseTime / 400);
-                    shakeY = Math.cos(phaseTime * 0.06) * 2 * (1 - phaseTime / 400);
-                } else {
-                    shakeX *= 0.9;
-                    shakeY *= 0.9;
-                }
-                overflowMarbles.forEach(function (m) {
-                    if (m.settled) {
-                        m.vy += 0.5;
-                        m.y += m.vy;
-                        m.alpha = Math.max(0, m.alpha - 0.008);
-                    }
-                });
-                overflowMarbles = overflowMarbles.filter(function (m) {
-                    return m.alpha > 0.01;
-                });
-                break;
-            case 'prune':
-                if (phaseTime < 100) {
-                    var filled = slots.filter(function (s) {
-                        return s.filled;
-                    });
-                    var toLose = Math.min(5, Math.ceil(filled.length * 0.06));
-                    for (var l = 0; l < toLose; l++) {
-                        var pick = filled[Math.floor(Math.random() * filled.length)];
-                        pick.filled = false;
-                        for (var j = marbles.length - 1; j >= 0; j--) {
-                            if (marbles[j].target === pick && marbles[j].settled) {
-                                marbles[j].settled = false;
-                                marbles[j].vy = -5 - Math.random() * 5;
-                                marbles[j].vx = (Math.random() - 0.5) * 8;
-                                marbles[j].target = null;
-                                marbles[j].landY = height + 50;
-                                marbles[j].landX = marbles[j].x;
-                                break;
+                    break;
+                case 'prune':
+                    if (phaseTime < 100) {
+                        var filled = slots.filter(function (s) {
+                            return s.filled;
+                        });
+                        var toLose = Math.min(5, Math.ceil(filled.length * 0.06));
+                        for (var l = 0; l < toLose; l++) {
+                            var pick = filled[Math.floor(Math.random() * filled.length)];
+                            pick.filled = false;
+                            for (var j = marbles.length - 1; j >= 0; j--) {
+                                if (marbles[j].target === pick && marbles[j].settled) {
+                                    marbles[j].settled = false;
+                                    marbles[j].vy = -5 - Math.random() * 5;
+                                    marbles[j].vx = (Math.random() - 0.5) * 8;
+                                    marbles[j].target = null;
+                                    marbles[j].landY = height + 50;
+                                    marbles[j].landX = marbles[j].x;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                marbles.forEach(function (m) {
-                    if (!m.settled && !m.target) {
-                        m.vy += 0.3;
-                        m.y += m.vy;
-                        m.alpha = Math.max(0, m.alpha - 0.005);
-                    }
-                });
-                marbles = marbles.filter(function (m) {
-                    return m.alpha > 0.01 || m.settled;
-                });
-                break;
-            case 'hydrate':
-                if (isSimulating && throwTimer <= 0) {
-                    var gaps = slots.filter(function (s) {
-                        return !s.filled && s.visible;
-                    });
-                    if (gaps.length > 0) {
-                        marbles.push(spawnMarble(gaps[0], 0.05, 'forest'));
-                    }
-                    throwTimer = 500;
-                }
-                break;
-            case 'decorate':
-                marbles.forEach(function (m) {
-                    if (m.settled) m.saturation = Math.min(1, 0.6 + polishIntensity * 0.4 + phaseTime * 0.0001);
-                });
-                break;
-            case 'release':
-                if (shipGlow > 0) {
-                    shipGlow = Math.max(0, shipGlow - 0.015);
-                }
-                if (phaseTime > p.duration * 0.7) {
-                    boardAlpha = Math.max(0, boardAlpha - 0.01);
                     marbles.forEach(function (m) {
-                        m.alpha = Math.max(0, m.alpha - 0.008);
+                        if (!m.settled && !m.target) {
+                            m.vy += 0.3;
+                            m.y += m.vy;
+                            m.alpha = Math.max(0, m.alpha - 0.005);
+                        }
                     });
-                }
-                break;
+                    marbles = marbles.filter(function (m) {
+                        return m.alpha > 0.01 || m.settled;
+                    });
+                    break;
+                case 'hydrate':
+                    if (isSimulating && throwTimer <= 0) {
+                        var gaps = slots.filter(function (s) {
+                            return !s.filled && s.visible;
+                        });
+                        if (gaps.length > 0) {
+                            marbles.push(spawnMarble(gaps[0], 0.05, 'forest'));
+                        }
+                        throwTimer = 500;
+                    }
+                    break;
+                case 'decorate':
+                    marbles.forEach(function (m) {
+                        if (m.settled) m.saturation = Math.min(1, 0.6 + polishIntensity * 0.4 + phaseTime * 0.0001);
+                    });
+                    break;
+                case 'release':
+                    if (shipGlow > 0) {
+                        shipGlow = Math.max(0, shipGlow - 0.015);
+                    }
+                    if (phaseTime > p.duration * 0.7) {
+                        boardAlpha = Math.max(0, boardAlpha - 0.01);
+                        marbles.forEach(function (m) {
+                            m.alpha = Math.max(0, m.alpha - 0.008);
+                        });
+                    }
+                    break;
             }
 
             syncSlotVisibility();
@@ -1658,7 +1704,7 @@
         function showPhase(target, hardReset) {
             target = Math.max(0, Math.min(PHASES.length - 1, target));
             resetCycle(hardReset);
-            
+
             if (hardReset) {
                 for (var i = 0; i <= target; i++) {
                     phase = i;
@@ -1668,7 +1714,7 @@
                     advanceSimulation(PHASES[i].duration * (i === target ? (PHASES[i].snapshotRatio || 0.55) : 1));
                 }
             }
-            
+
             phase = target;
             render();
             updateUi(true);

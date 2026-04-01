@@ -455,7 +455,7 @@ Then include:
 - Gate results
 - Open risks and what still needs proof
 
-## Integration with VibeCrafted Pipeline
+## Integration with 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Pipeline
 
 ```
 scaffold → init → workflow → followup → marbles → dou → decorate → hydrate → release

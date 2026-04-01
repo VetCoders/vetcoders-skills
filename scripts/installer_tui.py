@@ -8,8 +8,8 @@ import shutil
 import subprocess
 import sys
 import termios
-import threading
 import textwrap
+import threading
 import tty
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -691,8 +691,8 @@ def _render_welcome(console: Any, state: InstallerState, width: int) -> None:
         console,
         width,
         [
-            f"{PRODUCT_LINE} This setup stages VibeCrafted inside {home_display} and prepares the framework for daily work with agent CLIs.",
-            "Nothing outside your VibeCrafted home changes until you approve the install step.",
+            f"{PRODUCT_LINE} This setup stages 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. inside {home_display} and prepares the framework for daily work with agent CLIs.",
+            "Nothing outside your 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. home changes until you approve the install step.",
             "Each screen shows what changes, why it matters, and what stays reversible before we touch your shell or runtime views.",
             "If you need product context instead of setup context, the public surface lives at https://vibecrafted.io.",
         ],

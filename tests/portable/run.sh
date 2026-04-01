@@ -136,7 +136,7 @@ require_file "$home_dir/.gemini/skills/vc-agents/scripts/gemini_spawn.sh"
 # Canonical + legacy helper locations
 require_file "$config_dir/vetcoders/vc-skills.sh"
 require_file "$config_dir/zsh/vc-skills.zsh"
-assert_contains "$config_dir/vetcoders/vc-skills.sh" 'VibeCrafted helper shim'
+assert_contains "$config_dir/vetcoders/vc-skills.sh" '𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. helper shim'
 bad_helper_candidate="\${VIBECRAFT_ROOT:-}/skills/vc-agents/shell/vetcoders.sh"
 assert_not_contains "$config_dir/vetcoders/vc-skills.sh" "$bad_helper_candidate"
 # At least one rcfile must have the source line (depends on SHELL/platform)

@@ -330,7 +330,7 @@ Switch to `vc-agents` when:
 - Agent needs to install dependencies or modify system state
 - Task will take >10 minutes of agent time
 
-## Integration with VibeCrafted Pipeline
+## Integration with 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Pipeline
 
 ```
 scaffold → init → workflow → followup → marbles → dou → decorate → hydrate → release

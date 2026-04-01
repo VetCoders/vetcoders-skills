@@ -4,7 +4,6 @@ import os
 import subprocess
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LAUNCHER = REPO_ROOT / "scripts" / "vibecrafted"
 
@@ -94,7 +93,7 @@ def test_vc_help_wrapper_symlink_renders_main_help(tmp_path: Path) -> None:
         text=True,
     )
 
-    assert "VibeCrafted" in result.stdout
+    assert "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍." in result.stdout
     assert "Front door:" in result.stdout
 
 
@@ -108,5 +107,5 @@ def test_repo_launcher_is_directly_executable() -> None:
         text=True,
     )
 
-    assert "VibeCrafted" in result.stdout
+    assert "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍." in result.stdout
     assert expected_version in result.stdout

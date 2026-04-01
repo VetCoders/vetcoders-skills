@@ -1,7 +1,6 @@
-from pathlib import Path
-import sys
-
 import pytest
+import sys
+from pathlib import Path
 
 from scripts import installer_tui
 from scripts import vetcoders_install
@@ -137,13 +136,13 @@ def test_detect_system_deps_includes_optional_shells(
 def test_strip_rc_entry_removes_duplicate_launcher_blocks() -> None:
     path_line = vetcoders_install._launcher_path_line()
     content = (
-        f"# VibeCrafted launcher\n{path_line}\n"
+        f"# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher\n{path_line}\n"
         f"{path_line}\n"
         'export PATH="$HOME/.cargo/bin:$PATH"\n'
     )
 
     cleaned, removed = vetcoders_install._strip_rc_entry(
-        content, path_line, "VibeCrafted launcher"
+        content, path_line, "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher"
     )
 
     assert removed == 3
@@ -166,7 +165,7 @@ def test_install_launcher_dedupes_zshrc_path_entries(
 
     path_line = vetcoders_install._launcher_path_line()
     zshrc.write_text(
-        f"# VibeCrafted launcher\n{path_line}\n{path_line}\n",
+        f"# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher\n{path_line}\n{path_line}\n",
         encoding="utf-8",
     )
     bashrc.write_text("", encoding="utf-8")
@@ -177,7 +176,7 @@ def test_install_launcher_dedupes_zshrc_path_entries(
 
     zshrc_content = zshrc.read_text(encoding="utf-8")
     assert zshrc_content.count(path_line) == 1
-    assert zshrc_content.count("# VibeCrafted launcher") == 1
+    assert zshrc_content.count("# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher") == 1
     assert (home / ".vibecrafted" / "bin" / "vibecrafted").exists()
 
 

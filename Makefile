@@ -10,10 +10,10 @@ BRANCH   ?= main
 
 help:
 	@printf "\n"
-	@printf "  \033[1m\033[38;5;173m⚒  VibeCraft Framework\033[0m\n"
+	@printf "  \033[1m\033[38;5;173m⚒  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Framework\033[0m\n"
 	@printf "  ─────────────────────────────────────\n"
 	@printf "\n"
-	@printf "  \033[36m▸\033[0m  make vibecrafted   \033[2mSafely install or update the VibeCraft framework (Orchestrator)\033[0m\n"
+	@printf "  \033[36m▸\033[0m  make vibecrafted   \033[2mSafely install or update the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. framework (Orchestrator)\033[0m\n"
 	@printf "\n"
 	@printf "  \033[33m◆\033[0m  make install       \033[2mSkills + shell helpers (Direct)\033[0m\n"
 	@printf "  \033[33m◇\033[0m  make skills        \033[2mSkills only\033[0m\n"

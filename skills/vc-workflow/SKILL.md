@@ -12,7 +12,7 @@ description: >
   Implement (subagents). Each phase feeds context to the next.
 ---
 
-# VibeCrafted Workflow — ERi Pipeline
+# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Workflow — ERi Pipeline
 
 **Examine. Research. Implement.**
 
@@ -53,18 +53,18 @@ Map the codebase before touching anything. The **Foundation Skills** are the pri
 
 ### Required Steps
 
-1.  **Loctree (Eyes)**: Structural code intelligence.
-    - **`repo-view(project)`** — capture health, hubs, languages, LOC.
-    - **`focus(directory)`** — for each target module (1-3 dirs max).
-    - **`slice(file)`** — for every file likely to change (dependencies + consumers).
-    - **`impact(file)`** — for high-hub or deletion-candidate files.
-    - **`find(name)`** — for any new types/functions before creating them.
-2.  **AICX (Memory)**: Recovering prior session context.
-    - **`aicx extract`** — use if previous session output is too large to read or in raw JSONL format.
-3.  **PRView (Review)**: Analyzing existing PR context.
-    - **`prview`** — if the workflow is part of a PR review, generate artifacts first.
-4.  **ScreenScribe (Visuals)**: Visual demo analysis.
-    - **`screenscribe`** — if the task originated from a visual demo, consume the findings here.
+1. **Loctree (Eyes)**: Structural code intelligence.
+   - **`repo-view(project)`** — capture health, hubs, languages, LOC.
+   - **`focus(directory)`** — for each target module (1-3 dirs max).
+   - **`slice(file)`** — for every file likely to change (dependencies + consumers).
+   - **`impact(file)`** — for high-hub or deletion-candidate files.
+   - **`find(name)`** — for any new types/functions before creating them.
+2. **AICX (Memory)**: Recovering prior session context.
+   - **`aicx extract`** — use if previous session output is too large to read or in raw JSONL format.
+3. **PRView (Review)**: Analyzing existing PR context.
+   - **`prview`** — if the workflow is part of a PR review, generate artifacts first.
+4. **ScreenScribe (Visuals)**: Visual demo analysis.
+   - **`screenscribe`** — if the task originated from a visual demo, consume the findings here.
 
 ### Output: CONTEXT.md
 
@@ -184,7 +184,7 @@ Use loctree MCP tools as your primary exploration layer:
 Never edit code without mapping it first.
 ```
 
-3. **Living tree rule** — standard VibeCrafted preamble
+3. **Living tree rule** — standard 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. preamble
 4. **Quality gate** — repo-specific test/lint commands
 
 ### Spawn Pattern

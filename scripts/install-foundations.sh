@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # ---------------------------------------------------------------------------
-# install-foundations.sh — portable installer for VibeCrafted foundation layer
+# install-foundations.sh — portable installer for 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. foundation layer
 #
 # Handles:
 #   loctree / loctree-mcp  — binary from GitHub releases (Loctree/Loctree)

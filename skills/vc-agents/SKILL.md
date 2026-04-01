@@ -2,7 +2,7 @@
 name: vc-agents
 version: 1.4.1
 description: >
-  Spawn external subagents via the VibeCrafted method using the portable spawn
+  Spawn external subagents via the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. method using the portable spawn
   scripts. Use when the user wants
   full isolation, visible Terminal agents, durable artifacts in the canonical
   `~/.vibecrafted/artifacts/` store,
@@ -11,7 +11,7 @@ description: >
   "deleguj przez terminal", "codex agents", "power agents".
 ---
 
-# VibeCrafted Agents
+# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Agents
 
 ## When to use
 
@@ -24,7 +24,7 @@ Trigger when the user asks to delegate work, especially phrases like:
 ## Why use agents
 
 - Your context is precious and built through many sessions, so you should delegate precisely and minimize context bloat.
-- Spawning through the VibeCrafted method requires a strict execution pattern.
+- Spawning through the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. method requires a strict execution pattern.
 - The command shape is canonical and obligatory without exceptions. If you hesitate to use it as provided, do not use
   this skill.
 - Agents are copies of yourself: same smart, same capable, just lighter and more agile because they do not carry your
@@ -118,12 +118,12 @@ needs it:
   another `vc-agents` worker for the next plan, commit locally for
   preservation, and continue.
 
-## VibeCrafted doctrine
+## 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. doctrine
 
 - Do not treat agents like couriers or report printers. Treat them like artists and implementers.
 - Do not over-restrict them into tiny bureaucratic slices when the task wants a real rewrite.
 - Sometimes a full replacement is cleaner than patching scar tissue.
-- VibeCrafted builders ship real products through vibeguiding. Agents should be trusted to do the same.
+- 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. builders ship real products through vibeguiding. Agents should be trusted to do the same.
 
 ## Plan template
 
@@ -214,7 +214,7 @@ Use the equivalent agent observer when needed.
 
 ## Quality gate expectations
 
-Keep the standard VibeCrafted quality bar:
+Keep the standard 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. quality bar:
 
 - loctree-mcp as first-choice exploration and search tool with fail-fast if inaccessible
 - semgrep as first-choice security guard when available

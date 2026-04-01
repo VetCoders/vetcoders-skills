@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# VibeCrafted command deck
+# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. command deck
 set -euo pipefail
 
 _expand_home_path() {
@@ -127,7 +127,7 @@ _ensure_helpers_loaded() {
     source "$helper"
     return 0
   done < <(_helper_candidates)
-  printf '%b[error]%b Could not find the VibeCrafted helper layer.\n' "$_red" "$_reset" >&2
+  printf '%b[error]%b Could not find the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. helper layer.\n' "$_red" "$_reset" >&2
   printf '  Expected one of:\n' >&2
   _helper_candidates | sed 's/^/    - /' >&2
   return 1
@@ -148,7 +148,7 @@ cmd_help() {
   local ver
   ver="$(_version)"
   printf '\n'
-  printf '%b⚒  VibeCrafted %s%b\n' "$_bold$_copper" "$ver" "$_reset"
+  printf '%b⚒  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. %s%b\n' "$_bold$_copper" "$ver" "$_reset"
   printf '%b─────────────────────────────────────────%b\n' "$_steel" "$_reset"
   printf '  The Founders'"'"' Framework\n'
   printf '  A convergence-driven system for shipping software with AI agents.\n'
@@ -222,7 +222,7 @@ cmd_doctor() {
     [[ -f "$candidate" ]] && makefile="$candidate" && break
   done
   [[ -n "$makefile" ]] || {
-    printf '%b[error]%b Makefile not found. Is VibeCrafted installed?\n' "$_red" "$_reset" >&2
+    printf '%b[error]%b Makefile not found. Is 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. installed?\n' "$_red" "$_reset" >&2
     return 1
   }
   make -C "$(dirname "$makefile")" doctor
@@ -237,7 +237,7 @@ cmd_stats() {
   local today_dir artifacts_dir
   today_dir="$(date +%Y_%m%d)"
   artifacts_dir="$crafted_home/artifacts"
-  printf '\n%b⚒  VibeCrafted Stats — %s%b\n' "$_bold$_copper" "$(date +%Y-%m-%d)" "$_reset"
+  printf '\n%b⚒  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Stats — %s%b\n' "$_bold$_copper" "$(date +%Y-%m-%d)" "$_reset"
   printf '%b─────────────────────────────────────────%b\n' "$_steel" "$_reset"
   if [[ ! -d "$artifacts_dir" ]]; then
     printf '  No artifacts found yet.\n\n'

@@ -400,7 +400,7 @@ Auto-detected from repo contents. Override: `--profile <PROFILE>`.
 
 ---
 
-## VibeCrafted Pipeline Integration
+## 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Pipeline Integration
 
 ### As input to vc-followup
 

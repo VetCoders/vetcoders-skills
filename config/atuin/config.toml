@@ -22,11 +22,11 @@ word_jump_mode = "emacs"
 secrets_filter = true
 
 history_filter = [
-  "^ls$",
-  "^cd( .*)?$",
-  "^pwd$",
-  "^clear$",
-  "^history$",
+    "^ls$",
+    "^cd( .*)?$",
+    "^pwd$",
+    "^clear$",
+    "^history$",
 ]
 
 [sync]

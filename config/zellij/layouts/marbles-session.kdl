@@ -1,58 +1,31 @@
-// Marbles Session Layout — convergence workspace
-// Launch: zellij --layout marbles-session.kdl
-// Or:     vc-marbles claude --count 6  (auto-launches if not in zellij)
+// Marbles Session — convergence workspace
+// Launch: zellij --layout marbles-session
+//
+// Skroty widoczne w dolnym pasku:
+//   Ctrl+P  Pause marbles
+//   Alt+R   Resume
+//   Ctrl+X  Stop
+//   Alt+S   Session list
+//   Alt+I   Inspect
 
 layout {
-    // Top: compact bar with session info
+// Top bar: tabs
     pane size=1 borderless=true {
-        plugin location="zellij:compact-bar"
+        plugin location="tab-bar"
     }
 
-    // Main workspace: watcher + agent side by side
-    pane split_direction="vertical" {
-        // Left 40%: watcher status (circle chain, trajectory, metrics)
-        pane name="watcher" size="40%" {
-            borderless false
-        }
-
-        // Right 60%: agent terminal (where the actual work happens)
-        pane name="agent" size="60%" focus=true {
-            borderless false
+// Main workspace
+    tab name="Marbles" focus=true {
+        pane split_direction="vertical" {
+        // Left: your working terminal (focus here)
+            pane name="terminal" size="60%" focus=true
+        // Right: second pane for agent output or monitoring
+            pane name="agent" size="40%"
         }
     }
 
-    // Bottom: status bar with keybindings
+// Bottom bar: shows keybindings (the important one!)
     pane size=2 borderless=true {
-        plugin location="zellij:status-bar" {
-            format_left  " {mode}"
-            format_right " ⚒ Marbles "
-        }
-    }
-}
-
-// Keybindings for marbles control (injected into zellij's shared mode)
-keybinds {
-    shared {
-        // Ctrl+P = Pause marbles (creates pause sentinel)
-        bind "Ctrl p" {
-            Run "bash" "-c" "touch ~/.vibecrafted/marbles/*/pause 2>/dev/null && echo '⏸ Paused' || echo 'No sessions'"
-        }
-        // Ctrl+R in normal mode = Resume (remove pause sentinel)
-        // Note: Ctrl+R conflicts with zellij resize mode, use Alt+R instead
-        bind "Alt r" {
-            Run "bash" "-c" "rm -f ~/.vibecrafted/marbles/*/pause 2>/dev/null && echo '▶ Resumed' || echo 'Nothing paused'"
-        }
-        // Ctrl+X = Stop marbles (creates stop sentinel)
-        bind "Ctrl x" {
-            Run "bash" "-c" "touch ~/.vibecrafted/marbles/*/stop 2>/dev/null && echo '■ Stopped' || echo 'No sessions'"
-        }
-        // Alt+S = Session listing
-        bind "Alt s" {
-            Run "bash" "-c" "bash ~/.vibecrafted/skills/vc-agents/scripts/marbles_ctl.sh session; read -p ''"
-        }
-        // Alt+I = Inspect latest session
-        bind "Alt i" {
-            Run "bash" "-c" "rid=$(ls -t ~/.vibecrafted/marbles/ 2>/dev/null | head -1); [ -n \"$rid\" ] && bash ~/.vibecrafted/skills/vc-agents/scripts/marbles_ctl.sh inspect \"$rid\"; read -p ''"
-        }
+        plugin location="status-bar"
     }
 }

@@ -1,10 +1,10 @@
-# VibeCrafted Framework
+# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Framework
 
 A convergence framework for AI-assisted software development.
 
 ## What it does
 
-VibeCrafted does not write code for you. It gives AI agents a system where
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. does not write code for you. It gives AI agents a system where
 their output is systematically improved until it meets production quality —
 through closed verification loops, structural analysis, and multi-agent
 orchestration.
@@ -22,7 +22,7 @@ And keeps going until the answer is: _Nothing._
 
 ## How it works
 
-VibeCrafted breaks engineering into three phases:
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. breaks engineering into three phases:
 
 **Craft** — orient, examine, research, implement. Skills like `vc-init`,
 `vc-workflow`, and `vc-scaffold` give agents structured protocols for
@@ -50,7 +50,7 @@ Enterprise: info@vibecrafted.io
 
 ## Part of
 
-VetCoders VibeCrafted Suite — structured AI-guided engineering,
+VetCoders 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Suite — structured AI-guided engineering,
 convergence, packaging, and release.
 
 ## Registry Metadata

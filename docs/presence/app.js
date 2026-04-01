@@ -399,7 +399,7 @@ function shuffleArr(a) {
     function pickCoverageGoal() {
         return 1 + rand(0, 0.10);
     }
-    
+
     // Shape generators — your app is a canvas, you define the shape, agents fill the gaps
     var shapeIndex = 0;
 
@@ -544,22 +544,24 @@ function shuffleArr(a) {
             drawGroove(boardLayerCtx, slot.x, slot.y, marbleRadius);
         });
     }
-    
+
     function resizeCanvas() {
         var rect = canvas.getBoundingClientRect();
         if (!rect.width) return;
-        width = rect.width; height = rect.height;
-        canvas.width = width * dpr; canvas.height = height * dpr;
+        width = rect.width;
+        height = rect.height;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        
+
         board.x = width / 2;
         board.y = height / 2;
         board.radius = Math.min(width, height) * 0.42;
         marbleRadius = Math.max(10, board.radius * 0.08);
-        
+
         buildBoard();
     }
-    
+
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -609,7 +611,9 @@ function shuffleArr(a) {
 
     function throwWave() {
         if (morphing) return;
-        var unassigned = slots.filter(function (slot) { return !slot.assigned; });
+        var unassigned = slots.filter(function (slot) {
+            return !slot.assigned;
+        });
         if (!unassigned.length) return;
 
         var nextLoop = currentLoop + 1;
@@ -676,7 +680,9 @@ function shuffleArr(a) {
                     m.z = 2 + Math.random() * 10;
                     m.vz = 6 + Math.random() * 8;
                     // Reassign to a random empty slot
-                    var empties = slots.filter(function(s) { return !s.assigned; });
+                    var empties = slots.filter(function (s) {
+                        return !s.assigned;
+                    });
                     if (empties.length > 0) {
                         var newSlot = empties[Math.floor(Math.random() * empties.length)];
                         newSlot.assigned = true;
@@ -691,26 +697,26 @@ function shuffleArr(a) {
         }
         updateCounters();
     }
-    
+
     function updateCounters() {
-        if(loopCounter) loopCounter.textContent = marbles.length;
-        if(coverageCounter) {
+        if (loopCounter) loopCounter.textContent = marbles.length;
+        if (coverageCounter) {
             var pct = slots.length ? Math.round(displayCoverageRatio() * 100) : 0;
             coverageCounter.textContent = pct + '%';
         }
     }
-    
+
     function tick(now) {
         var dt = Math.min(32, now - lastAt);
         lastAt = now;
-        
+
         ctx.clearRect(0, 0, width, height);
         if (boardLayer.width && boardLayer.height) {
             ctx.drawImage(boardLayer, 0, 0, width, height);
         }
-        
+
         // Remove marbles that flew way off screen
-        marbles = marbles.filter(function(m) {
+        marbles = marbles.filter(function (m) {
             if (m.settled) return true;
             var inBounds = m.x > -100 && m.x < width + 100 && m.y > -300 && m.y < height + 100;
             if (!inBounds && m.target) {
@@ -725,9 +731,12 @@ function shuffleArr(a) {
             if (!m.settled) {
                 var dx = m.target.x - m.x;
                 var dy = m.target.y - m.y;
-                var dist = Math.sqrt(dx*dx + dy*dy);
+                var dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (m.z === undefined) { m.z = 0; m.vz = 0; }
+                if (m.z === undefined) {
+                    m.z = 0;
+                    m.vz = 0;
+                }
                 m.vz -= 1.0;
                 m.z += m.vz;
                 if (m.z < 0) {
@@ -769,11 +778,11 @@ function shuffleArr(a) {
             }
         });
 
-        var renderList = marbles.slice().sort((a,b) => a.y - b.y);
+        var renderList = marbles.slice().sort((a, b) => a.y - b.y);
 
         renderList.forEach(m => {
             var sprite = m.sprite;
-            var speed = m.vx !== undefined ? Math.sqrt(m.vx*m.vx + m.vy*m.vy) : 0;
+            var speed = m.vx !== undefined ? Math.sqrt(m.vx * m.vx + m.vy * m.vy) : 0;
             var hover = m.z || 0;
 
             // Marble alpha: settled marbles are brighter as convergence increases
@@ -785,16 +794,16 @@ function shuffleArr(a) {
                 var shadowW = marbleRadius * 0.8 * shadowScale;
                 var shadowH = marbleRadius * 0.4 * shadowScale;
                 var shadowAlpha = Math.max(0.05, 0.4 - hover / 250);
-                
+
                 ctx.globalAlpha = mAlpha * shadowAlpha;
                 ctx.beginPath();
-                ctx.ellipse(m.x, m.y + marbleRadius * 0.6 + hover * 0.15, shadowW, shadowH, 0, 0, Math.PI*2);
+                ctx.ellipse(m.x, m.y + marbleRadius * 0.6 + hover * 0.15, shadowW, shadowH, 0, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(0,0,0,1)';
                 ctx.fill();
             }
 
             ctx.globalAlpha = mAlpha;
-            ctx.drawImage(sprite, m.x - sprite.width/2, m.y - hover - sprite.height/2);
+            ctx.drawImage(sprite, m.x - sprite.width / 2, m.y - hover - sprite.height / 2);
         });
         ctx.globalAlpha = 1;
 
@@ -808,10 +817,10 @@ function shuffleArr(a) {
             }
         }
         updateCounters();
-        
+
         requestAnimationFrame(tick);
     }
-    
+
     loopTimer = 700 + Math.random() * 300;
     requestAnimationFrame(tick);
 })();
@@ -880,8 +889,8 @@ function shuffleArr(a) {
         var seed = Math.floor(Math.random() * 999999);
         return {
             sprite: MarbleFactory.createSprite(MR, palIdx, pat, seed),
-            alpha: 0, 
-            drop: 1.0 + Math.random() * 2.5, 
+            alpha: 0,
+            drop: 1.0 + Math.random() * 2.5,
             dropSpeed: 0.03 + Math.random() * 0.04,
             shaking: false, shakeT: 0
         };
@@ -1012,6 +1021,7 @@ function shuffleArr(a) {
 (function () {
     var target = document.getElementById('trajectoryBars');
     if (!target) return;
+
     function animateBars() {
         var bars = target.querySelectorAll('.bar');
         bars.forEach(function (bar, i) {
@@ -1020,6 +1030,7 @@ function shuffleArr(a) {
             }, prefersReducedMotion ? 0 : i * 300);
         });
     }
+
     if (prefersReducedMotion || !supportsIntersectionObserver) {
         animateBars();
         return;
@@ -1276,7 +1287,7 @@ function shuffleArr(a) {
         scrollStrip(1);
     });
 
-    strip.addEventListener('scroll', queueWrap, { passive: true });
+    strip.addEventListener('scroll', queueWrap, {passive: true});
 
     wrap.addEventListener('wheel', function (event) {
         var delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
@@ -1284,7 +1295,7 @@ function shuffleArr(a) {
         event.preventDefault();
         strip.scrollLeft += delta;
         queueWrap();
-    }, { passive: false });
+    }, {passive: false});
 
     window.addEventListener('resize', function () {
         jumpToMiddle(false);
@@ -1307,18 +1318,23 @@ function shuffleArr(a) {
 })();
 
 // ============ MERMAID TOGGLE ============
-(function() {
+(function () {
     var toggleBtn = document.querySelector('.mmd-toggle');
     var splitBtn = document.querySelector('.mmd-split');
     var shell = document.querySelector('.mmd-shell');
     var codeBlock = shell ? shell.querySelector('code') : null;
     var codePane = shell ? shell.querySelector('.mmd-code') : null;
     var previewPane = shell ? shell.querySelector('.mmd-preview') : null;
-    
+
     if (!toggleBtn || !shell || !codeBlock || !codePane || !previewPane) return;
-    
+
     var mermaidInitialized = false;
     var switchTimer = null;
+
+    function showMermaidUnavailable() {
+        previewPane.textContent = uiStrings.previewUnavailable;
+        lockMermaidShellHeight();
+    }
 
     function measurePaneHeight(pane, paneWidth) {
         var prevDisplay = pane.style.display;
@@ -1361,6 +1377,9 @@ function shuffleArr(a) {
         var stableHeight = Math.max(codeHeight, previewHeight);
         if (stableHeight > 0) {
             shell.style.minHeight = (stableHeight + shellExtra) + 'px';
+            previewPane.style.minHeight = stableHeight + 'px';
+        } else {
+            previewPane.style.minHeight = '';
         }
     }
 
@@ -1370,8 +1389,7 @@ function shuffleArr(a) {
         var svg = parsed.documentElement;
 
         if (parsed.querySelector('parsererror') || !svg || svg.nodeName.toLowerCase() !== 'svg') {
-            previewPane.textContent = uiStrings.previewUnavailable;
-            lockMermaidShellHeight();
+            showMermaidUnavailable();
             return;
         }
 
@@ -1399,22 +1417,49 @@ function shuffleArr(a) {
         previewPane.appendChild(document.importNode(svg, true));
         requestAnimationFrame(lockMermaidShellHeight);
     }
-    
+
     function initMermaid() {
         if (!mermaidInitialized && window.mermaid) {
-            mermaid.initialize({
-                startOnLoad: false,
-                theme: 'dark',
-                flowchart: {
-                    htmlLabels: false,
-                    curve: 'linear'
-                }
-            });
-            var rawText = codeBlock.innerText || codeBlock.textContent;
-            mermaid.render('mermaid-graph-1', rawText).then(function(result) {
-                renderMermaidPreview(result.svg);
-            });
-            mermaidInitialized = true;
+            try {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'base',
+                    themeVariables: {
+                        darkMode: true,
+                        background: '#0e0e11',
+                        primaryColor: '#1a1d22',
+                        primaryTextColor: '#e5ecf5',
+                        primaryBorderColor: '#d4905c',
+                        secondaryColor: '#14171b',
+                        secondaryTextColor: '#e5ecf5',
+                        secondaryBorderColor: '#a3b8c7',
+                        tertiaryColor: '#122018',
+                        tertiaryTextColor: '#e5ecf5',
+                        tertiaryBorderColor: '#5a8a7a',
+                        lineColor: '#c4d4e0',
+                        arrowheadColor: '#c4d4e0',
+                        clusterBkg: '#14171b',
+                        clusterBorder: '#5a8a7a',
+                        edgeLabelBackground: '#0e0e11',
+                        nodeTextColor: '#e5ecf5',
+                        mainBkg: '#1a1d22',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    flowchart: {
+                        htmlLabels: false,
+                        curve: 'linear'
+                    }
+                });
+                var rawText = codeBlock.innerText || codeBlock.textContent;
+                mermaid.render('mermaid-graph-1', rawText).then(function (result) {
+                    renderMermaidPreview(result.svg);
+                }).catch(function () {
+                    showMermaidUnavailable();
+                });
+                mermaidInitialized = true;
+            } catch (err) {
+                showMermaidUnavailable();
+            }
         }
     }
 
@@ -1423,13 +1468,13 @@ function shuffleArr(a) {
         if (newMode === 'preview') {
             toggleBtn.style.color = 'var(--orange)';
             toggleBtn.style.borderColor = 'var(--orange)';
-            if(splitBtn) {
+            if (splitBtn) {
                 splitBtn.style.color = '';
                 splitBtn.style.borderColor = '';
             }
             initMermaid();
         } else if (newMode === 'split') {
-            if(splitBtn) {
+            if (splitBtn) {
                 splitBtn.style.color = 'var(--orange)';
                 splitBtn.style.borderColor = 'var(--orange)';
             }
@@ -1440,7 +1485,7 @@ function shuffleArr(a) {
             // code
             toggleBtn.style.color = '';
             toggleBtn.style.borderColor = '';
-            if(splitBtn) {
+            if (splitBtn) {
                 splitBtn.style.color = '';
                 splitBtn.style.borderColor = '';
             }
@@ -1459,13 +1504,13 @@ function shuffleArr(a) {
         }, 120);
     }
 
-    toggleBtn.addEventListener('click', function() {
+    toggleBtn.addEventListener('click', function () {
         var mode = shell.getAttribute('data-mode');
         animateModeChange(mode === 'preview' ? 'code' : 'preview');
     });
 
-    if(splitBtn) {
-        splitBtn.addEventListener('click', function() {
+    if (splitBtn) {
+        splitBtn.addEventListener('click', function () {
             var mode = shell.getAttribute('data-mode');
             animateModeChange(mode === 'split' ? 'code' : 'split');
         });

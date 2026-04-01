@@ -2,11 +2,15 @@
 
 ### Opis
 
-؞Vibecraftedٜ to framework dla AI-guided engineering. Nie jest narzędziem do generowania kodu ani zestawem promptów. To system pracy z agentami, który prowadzi od pierwszego draftu do produktu gotowego do wypuszczenia.
+؞Vibecraftedٜ to framework dla AI-guided engineering. Nie jest narzędziem do generowania kodu ani zestawem promptów. To
+system pracy z agentami, który prowadzi od pierwszego draftu do produktu gotowego do wypuszczenia.
 
-Nie zakłada, że AI „pisze dobrze”. Zakłada, że kod generowany przez AI jest zmienny, często niekompletny i podatny na błędy. Dlatego zamiast obiecywać inteligencję, wprowadza strukturę: kontekst, pamięć decyzji, analizę repozytorium i iteracyjne pętle konwergencji.
+Nie zakłada, że AI „pisze dobrze”. Zakłada, że kod generowany przez AI jest zmienny, często niekompletny i podatny na
+błędy. Dlatego zamiast obiecywać inteligencję, wprowadza strukturę: kontekst, pamięć decyzji, analizę repozytorium i
+iteracyjne pętle konwergencji.
 
-Rezultat: proces, który systematycznie redukuje błędy i doprowadza projekt do stanu, w którym można go bezpiecznie pokazać światu.
+Rezultat: proces, który systematycznie redukuje błędy i doprowadza projekt do stanu, w którym można go bezpiecznie
+pokazać światu.
 
 ---
 
@@ -84,7 +88,8 @@ To podejście jest bliższe metodom inżynieryjnym niż „promptowaniu”.
 
 ؞Vibecraftedٜ nie powstał jako teoria.
 
-Powstał z potrzeby dowiezienia realnego produktu przez osoby spoza tradycyjnej ścieżki software engineering. Praca z agentami szybko pokazała ograniczenia: brak globalnego kontekstu, nadpisywanie działających fragmentów, rosnący chaos.
+Powstał z potrzeby dowiezienia realnego produktu przez osoby spoza tradycyjnej ścieżki software engineering. Praca z
+agentami szybko pokazała ograniczenia: brak globalnego kontekstu, nadpisywanie działających fragmentów, rosnący chaos.
 
 Z tej presji powstał zestaw zasad:
 
@@ -117,7 +122,9 @@ Potrzebują śladu decyzji, a nie tylko efektu końcowego
 
 ؞Vibecraftedٜ jest publicznie dostępny i source-visible.
 
-Działa na licencji Business Source License 1.1 z dodatkowymi uprawnieniami dla indywidualnych twórców i małych zespołów. Pozwala to używać frameworka w praktyce bez barier wejścia, przy jednoczesnej ochronie przed bezpośrednim replikowaniem modelu jako produktu konkurencyjnego.
+Działa na licencji Business Source License 1.1 z dodatkowymi uprawnieniami dla indywidualnych twórców i małych zespołów.
+Pozwala to używać frameworka w praktyce bez barier wejścia, przy jednoczesnej ochronie przed bezpośrednim replikowaniem
+modelu jako produktu konkurencyjnego.
 
 ---
 

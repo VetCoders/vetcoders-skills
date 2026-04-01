@@ -43,7 +43,7 @@ def test_run_doctor_smokes_helper_and_launcher_runtime(
 
     _write_executable(
         launcher_bin / "vibecrafted",
-        "#!/usr/bin/env bash\nprintf 'VibeCrafted help ok\\n'\n",
+        "#!/usr/bin/env bash\nprintf '𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. help ok\\n'\n",
     )
     (launcher_bin / "vc-help").symlink_to(launcher_bin / "vibecrafted")
 
