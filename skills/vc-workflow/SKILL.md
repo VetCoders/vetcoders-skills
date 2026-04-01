@@ -49,16 +49,22 @@ Repo-local `.vibecrafted/plans` and `.vibecrafted/reports` are convenience symli
 
 ## Phase 1: EXAMINE
 
-Map the codebase before touching anything. Use loctree MCP tools as the primary layer.
+Map the codebase before touching anything. The **Foundation Skills** are the primary sensory layer for this phase.
 
 ### Required Steps
 
-1. **`repo-view(project)`** — capture health, hubs, languages, LOC
-2. **`focus(directory)`** — for each target module (1-3 dirs max)
-3. **`slice(file)`** — for every file likely to change (dependencies + consumers)
-4. **`impact(file)`** — for high-hub or deletion-candidate files
-5. **`find(name)`** — for any new types/functions before creating them
-6. **`follow(scope)`** — pursue signals flagged by repo-view (dead, cycles, twins)
+1.  **Loctree (Eyes)**: Structural code intelligence.
+    - **`repo-view(project)`** — capture health, hubs, languages, LOC.
+    - **`focus(directory)`** — for each target module (1-3 dirs max).
+    - **`slice(file)`** — for every file likely to change (dependencies + consumers).
+    - **`impact(file)`** — for high-hub or deletion-candidate files.
+    - **`find(name)`** — for any new types/functions before creating them.
+2.  **AICX (Memory)**: Recovering prior session context.
+    - **`aicx extract`** — use if previous session output is too large to read or in raw JSONL format.
+3.  **PRView (Review)**: Analyzing existing PR context.
+    - **`prview`** — if the workflow is part of a PR review, generate artifacts first.
+4.  **ScreenScribe (Visuals)**: Visual demo analysis.
+    - **`screenscribe`** — if the task originated from a visual demo, consume the findings here.
 
 ### Output: CONTEXT.md
 

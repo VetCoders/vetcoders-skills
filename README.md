@@ -1,66 +1,183 @@
-<img width="1536" height="677" alt="image" src="https://github.com/user-attachments/assets/4c238bf2-3087-472a-a420-1f68f717f5ad" />
+<p align="center">
+  <img width="1536" height="677" alt="VibeCrafted" src="https://github.com/user-attachments/assets/4c238bf2-3087-472a-a420-1f68f717f5ad" />
+</p>
 
-# VibeCrafted Framework
+<h1 align="center">A framework that created itself؞</h1>
 
-The definitive toolkit for AI-guided engineering.
+<p align="center">
+  <em>...and its tooling, and its release pipeline, and its distribution channels.</em><br>
+  <em>Check what it can craft for you.</em>
+</p>
 
-VibeCrafted is not just a collection of prompts; it is a structured, opinionated framework for orchestrating AI agents (Codex, Claude, Gemini) to build, refactor, and ship software at veterinary speed.
+<p align="center">
+  <a href="https://vetcoders.github.io/vibecrafted/">Website</a> ·
+  <a href="docs/QUICK_START.md">Quick Start</a> ·
+  <a href="docs/VIBECRAFTED.md">Manifesto</a> ·
+  <a href="docs/FAQ.md">FAQ</a>
+</p>
 
-Quick links:
+---
 
-- [Website](https://vetcoders.github.io/vibecrafted/)
-- [Quick Start](docs/QUICK_START.md)
-- [Answered FAQ](docs/FAQ.md)
-- [Marketplace Listing Draft](docs/MARKETPLACE_LISTING.md)
+## What is VibeCrafted
 
-## The Paradigm
+VibeCrafted is a convergence framework for AI-assisted software development.
 
-We follow the **Living Tree** methodology. Agents work directly in your repository. We do not use isolated worktrees for active implementation unless testing destructive operations. We believe in _Product truth beating local elegance_.
+It does not write code for you. It gives you a **system** where AI-written code
+is systematically improved until it meets production quality — through closed
+verification loops, structural analysis tools, and multi-agent orchestration.
 
-Read more in our core documents:
+Every other tool says: _"AI will write your code."_
+VibeCrafted says: _"AI will write your code — then prove it is good, or fix it until it is."_
 
-- [VIBECRAFTED.md](docs/VIBECRAFTED.md) - The core philosophy.
-- [PERCEPTION.md](docs/PERCEPTION.md) - How our agents see your code using loctree.
+That is not a promise of intelligence.
+That is a promise of **process that converges to quality.**
 
-## Installation
+### Proof
 
-We strictly adhere to a **"No 'why?' questions" rule** for installation.
-Our installer is 100% transparent, interactive, and non-destructive. It explains everything it does and only adds a single `source` line to your shell configuration. It never overwrites your global configs.
+This framework built itself. Its skills, its installer, its CI pipeline,
+its landing page, its docs, its distribution channels.
+Meta-recursive. Every commit is evidence.
 
-To install the VibeCrafted Framework from the public bootstrap path:
+---
+
+## The Three Marks
+
+VibeCrafted has three typographic signatures — one for each layer of craft:
+
+| Mark                        | Layer              | When to use                              |
+| --------------------------- | ------------------ | ---------------------------------------- |
+| `⚒🅅·🄸·🄱·🄴·🄲·🅡·🄰·🄵·🅃·🄴·🄳·؞` | **Produced with**  | Full product built through the framework |
+| `𝓥𝓲𝓫𝓮𝓬𝓻𝓪𝓯𝓽𝓮𝓭؞`              | **Designed with**  | Design, UI, visual identity, brand work  |
+| `// 𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍؞`           | **Developed with** | Source code, engineering, infrastructure |
+
+The `؞` is not decoration. It is the mark.
+
+---
+
+## What You Get
+
+| Layer             | Tool                                | What it does                                                                                                                                                           |
+| ----------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Senses**        | Loctree                             | Structural codebase analysis — dead code, cycles, dependencies, blast radius. The agent reads architecture through instruments, not guesswork.                         |
+| **Orientation**   | vc-init                             | Three senses before action: memory (what was done before), sight (what the code looks like now), ground truth (do the tools actually work).                            |
+| **Convergence**   | vc-marbles                          | The loop: _"What is still wrong?"_ — find counterexamples to health, eliminate them, observe the cascade, repeat until nothing is wrong. Solo, duo, trio, multi-agent. |
+| **Orchestration** | vc-agents                           | Spawn Claude, Codex, Gemini in terminal. Headless, background, with reports, transcripts, and metadata.                                                                |
+| **Quality**       | vc-followup, vc-dou                 | Followup examines what went wrong. DoU (Definition of Undone) measures what is not yet ready to ship.                                                                  |
+| **Craft**         | vc-workflow                         | The full pipeline: Examine → Research → Implement. One command, structured phases.                                                                                     |
+| **Ship**          | vc-decorate, vc-hydrate, vc-release | From code to product: brand polish, packaging, market-facing distribution.                                                                                             |
+| **Safety**        | rust-ai-locker                      | Resource locking. Two agents cannot crash the system with simultaneous compilation.                                                                                    |
+
+---
+
+## Install
+
+Non-destructive. Interactive. Transparent. Reversible.
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/VetCoders/vibecrafted/main/install.sh
 bash install.sh
 ```
 
-This stages a local control-plane copy inside `~/.vibecrafted/tools/` and then runs our safe, interactive orchestrator (`setup_vibecraft.py`) from that local snapshot.
+The installer stages a local control plane under `~/.vibecrafted/tools/`,
+then runs the orchestrator interactively. It tells you what it does before
+it does it. It asks before touching your shell config.
 
-To verify that staged install later:
+Verify:
 
 ```bash
 make -C ~/.vibecrafted/tools/vibecrafted-current doctor
 ```
 
-If you already have a local checkout and want to run the orchestrator directly:
+If you have a local checkout:
 
 ```bash
 make vibecrafted
 ```
 
-## Directory Structure
+Undo everything:
 
-- `skills/` - The core AI skills (e.g., `vc-justdo`, `vc-partner`, `vc-workflow`). These are the brains of the operations.
-- `docs/` - Core architectural documentation.
-- `scripts/` - Installation and migration scripts.
-- `config/` - The VibeCrafted frontier configs (starship, atuin, zellij) loaded dynamically as sidecars.
+```bash
+make -C ~/.vibecrafted/tools/vibecrafted-current uninstall
+```
 
-## Getting Started
+---
 
-Once installed, simply run your preferred VibeCrafted command in the terminal. For example:
+## Quick Start
 
-- `vc-justdo`: Build and ship a feature from idea to completion.
-- `vc-dou`: Run a "Definition of Undone" audit.
-- `vc-workflow`: Run the full Examine -> Research -> Implement pipeline.
+```bash
+cd ~/your-project
+```
 
-For a full list of commands, just type `vc-` and hit tab.
+Open a Claude Code session:
+
+```
+Init session                    # vc-init — memory, sight, ground truth
+Just do: add JWT authentication # vc-justdo — full pipeline to done
+```
+
+Or run phases individually:
+
+```
+Scaffold this                   # architecture planning
+ERi pipeline for auth module    # vc-workflow — examine, research, implement
+Follow-up check                 # vc-followup — what went wrong
+Fill the gaps                   # vc-marbles — convergence loop
+```
+
+Type `vc-` and hit tab for the full list.
+
+---
+
+## The Philosophy
+
+We do not treat AI like magic.
+
+We treat it like a stochastic engine that produces both signal and noise.
+The signal is valuable. The noise is physics, not failure.
+
+The framework exists because **the noise is manageable** — if you have
+a system that finds it, names it, and eliminates it, one counterexample
+at a time.
+
+That system is called **Marbles**.
+
+Read the full manifesto: [VIBECRAFTED.md](docs/VIBECRAFTED.md)
+
+---
+
+## Requirements
+
+- macOS or Linux
+- Git, Python 3.10+, `make`
+- One or more agent CLIs: Claude Code, Codex, or Gemini CLI
+- Recommended foundations: [Loctree](https://github.com/Loctree/loctree-suite), AICX, prview
+
+---
+
+## For Founders
+
+Free for personal use and for startups. No limits on repos or agents.
+
+For enterprise: **info@vibecrafted.io**
+
+---
+
+## Contributing
+
+We build tools for AI agents to build tools. Read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+<p align="center">
+  <em>Move fast, but with taste.</em><br>
+  <em>Be radical when radical is cleaner.</em><br>
+  <em>Finish the whole thing, not just the code.</em>
+</p>
+
+<p align="center">
+  <code>// 𝚟𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍؞</code>
+</p>
+
+<p align="center">
+  <sub>(c)2026 VetCoders · <a href="https://vibecrafted.io">vibecrafted.io</a></sub>
+</p>

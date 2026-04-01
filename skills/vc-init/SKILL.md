@@ -1,26 +1,39 @@
 ---
 name: vc-init
-version: 2.2.0
+version: 3.0.0
 description: >-
-  This skill should be used when the user asks to "init", "initialize session",
-  "give context to agent", "prepare agent", "bootstrap agent", "daj kontekst",
-  "zainicjuj", "przygotuj agenta", "init session", "start fresh with context",
-  or when starting work on a repo and the agent needs situational awareness.
-  Fuses three layers — History (AICX MCP index of prior sessions), Eyes
-  (loctree MCP + cross-tool config absorption), and Verify (ground-truth
-  quality gate check) — to equip the agent with orientation before
-  implementation work.
+  Orientation before action. Init equips the agent with three layers of
+  situational awareness — History (what happened before), Eyes (what the
+  code looks like now), and Verify (whether what you see is actually true).
+  No implementation without orientation. The craftsman reads the brief,
+  studies the material, and tests the tools before the first cut.
+  Trigger: "init", "initialize", "bootstrap", "daj kontekst", "zainicjuj",
+  "przygotuj agenta", "start fresh with context".
 ---
 
-# vc-init — History + Eyes + Verify
+# vc-init — Orientation Before Action
 
-Bootstrap an agent session with three layers of context:
+> You would not operate on a patient without reading their chart.
+> You would not navigate a city without a map.
+> You would not cook without tasting the ingredients.
+> Init is how you get oriented before touching anything.
 
-- **History**: What was done before (AICX MCP — indexed records of prior sessions)
-- **Eyes**: What the code looks like now (loctree MCP — structural map + existing agent configs)
-- **Verify**: Whether what you see is actually true (run quality gates, confirm commands work)
+## The Mission
 
-No layer is optional by default. Skip only when a tool is genuinely unavailable.
+An agent without context is dangerous. Not because it is malicious, but
+because it is confident. It will edit code based on training patterns instead
+of project reality. It will create symbols that already exist. It will
+restructure things that other sessions already restructured differently.
+
+Init prevents this. It gives the agent three things before any implementation:
+
+- **Memory** — what was done before you arrived
+- **Sight** — what the code looks like right now
+- **Ground truth** — whether the tools actually work
+
+This is not overhead. This is the minimum viable awareness for competent
+action. A craftsman who skips orientation produces waste. An agent who
+skips init produces noise that other agents (or humans) must clean up.
 
 ## Pipeline Position
 
@@ -28,6 +41,9 @@ No layer is optional by default. Skip only when a tool is genuinely unavailable.
 scaffold → [INIT] → workflow → followup → marbles → dou → decorate → hydrate → release
            ^^^^^^
 ```
+
+Init is the first real act of every session. Everything downstream depends
+on the quality of orientation achieved here.
 
 ## When To Use
 
@@ -38,251 +54,204 @@ Execute at the start of every session, **before any implementation work**:
 - **Subagent delegation**: Agents inherit structured context
 - **Structural drift**: Major changes by others since last session
 
-Running init is a forcing function: it prevents blind coding.
+If you are tempted to skip init because "it's a small task" — that is
+exactly when init prevents the most damage.
 
-## Init Sequence
+---
 
-### Step 1: History — What Was Done Before
+## The Three Senses
 
-Pull historical context from previous AI sessions for this project through AICX MCP:
+### Sense 1: Memory — What Happened Before
 
-- **`aicx_store(hours=168, project=<project>)`** — refresh the indexed session record for the repo
+_Your patient has a chart. Read it._
+
+Pull historical context from previous AI sessions for this project:
+
+- **`aicx_store(hours=168, project=<project>)`** — refresh the indexed record
 - **`aicx_refs(hours=168, project=<project>, strict=true)`** — list stored context files
-- **`aicx_rank(project=<project>, hours=168, strict=true, top=5)`** — optionally prioritize the densest recent chunks
-- **Optional: `aicx_search(query=<task or subsystem>, project=<project>)`** — narrow the catalog to a specific feature,
-  bug, or decision when recent history is noisy
+- **`aicx_rank(project=<project>, hours=168, strict=true, top=5)`** — prioritize densest chunks
+- **Optional: `aicx_search(query=<task>, project=<project>)`** — narrow to specific feature/bug
 
-Read the most recent 1-2 context files, or the top-ranked 1-2 if those are
-more signal-dense, to understand:
+Read the most recent 1-2 context files, or the top-ranked 1-2 if more
+signal-dense. Understand:
 
 - What was the last task worked on?
 - Are there open TODOs or decisions pending?
 - What signals were extracted (look for `[signals]` blocks)?
 
-Doctrine:
+**Discipline:** AICX is a card catalog, not a backpack. Use it to find
+the right cards, then read the few relevant files on demand. Do not stuff
+the whole archive into context.
 
-- AICX is not a heavy "memory layer" that should be dragged through the whole session.
-- It is a card catalog and archive index for prior work.
-- Use it to find the right cards, then read the few relevant files on demand.
-- Do not stuff the whole archive into context just because it exists.
+**Fallback:** If AICX MCP unavailable, try `aicx all -p "$PROJECT" -H 168 --incremental`
+CLI. If neither exists, skip and note the gap. Memory is valuable but not blocking.
 
-**If AICX MCP is unavailable**: fall back to `aicx all -p "$PROJECT" -H 168 --incremental`
-and `aicx refs -H 168 -p "$PROJECT"` if the CLI exists. If neither exists,
-skip this step and note the gap in the report.
-History lookup is valuable but not blocking.
+### Sense 2: Sight — What The Code Looks Like Now
 
-### Step 2: Eyes — What the Code Looks Like Now
+_Your patient is in front of you. Look at them._
 
-Three sub-steps, in order.
+Three sub-steps, in order of breadth:
 
 #### 2a. Structural Map (loctree MCP)
 
 1. **`repo-view(project)`** — health, hubs, languages, LOC, dead exports, cycles
-2. **`focus(directory)`** — for the target module(s) relevant to the task (1-3 dirs)
+2. **`focus(directory)`** — for target module(s) relevant to the task (1-3 dirs)
 3. **`follow(scope)`** — only if repo-view flagged signals (dead, cycles, twins, hotspots)
 
 This gives the agent structural awareness: what files matter, what depends
-on what, where the risk is.
+on what, where the risk is. Without this, every edit is a guess.
 
 #### 2b. Absorb Existing Agent Configs
 
 Check for and read `.vibecrafted/GUIDELINES.md` — the canonical cross-tool
-reference. If it exists, use it as starting context but verify against code.
+reference. If it exists, use as starting context but **verify against code**.
 
-Also glob for any other agent config files that may exist in the repo
-(tool-specific instruction files, rule directories, `VETCODERS.md`,
-`README.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Copilot/Cursor rules,
-etc.). Read what you find — it may contain project conventions not yet
-captured in GUIDELINES.md.
+Also glob for other agent config files: `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
+`VETCODERS.md`, `README.md`, Copilot/Cursor rules, etc.
 
-Do NOT blindly trust any config file as source of truth. They may be outdated.
+**Do NOT blindly trust any config file.** They may be outdated.
 Cross-reference against what loctree and git show you. If a config file
-claims a command or convention that contradicts the current code, trust the code.
+claims a command that contradicts current code, trust the code.
 
 #### 2c. Derive Conventions from Git History
 
-Run `repo-full` (available as a shell helper) to get a complete repository
-snapshot in one call: branch state, upstream sync, last 15 commits with graph,
-worktree status, stash list, diff stats, and git config. This replaces
-ad-hoc git log/status/diff calls during init.
-
-```bash
-repo-full    # full repo snapshot — branch, commits, status, stash, diffs, config
-```
-
-If `repo-full` is not available (helper not sourced), fall back to:
+Run `repo-full` for a complete repository snapshot, or fall back to:
 
 ```bash
 git log --oneline --decorate --graph -n 15
 git status -sb
 git stash list
-git log --format="%an" | sort -u | head -10
 ```
 
-From the output, observe actual commit style (conventional commits? prefixes?
-Polish/English?) and active contributors. Do not invent conventions — read
-what the team actually does.
+From the output, observe actual commit style and active contributors.
+Do not invent conventions — read what the team actually does.
 
-### Step 3: Verify — Is What You See Actually True
+### Sense 3: Ground Truth — Is What You See Actually Real?
 
-**This step is mandatory.** Do not skip it. Do not assume commands work.
+_You read the chart and looked at the patient. Now test whether your
+instruments work before you start cutting._
 
-Locate the project's quality gate commands. Common sources:
+**This step is mandatory. Do not skip it. Do not assume commands work.**
 
-- `pyproject.toml` `[tool.pytest]`, `[tool.ruff]`, `[tool.mypy]`
-- `Makefile` / `justfile` / `package.json` scripts
-- `.vibecrafted/GUIDELINES.md` or other agent config files
-- `VETCODERS.md` or equivalent repo-wide charter/instructions
-- README.md "Testing" or "Development" sections
-- test harness wrappers such as `scripts/check-*.sh` or `tests/**/run.sh`
+Locate the project's quality gate commands from:
+
+- `pyproject.toml`, `Makefile`, `justfile`, `package.json`
+- `.vibecrafted/GUIDELINES.md` or other agent configs
+- README "Testing" or "Development" sections
 
 Run each quality gate command and record the result:
 
 ```bash
-# Example for a Python project:
+# Python example:
 uv run pytest tests/ -q --tb=no 2>&1 | tail -3
-uv run mypy <src_dir>/ --exclude build/ 2>&1 | tail -3
-uv run ruff check <src_dir>/ tests/ 2>&1 | tail -3
+uv run ruff check <src>/ 2>&1 | tail -3
 
-# Example for an installer/runtime repo:
+# Rust example:
+cargo clippy --workspace -- -D warnings 2>&1 | tail -5
+cargo test --workspace -q 2>&1 | tail -5
+
+# Installer/runtime example:
 python3 scripts/vetcoders_install.py doctor 2>&1 | tail -5
-bash scripts/check-portable.sh 2>&1 | tail -5
 ```
 
-Rules:
+**Rules:**
 
 - **Run the commands.** Do not write "run pytest" in a report without running it.
 - Record pass/fail and any unexpected output.
-- If a command fails, note it as a known issue — do not fix it during init.
-- If a command does not exist (e.g., no mypy config), note absence, don't fabricate.
-- Use `--tb=no` or `tail` to keep output concise — this is a health check, not a debug session.
+- If a command fails, note it as known issue — do not fix during init.
+- If a command does not exist, note absence, do not fabricate.
+- Use `--tb=no` or `tail` for conciseness — this is a health check, not debug.
 
-### Step 4: Produce Situational Report (Required)
+---
 
-After steps 1-3, produce two outputs:
+## Produce Situational Report
 
-**A. Stdout report** — ephemeral, for this session's context.
-Keep it tight — Codex-level conciseness. No padding, no filler.
-Omit sections that produced no signal.
+After all three senses, produce two outputs:
 
-**B. `.vibecrafted/GUIDELINES.md`** — durable, for all future agents.
-See the "Canonical Reference File" section below for format and guardrails.
-Generate on first init, update on subsequent inits if stale. Always ask before writing.
+### A. Session Report (ephemeral, for this session)
 
 ```
 ## Session Init: <project>
 
-### History
+### Memory
 - Last activity: <date>
 - Open signals: <TODOs, pending decisions — or "none">
 - Sessions: <count> entries across <agents>
 
-### Structure
+### Sight
 - Files: <N> | LOC: <N> | Languages: <list>
 - Health: <cycles, dead exports, twins — or "clean">
 - Top hubs: <top 3 files by importers>
 - GUIDELINES.md: <current / stale / missing>
 
-### Verify
+### Ground Truth
 - <gate 1>: <pass / fail / not configured>
 - <gate 2>: <pass / fail / not configured>
 - <gate 3>: <pass / fail / not configured>
 
 ### Ready
-Agent has history, eyes, and verified ground truth.
+Agent has memory, sight, and verified ground truth.
 ```
 
-**Audience note (from Junie):** The people reading this report may be
-domain experts (veterinarians, scientists, designers) who code through
-AI collaboration — not necessarily seasoned programmers. Be explicit
-about what matters. Don't hide behind jargon.
+### B. GUIDELINES.md (durable, for all future agents)
 
-## .vibecrafted/GUIDELINES.md — Canonical Reference File
+Generate on first init, update on subsequent inits if stale. **Always ask
+before writing.**
 
-After init completes, generate (or update) `.vibecrafted/GUIDELINES.md` in the repo.
-This is the **single canonical reference** that all AI agents — Claude, Codex, Gemini,
-Cursor, Copilot — can read regardless of which tool-specific config format they prefer.
-
-Tool-specific config files may exist alongside it and link back here,
-but GUIDELINES.md is the source of truth. This skill does not generate
-or manage tool-specific files — only the canonical reference.
-
-### When to generate
-
-- **First init on a repo**: always generate (ask user first)
-- **Subsequent inits**: compare current file against what you observe. If stale, offer to update.
-- **Never silently overwrite**: always show diff or summary of changes and ask.
-
-### Structure
-
-Adapt sections to what the repo actually has. Omit sections with no signal.
-Target: 200-600 words. Concise beats complete.
-
-```markdown
-# Repository Guidelines
-
-## Product
-
-<What this is, who it's for, one paragraph max.>
-
-## Architecture
-
-<Big-picture pipeline or data flow that requires reading multiple files to understand.
-Not a file listing — only structural relationships an agent needs to avoid mistakes.
-Include critical hub files with blast radius from loctree analysis.>
-
-## Quality Gates (verified <date>)
-
-<Commands that were actually run and confirmed working during init.
-Mark each with pass/fail status. Never include unverified commands.>
-
-## Conventions
-
-<Derived from code analysis and git history, not from assumptions.
-Language version, style tools, dataclass vs Pydantic, commit message patterns.
-Only what's non-obvious or project-specific.>
-
-## Critical Files
-
-<Files with high import count or blast radius. Always run impact analysis before
-modifying these.>
-
-## Known Issues
-
-<Quality gate failures, pre-existing lint/security findings, known gaps.
-Things an agent should know about but not try to fix during unrelated work.>
-```
-
-### Guardrails
+Structure: Product → Architecture → Quality Gates (verified) → Conventions
+→ Critical Files → Known Issues. Target 200-600 words. Concise beats complete.
 
 **Do:**
 
-- Derive from code analysis and verified commands, not from docs alone
-- Include quality gate commands that you confirmed actually work in Step 3
-- Focus on big-picture architecture that requires reading multiple files
-- Merge relevant findings from other agent config files found in 2b
-- Note critical files with high blast radius (from loctree hub analysis)
-- Date the "verified" timestamp so staleness is visible
+- Derive from code analysis and verified commands
+- Date the "verified" timestamp
+- Note critical files with high blast radius
 
 **Do NOT:**
 
-- Repeat information easily discoverable by reading files
-- Include generic advice ("write tests", "use meaningful names", "handle errors")
-- Fabricate sections like "Common Development Tasks" or "Tips" unless grounded in evidence
-- List every file or component — only what an agent needs to avoid mistakes
-- Include test commands you did not verify in Step 3
-- Exceed 600 words — if you need more, the architecture section is too detailed
-- Reference or generate tool-specific config files (CLAUDE.md, AGENTS.md, GEMINI.md, etc.)
+- Repeat easily discoverable information
+- Include generic advice ("write tests", "handle errors")
+- Include test commands you did not verify
+- Exceed 600 words
 
-## For Subagent Prompts
+---
 
-When delegating to subagents via `vc-agents` or `vc-delegate`,
-include this preamble:
+## Operational Doctrine (Agent Execution Model)
+
+_This section is for agent internalization._
+
+### Role In The Convergence System
+
+Init is the prosecution's case file preparation. Before any convergence
+loop (marbles) can ask "what is still wrong?", the agent must know:
+
+- **What was already fixed** (Memory/AICX) — so it does not re-break solved problems
+- **What the current structure is** (Sight/loctree) — so it has objective evidence
+- **What the instruments say** (Verify/gates) — so it knows baseline health
+
+Without init, the agent is a tank with no coordinates. It will fire, but
+not at the right targets.
+
+### Evidence Chain
+
+Every init output is evidence that downstream skills consume:
+
+- `vc-workflow` uses the structural map to scope implementation
+- `vc-followup` uses the gate baseline to measure delta
+- `vc-marbles` uses everything — the baseline is what "loop 0" looks like
+- `vc-dou` uses the verified gates to assess shipping readiness
+
+If init is skipped, every downstream skill operates on assumptions instead
+of evidence. Assumptions are the primary source of wasted loops.
+
+### For Subagent Prompts
+
+When delegating via `vc-agents`, include this preamble:
 
 ```
 ## Context Bootstrap
 
-Use loctree MCP tools as the primary exploration layer:
+Use loctree MCP tools as primary exploration layer:
 - repo-view(project) first for overview
 - slice(file) before modifying any file
 - find(name) before creating new symbols
@@ -290,59 +259,30 @@ Use loctree MCP tools as the primary exploration layer:
 
 Derive truth from code, not from docs. If a doc says X and code says Y, trust Y.
 
-Historical context from previous sessions:
-- `aicx_store(hours=168, project=<project_name>)`
-- `aicx_refs(hours=168, project=<project_name>, strict=true)`
-- `aicx_rank(project=<project_name>, hours=168, strict=true, top=5)`
-- optional: `aicx_search(query=<task or subsystem>, project=<project_name>)`
+Historical context:
+- aicx_store(hours=168, project=<project>)
+- aicx_refs(hours=168, project=<project>, strict=true)
 
-Treat AICX as an index, not a backpack.
-Pull the few relevant records, do not dump the whole archive into context.
-
-Before creating new implementations, search for existing ones:
-- find(name) for symbols
-- Grep for patterns
-- Do not duplicate what already exists.
+Treat AICX as an index. Pull few relevant records, do not dump the archive.
+Before creating new implementations, search for existing ones.
 ```
 
-## Quick Reference
-
-| Step    | Tool                                            | What It Gives                           |
-| ------- | ----------------------------------------------- | --------------------------------------- |
-| History | `aicx_store(hours=168, project=X)`              | Refreshed index of repo session history |
-| Refs    | `aicx_refs(hours=168, project=X, strict=true)`  | Paths to stored context chunks          |
-| Rank    | `aicx_rank(project=X, hours=168, top=5)`        | Highest-signal recent chunks            |
-| Search  | `aicx_search(query=..., project=X)`             | Topic-specific history lookup           |
-| Eyes    | `repo-view(project)`                            | Current structure + health              |
-| Focus   | `focus(directory)`                              | Module-level detail                     |
-| Signals | `follow(scope)`                                 | Dead code, cycles, twins                |
-| Configs | Read `.vibecrafted/GUIDELINES.md` + glob others | Cross-tool instructions                 |
-| Git     | `repo-full` (or `git log --oneline -15`)        | Full repo snapshot in one call          |
-| Verify  | Run quality gate commands                       | Ground truth on test/lint/type          |
-
-## Fallback
-
-If **AICX MCP** unavailable: fall back to `aicx` CLI if present, otherwise skip history steps and proceed with eyes +
-verify.
-If **loctree MCP** unavailable: fall back to `loct --for-ai` CLI, then `rg --files`.
-If **both** unavailable: read `.vibecrafted/GUIDELINES.md` + README.md + `git log -20`. Run quality gates. Announce
-gaps.
-Quality gate verification has **no fallback** — always attempt it.
+---
 
 ## Anti-Patterns
 
 - Starting implementation without running init (blind coding)
-- Running loctree but skipping AICX MCP history lookup (no indexed view of past work)
-- Reading every context file (context bloat) — read only the 1-2 most recent
-- Treating AICX like a backpack memory layer instead of a catalog you query on demand
+- Running loctree but skipping AICX history (no memory of prior work)
+- Reading every context file (context bloat) — read only 1-2 most recent
 - Skipping repo-view and jumping to grep (no structural map)
-- Trusting any config file or README without cross-referencing code (doc rot)
-- Writing "run pytest" in a report without actually running pytest (unverified claims)
-- Generating GUIDELINES.md with commands you never tested (hallucinated instructions)
-- Including generic developer advice that any senior knows (noise)
+- Trusting config files without cross-referencing code (doc rot)
+- Writing "run pytest" without actually running pytest (unverified claims)
+- Generating GUIDELINES.md with commands you never tested (hallucination)
+- Including generic developer advice (noise)
 - Inventing commit conventions instead of reading `git log` (fabrication)
-- Ignoring existing agent configs from other tools (lost context)
 
 ---
 
-_Created by M&K (c)2026 VetCoders_
+_"Memory. Sight. Ground truth. Then — and only then — act."_
+
+_Vibecrafted with AI Agents by VetCoders (c)2026 VetCoders_

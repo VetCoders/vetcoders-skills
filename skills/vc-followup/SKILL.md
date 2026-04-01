@@ -23,8 +23,11 @@ Always run this sequence:
 
 1. `vc-init` (history + structure baseline)
 2. `vc-workflow` (Examine -> optional Research -> Implement context)
-3. `vc-agents` first; use `vc-delegate` only for small or model-agnostic delegated audits
-4. Final synthesis by primary agent (you)
+3. **Audit Inputs**:
+   - `prview` (Foundation) — generate artifacts for any code changes.
+   - `screenscribe` (Foundation) — if visual confirmation is needed, consume demos.
+4. `vc-agents` first; use `vc-delegate` only for small or model-agnostic delegated audits
+5. Final synthesis by primary agent (you)
 
 Do not skip sequence unless user explicitly opts out.
 

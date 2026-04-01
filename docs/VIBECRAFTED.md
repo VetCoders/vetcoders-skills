@@ -58,14 +58,27 @@ That is physics.
 The answer is not faith.
 The answer is convergence.
 
-We loop.
-We inspect.
-We add counterexamples.
-We reduce entropy.
-We keep going until the circle is full.
+Traditional quality assurance asks: _is it correct?_ — and tries to prove yes.
+That question has no finite answer for a living codebase.
 
-Marbles is not repetition for its own sake.
-It is counterexample-guided stochastic convergence [2].
+Marbles asks a different question: **What is still wrong?**
+
+Each loop inspects the current state and finds counterexamples —
+concrete things that contradict health. Dead exports. Circular imports.
+Orphaned files. Each fix is small. But each fix changes the landscape
+for the next loop, exposing issues that were previously hidden beneath
+worse ones.
+
+This is counterexample-guided convergence [2].
+The system cannot get worse through counterexample elimination, only better.
+Monotonic entropy reduction. No single loop needs to understand the whole.
+No loop needs a plan. The convergence is emergent — driven by the repeated
+pressure of one question.
+
+The tools find evidence. The human categorizes. The agent eliminates.
+The loop ends when no tool can generate even one accusation.
+That is when the circle is full.
+
 Early loops remove structural breakage.
 Late loops remove residue, drag, and polish debt.
 The loop ends when the thing stops lying about being done.
