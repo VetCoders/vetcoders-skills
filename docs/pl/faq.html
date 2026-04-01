@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html class="subpage" lang="pl">
 
 <head>
@@ -6,17 +7,15 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>VibeCrafted — FAQ | VetCoders</title>
     <meta
-        content="Odpowiedzi na najczęstsze pytania o VibeCrafted: ścieżkę instalacji, helpery shellowe, skille, fundamenty, CI i model komercyjny."
+        content="Odpowiedzi na najczęstsze pytania o VibeCrafted: instalację, helpery shellowe, skille, zależności runtime’u, CI i model komercyjny."
         name="description">
     <meta content="https://vetcoders.github.io/vibecrafted/pl/faq.html" property="og:url">
-    <meta content="VibeCrafted FAQ" property="og:title">
-    <meta content="Odpowiedzi o instalacji, architekturze, workflow i modelu komercyjnym."
-        property="og:description">
+    <meta content="VibeCrafted — FAQ" property="og:title">
+    <meta content="Odpowiedzi o instalacji, architekturze, workflow i modelu komercyjnym." property="og:description">
     <meta content="https://vetcoders.github.io/vibecrafted/presence/og-image.png" property="og:image">
     <meta content="summary_large_image" name="twitter:card">
-    <meta content="VibeCrafted FAQ" name="twitter:title">
-    <meta content="Odpowiedzi o instalacji, architekturze, workflow i modelu komercyjnym."
-        name="twitter:description">
+    <meta content="VibeCrafted — FAQ" name="twitter:title">
+    <meta content="Odpowiedzi o instalacji, architekturze, workflow i modelu komercyjnym." name="twitter:description">
     <meta content="https://vetcoders.github.io/vibecrafted/presence/og-image.png" name="twitter:image">
     <meta content="#0e0e11" name="theme-color">
     <link href="https://vetcoders.github.io/vibecrafted/pl/faq.html" rel="canonical">
@@ -29,7 +28,7 @@
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
         rel="stylesheet">
     <link href="../presence/styles.css?v=20260331ah" rel="stylesheet">
 </head>
@@ -56,16 +55,16 @@
         <div class="docs-shell">
             <section class="docs-hero fade-up">
                 <div class="section-label">FAQ</div>
-                <h1 class="manifesto-title">Pytania, które ludzie zadają najpierw.</h1>
+                <h1 class="manifesto-title">Pytania, które padają na początku.</h1>
                 <p class="manifesto-lead">
-                    Ta strona istnieje po to, żeby framework mógł wyjaśnić sam siebie bez zmuszania ludzi do
-                    rozbierania repo, helperów shellowych albo licencji na części pierwsze.
+                    Wyjaśniamy, jak działa VibeCrafted — bez zmuszania Cię do przekopywania repo, konfiguracji shella
+                    czy licencji.
                 </p>
                 <p class="manifesto-quote">
                     ⁿⁱᵉ 𝐩𝐨 𝐬ł𝐨𝐰𝐚𝐜𝐡, ˡᵉᶜᶻ ᶜᶻʸⁿᵃᶜʰ 𝐢𝐜𝐡 𝐨𝐬ą𝐝𝐳𝐚𝐣𝐜𝐢𝐞
                 </p>
                 <div class="manifesto-actions">
-                    <a class="btn-solid" href="quickstart.html">Czytaj Szybki start</a>
+                    <a class="btn-solid" href="quickstart.html">Szybki start</a>
                     <a class="btn-outline" href="index.html">Wróć do przeglądu</a>
                 </div>
             </section>
@@ -76,101 +75,105 @@
                         <h2>Instalacja</h2>
                         <details class="faq-item" open>
                             <summary>Dlaczego VibeCrafted instaluje się do <code>~/.vibecrafted/</code>, a nie do
-                                <code>~/.agents/</code>?</summary>
-                            <p><code>~/.vibecrafted/</code> to centralny magazyn i control plane frameworka. Katalogi specyficzne dla
-                                agentów są tylko widokami albo celami symlinków. Prawdziwe źródło prawdy, artefakty i
-                                stan helperów żyją w jednym miejscu.</p>
+                                <code>~/.agents/</code>?
+                            </summary>
+                            <p><code>~/.vibecrafted/</code> to miejsce, w którym działa cały system. Katalogi
+                                przypisane do agentów tylko odwołują się do tego jednego wspólnego miejsca. Logika,
+                                artefakty i skrypty pomocnicze są trzymane w jednym miejscu.</p>
                         </details>
                         <details class="faq-item">
-                            <summary>Czy mogę zainstalować VibeCrafted bez edycji shell configu?</summary>
-                            <p>Tak. W interaktywnej ścieżce można zrezygnować z instalacji shell-helperów. Jeśli chcesz
-                                helpery w bieżącej sesji, załaduj ręcznie
+                            <summary>Czy mogę zainstalować VibeCrafted bez edycji konfiguracji shella?</summary>
+                            <p>Tak. W trybie interaktywnym możesz zrezygnować z instalacji helperów. Jeśli chcesz mieć
+                                je tylko w bieżącej sesji, załaduj ręcznie skrypt pomocniczy
                                 <code>${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh</code>.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Co dokładnie sprawdza <code>vibecrafted doctor</code>?</summary>
-                            <p>Doctor sprawdza centralny store, dostępność helperów, stan symlinków, opcjonalne
-                                fundamenty takie jak loctree/aicx/prview oraz to, czy środowisko shellowe jest na tyle
-                                ciche, żeby narzędzia agentowe się nie rozjeżdżały.</p>
+                            <p>Polecenie <code>doctor</code> sprawdza centralny magazyn, dostępność helperów, stan
+                                odwołań agentów, opcjonalne zależności, takie jak loctree, aicx i prview, oraz to, czy
+                                środowisko nie przeszkadza narzędziom agentowym w stabilnej pracy.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Którą ścieżkę instalacji wybrać w CI lub automatyzacji?</summary>
-                            <p>Użyj <code>make install</code> dla bezpośredniej ścieżki non-interactive albo odpal
-                                <code>python3 scripts/vetcoders_install.py install --source "$PWD" --non-interactive</code>,
-                                jeśli chcesz pełną kontrolę z poziomu CLI.</p>
+                            <p>Użyj <code>make install</code>, jeśli chcesz prostą ścieżkę bez interakcji. Jeśli
+                                potrzebujesz pełnej kontroli z poziomu wiersza poleceń, uruchom
+                                <code>python3 scripts/vetcoders_install.py install --source "$PWD" --non-interactive</code>.
+                            </p>
                         </details>
                     </article>
 
                     <article class="faq-group">
-                        <h2>Skille, agenci, fundamenty</h2>
+                        <h2>Skille, agenci, zależności</h2>
                         <details class="faq-item" open>
                             <summary>Jaka jest różnica między skillem a agentem?</summary>
-                            <p>Agent to runtime, na przykład Codex, Claude albo Gemini. Skill to zestaw instrukcji i
-                                protokół workflow, który mówi temu runtime, jak ma się zachować w konkretnej fazie pracy.
-                            </p>
+                            <p>Agent to runtime — na przykład Codex, Claude albo Gemini.
+                                Skill to zestaw instrukcji i zasad pracy, które mówią agentowi, jak ma działać na danym
+                                etapie.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Dlaczego nie po prostu ChatGPT, Copilot albo jeden wielki prompt?</summary>
-                            <p>Bo VibeCrafted rozwiązuje problem kształtowania systemu, a nie tylko wygodę czatu. Łączy świadomość
-                                struktury, odzyskiwanie decyzji, pętle konwergencji i audyty gotowości do wypuszczenia, żeby model widział
-                                repo i powierzchnię produktu, a nie improwizował po omacku.</p>
+                            <p>Bo VibeCrafted nie służy tylko do rozmowy z modelem. Pracuje na strukturze kodu, pamięci
+                                decyzji i iteracji. Dzięki temu model widzi repo i realną powierzchnię produktu, zamiast
+                                improwizować po omacku.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Czy mogę używać VibeCrafted bez loctree albo aicx?</summary>
-                            <p>Technicznie tak, ale tracisz percepcję struktury i ciągłość sesji. Framework dalej działa,
-                                tylko agent ma dużo słabszy kontekst.</p>
+                            <p>Technicznie tak, ale tracisz rozumienie struktury i ciągłość sesji. Framework dalej
+                                działa, tylko agent pracuje na dużo słabszym kontekście.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Co to jest pętla Marbles?</summary>
                             <p>Marbles to silnik konwergencji. Wynik AI bywa zaszumiony, więc framework zapętla
-                                implementację, followup, pomiar i poprawki, aż ważne klasy findings spadną do zera.</p>
+                                implementację, sprawdzenie, pomiar i poprawki, aż najważniejsze problemy spadną do zera.
+                            </p>
                         </details>
                     </article>
 
                     <article class="faq-group">
-                        <h2>Workflow i operacje</h2>
+                        <h2>Praca z frameworkiem</h2>
                         <details class="faq-item" open>
                             <summary>Kiedy używać <code>vc-justdo</code> zamiast ręcznych faz?</summary>
-                            <p>Użyj <code>vc-justdo</code>, gdy zadanie jest jasne i chcesz oddać agentowi pełną
-                                odpowiedzialność od początku do końca. Fazy osobno bierz wtedy, gdy chcesz bliżej nadzorować
-                                decyzje architektoniczne.</p>
+                            <p>Użyj <code>vc-justdo</code>, kiedy zadanie jest jasne i chcesz, żeby agent dowiózł je od
+                                początku do końca. Ręczne fazy wybierz wtedy, gdy chcesz bliżej pilnować kierunku i
+                                decyzji architektonicznych.</p>
                         </details>
                         <details class="faq-item">
-                            <summary>Co siedzi w <code>~/.vibecrafted/artifacts/</code>?</summary>
-                            <p>Plany, raporty, transkrypty i metadane z większych runów. Ten magazyn istnieje po to, żeby
-                                praca agentów zostawiała trwałe dowody, a nie ginęła w historii terminala.</p>
+                            <summary>Co znajduje się w <code>~/.vibecrafted/artifacts/</code>?</summary>
+                            <p>To miejsce na plany, raporty, transkrypty i metadane z większych uruchomień. Powstało po
+                                to, żeby praca agentów zostawiała trwały ślad, a nie znikała w historii terminala.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Czym jest Definition of Undone?</summary>
-                            <p>DoU to audyt, który sprawdza, czy ludzie mogą odkryć, zrozumieć, zainstalować
-                                i zaufać temu, co budujesz. Mierzy prawdę powierzchni produktu, nie tylko zdrowie repo.</p>
+                            <p>DoU to audyt, który sprawdza, czy ktoś z zewnątrz może ten projekt znaleźć, zrozumieć,
+                                zainstalować i mu zaufać. Mierzy prawdę powierzchni produktu, a nie tylko stan repo.</p>
                         </details>
                     </article>
 
                     <article class="faq-group">
-                        <h2>Model komercyjny</h2>
+                        <h2>Licencja i użycie komercyjne</h2>
                         <details class="faq-item" open>
                             <summary>Czy VibeCrafted jest open source?</summary>
-                            <p>Framework jest dystrybuowany na licencji Business Source License 1.1. Repo jest widoczne i
-                                używalne, ale nie jest czystym permisyjnym open source.</p>
+                            <p>VibeCrafted jest udostępniany na licencji Business Source License 1.1. Repo jest
+                                publiczne i można z niego korzystać, ale nie jest to klasyczny open source na licencji
+                                permisyjnej.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Czy małe zespoły mogą używać VibeCrafted produkcyjnie?</summary>
-                            <p>Tak. Additional Use Grant pozwala indywidualnym deweloperom i zespołom mniejszym niż pięć
-                                osób używać frameworka produkcyjnie, o ile nie oferują konkurencyjnego hostowanego albo
-                                produktu osadzonego.</p>
+                            <p>Tak. Grant pozwala pojedynczym deweloperom i zespołom mniejszym niż pięć
+                                osób używać frameworka w produkcji, o ile nie oferują konkurencyjnej usługi hostowanej ani rozwiązania osadzonego.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Co jeśli potrzebuję szerszego modelu komercyjnego?</summary>
-                            <p>Licencja wskazuje VetCoders jako kontakt do alternatywnych ustaleń licencyjnych. Przed
-                                szerszym wdrożeniem przeczytaj dokładne warunki w repo i ustal ścieżkę kontaktu.</p>
+                            <p>Jeśli potrzebujesz szerszych uprawnień komercyjnych, skontaktuj się z VetCoders.
+                                Przeczytaj warunki licencji i ustal właściwą ścieżkę.</p>
                         </details>
                     </article>
                 </div>
 
                 <div class="docs-inline-links">
                     <a href="quickstart.html">Szybki start</a>
-                    <a href="https://github.com/VetCoders/vibecrafted/blob/main/docs/FAQ-ANSWERED.md">Pełne FAQ w Markdownzie</a>
+                    <a href="https://github.com/VetCoders/vibecrafted/blob/main/docs/FAQ-ANSWERED.md">Pełne FAQ -
+                        markdown</a>
                     <a href="https://github.com/VetCoders/vibecrafted/blob/main/LICENSE">Licencja</a>
                 </div>
             </section>
@@ -182,13 +185,13 @@
             <img src="../presence/logo-32.png" alt="" class="footer-logo" width="24" height="24">
             <span class="footer-title">VIBECRAFTED</span>
         </div>
-        <p class="footer-tagline">Stworzone po północy, pod presją. Odpalone na localhost.</p>
+        <p class="footer-tagline">Powstało pod presją, po północy. Uruchomione na localhost.</p>
         <nav class="footer-links" aria-label="Footer links">
             <a href="index.html">Przegląd</a>
             <a href="quickstart.html">Szybki start</a>
             <a href="https://github.com/VetCoders/vibecrafted">GitHub</a>
         </nav>
-        <p class="footer-copyright">&copy; 2025-2026 VetCoders. Built by Maciej Gad &amp; Monika Szymańska.</p>
+        <p class="footer-copyright">© 2025-2026 VetCoders. Built by Maciej Gad & Monika Szymańska.</p>
     </footer>
 
     <script src="../presence/app.js?v=20260331k"></script>
