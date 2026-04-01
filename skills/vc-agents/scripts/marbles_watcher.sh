@@ -302,9 +302,11 @@ for ((loop_nr=1; loop_nr<=total_count; loop_nr++)); do
   expected_report="$store/reports/${report_base}.md"
   expected_transcript="$store/reports/${report_base}.transcript.log"
 
-  # For L2+, reports are created by the spawn scripts with their own timestamps.
-  # We need to watch for any matching report file instead of exact name.
-  report_pattern="marbles-*_L${loop_nr}_${agent}.md"
+  # Spawn scripts own the timestamp prefix, but the plan slug is stable for this run.
+  # Matching on the slug keeps us inside the current marbles run without racing
+  # against state-file timestamps that are updated during observation.
+  report_pattern="*_marbles-${plan_slug}_L${loop_nr}_${agent}.md"
+  transcript_pattern="*_marbles-${plan_slug}_L${loop_nr}_${agent}.transcript.log"
 
   # ── Promise phase ────────────────────────────────────────────────
   _record_loop_start "$loop_nr" "$expected_transcript"
@@ -321,7 +323,7 @@ for ((loop_nr=1; loop_nr<=total_count; loop_nr++)); do
   sleep 3  # brief wait for transcript file to appear
   actual_transcript=""
   for _try in $(seq 1 10); do
-    actual_transcript=$(find "$store/reports" -name "*_L${loop_nr}_${agent}.transcript.log" -newer "$state_file" 2>/dev/null | sort | tail -1 || true)
+    actual_transcript=$(find "$store/reports" -name "$transcript_pattern" 2>/dev/null | sort | tail -1 || true)
     [[ -n "$actual_transcript" ]] && break
     sleep 2
   done
@@ -338,9 +340,9 @@ for ((loop_nr=1; loop_nr<=total_count; loop_nr++)); do
   actual_report=""
   while [[ -z "$actual_report" || ! -s "$actual_report" ]]; do
     sleep 5
-    actual_report=$(find "$store/reports" -name "*_L${loop_nr}_${agent}.md" \
+    actual_report=$(find "$store/reports" -name "$report_pattern" \
       ! -name '*.meta.json' ! -name '*.transcript.log' \
-      -newer "$state_file" 2>/dev/null | sort | tail -1 || true)
+      2>/dev/null | sort | tail -1 || true)
     # Check stop during wait
     if [[ -f "$state_dir/stop" ]]; then
       _check_stop
