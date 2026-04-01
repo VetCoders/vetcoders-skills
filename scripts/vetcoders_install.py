@@ -40,6 +40,11 @@ try:
         separator as brand_separator,
         version_line as brand_version_line,
     )
+    from runtime_paths import (
+        read_version_file,
+        xdg_config_home,
+        vibecrafted_home,
+    )
 except (
     ModuleNotFoundError
 ):  # pragma: no cover - module import path depends on entrypoint
@@ -51,6 +56,11 @@ except (
         VAPOR_HEADER,
         separator as brand_separator,
         version_line as brand_version_line,
+    )
+    from scripts.runtime_paths import (
+        read_version_file,
+        xdg_config_home,
+        vibecrafted_home,
     )
 
 # ---------------------------------------------------------------------------
@@ -405,10 +415,7 @@ def detect_cargo() -> Optional[str]:
 
 
 def get_framework_version(repo_root: Path) -> str:
-    version_file = repo_root / "VERSION"
-    if version_file.exists():
-        return version_file.read_text().strip()
-    return "unknown"
+    return read_version_file(repo_root)
 
 
 def get_repo_commit(repo_root: Path) -> str:
@@ -431,21 +438,6 @@ def get_repo_url(repo_root: Path) -> str:
         ).strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return ""
-
-
-def resolve_env_path(name: str, default: Path) -> Path:
-    raw = os.environ.get(name)
-    if raw:
-        return Path(raw).expanduser()
-    return default.expanduser()
-
-
-def xdg_config_home() -> Path:
-    return resolve_env_path("XDG_CONFIG_HOME", Path.home() / ".config")
-
-
-def vibecrafted_home() -> Path:
-    return resolve_env_path("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")
 
 
 # ---------------------------------------------------------------------------

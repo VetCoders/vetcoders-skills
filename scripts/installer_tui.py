@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import contextlib
-import os
 import queue
 import select
 import shutil
@@ -26,6 +25,11 @@ try:
         separator as brand_separator,
         version_line as brand_version_line,
     )
+    from runtime_paths import (
+        read_version_file,
+        xdg_config_home,
+        vibecrafted_home,
+    )
 except (
     ModuleNotFoundError
 ):  # pragma: no cover - module import path depends on entrypoint
@@ -37,6 +41,11 @@ except (
         VAPOR_HEADER,
         separator as brand_separator,
         version_line as brand_version_line,
+    )
+    from scripts.runtime_paths import (
+        read_version_file,
+        xdg_config_home,
+        vibecrafted_home,
     )
 
 STEP_MIN = 0
@@ -78,25 +87,7 @@ def default_source_dir() -> str:
 
 
 def read_framework_version(source_dir: str) -> str:
-    version_file = Path(source_dir) / "VERSION"
-    if version_file.exists():
-        return version_file.read_text(encoding="utf-8").strip()
-    return "unknown"
-
-
-def resolve_env_path(name: str, default: Path) -> Path:
-    raw = os.environ.get(name)
-    if raw:
-        return Path(raw).expanduser()
-    return default.expanduser()
-
-
-def xdg_config_home() -> Path:
-    return resolve_env_path("XDG_CONFIG_HOME", Path.home() / ".config")
-
-
-def vibecrafted_home() -> Path:
-    return resolve_env_path("VIBECRAFTED_HOME", Path.home() / ".vibecrafted")
+    return read_version_file(source_dir)
 
 
 def framework_store_dir() -> Path:

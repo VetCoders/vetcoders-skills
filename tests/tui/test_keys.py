@@ -5,6 +5,7 @@ import pytest
 
 from scripts import installer_tui
 from scripts import vetcoders_install
+from scripts.runtime_paths import read_version_file
 
 
 def test_read_framework_version_reads_version_file(tmp_path: Path) -> None:
@@ -15,6 +16,12 @@ def test_read_framework_version_reads_version_file(tmp_path: Path) -> None:
 
 def test_read_framework_version_returns_unknown_when_missing(tmp_path: Path) -> None:
     assert installer_tui.read_framework_version(str(tmp_path)) == "unknown"
+
+
+def test_runtime_paths_reads_framework_version(tmp_path: Path) -> None:
+    (tmp_path / "VERSION").write_text("3.2.1\n", encoding="utf-8")
+
+    assert read_version_file(tmp_path) == "3.2.1"
 
 
 def test_build_install_command_includes_compact_noninteractive_flags(
