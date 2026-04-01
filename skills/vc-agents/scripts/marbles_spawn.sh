@@ -31,6 +31,7 @@ prompt=""
 count=3
 runtime="terminal"
 root=""
+use_watcher=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -41,6 +42,7 @@ while [[ $# -gt 0 ]]; do
     --count)   shift; [[ $# -gt 0 ]] || spawn_die "Missing value for --count";   count="$1" ;;
     --runtime) shift; [[ $# -gt 0 ]] || spawn_die "Missing value for --runtime"; runtime="$1" ;;
     --root)    shift; [[ $# -gt 0 ]] || spawn_die "Missing value for --root";    root="$1" ;;
+    --no-watch) use_watcher=0 ;;
     -h|--help) usage; exit 0 ;;
     *) spawn_die "Unknown argument: $1" ;;
   esac
@@ -144,17 +146,45 @@ q_store="$(printf '%q' "$store")"
 success_hook="bash $q_scripts/marbles_next.sh $q_agent $q_plan $count 1 $marbles_run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
 failure_hook="bash $q_scripts/marbles_next.sh --failed $q_agent $q_plan $count 1 $marbles_run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
 
-# ── Spawn first iteration ────────────────────────────────────────────
-export VIBECRAFT_LOOP_NR=1
-export VIBECRAFT_SKILL_CODE="marb"
-export VIBECRAFT_RUN_ID="${marbles_run_id}-001"
+# ── Launch watcher (temporal guardian) or legacy fire-and-forget ──────
+if (( use_watcher )); then
+  # Watcher runs as foreground — it observes the spawn lifecycle
+  # and renders the circle chain visualization.
+  # The existing spawn mechanism (agent_spawn.sh + marbles_next.sh hooks)
+  # runs inside the watcher's observation loop.
 
-spawn_args=(
-  --mode marbles
-  --runtime "$runtime"
-  --root "$root_dir"
-  --success-hook "$success_hook"
-  --failure-hook "$failure_hook"
-)
+  # Spawn L1 first (watcher observes from the start)
+  export VIBECRAFT_LOOP_NR=1
+  export VIBECRAFT_SKILL_CODE="marb"
+  export VIBECRAFT_RUN_ID="${marbles_run_id}-001"
 
-VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"
+  spawn_args=(
+    --mode marbles
+    --runtime "$runtime"
+    --root "$root_dir"
+    --success-hook "$success_hook"
+    --failure-hook "$failure_hook"
+  )
+
+  VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan" &
+
+  # Hand off to watcher as foreground process
+  exec bash "$SCRIPT_DIR/marbles_watcher.sh" \
+    "$marbles_run_id" "$agent" "$original_plan" "$count" \
+    "$root_dir" "$runtime" "$store" "$session_lock"
+else
+  # Legacy fire-and-forget (--no-watch)
+  export VIBECRAFT_LOOP_NR=1
+  export VIBECRAFT_SKILL_CODE="marb"
+  export VIBECRAFT_RUN_ID="${marbles_run_id}-001"
+
+  spawn_args=(
+    --mode marbles
+    --runtime "$runtime"
+    --root "$root_dir"
+    --success-hook "$success_hook"
+    --failure-hook "$failure_hook"
+  )
+
+  VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"
+fi

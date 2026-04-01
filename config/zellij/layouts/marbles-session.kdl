@@ -1,0 +1,58 @@
+// Marbles Session Layout — convergence workspace
+// Launch: zellij --layout marbles-session.kdl
+// Or:     vc-marbles claude --count 6  (auto-launches if not in zellij)
+
+layout {
+    // Top: compact bar with session info
+    pane size=1 borderless=true {
+        plugin location="zellij:compact-bar"
+    }
+
+    // Main workspace: watcher + agent side by side
+    pane split_direction="vertical" {
+        // Left 40%: watcher status (circle chain, trajectory, metrics)
+        pane name="watcher" size="40%" {
+            borderless false
+        }
+
+        // Right 60%: agent terminal (where the actual work happens)
+        pane name="agent" size="60%" focus=true {
+            borderless false
+        }
+    }
+
+    // Bottom: status bar with keybindings
+    pane size=2 borderless=true {
+        plugin location="zellij:status-bar" {
+            format_left  " {mode}"
+            format_right " ⚒ Marbles "
+        }
+    }
+}
+
+// Keybindings for marbles control (injected into zellij's shared mode)
+keybinds {
+    shared {
+        // Ctrl+P = Pause marbles (creates pause sentinel)
+        bind "Ctrl p" {
+            Run "bash" "-c" "touch ~/.vibecrafted/marbles/*/pause 2>/dev/null && echo '⏸ Paused' || echo 'No sessions'"
+        }
+        // Ctrl+R in normal mode = Resume (remove pause sentinel)
+        // Note: Ctrl+R conflicts with zellij resize mode, use Alt+R instead
+        bind "Alt r" {
+            Run "bash" "-c" "rm -f ~/.vibecrafted/marbles/*/pause 2>/dev/null && echo '▶ Resumed' || echo 'Nothing paused'"
+        }
+        // Ctrl+X = Stop marbles (creates stop sentinel)
+        bind "Ctrl x" {
+            Run "bash" "-c" "touch ~/.vibecrafted/marbles/*/stop 2>/dev/null && echo '■ Stopped' || echo 'No sessions'"
+        }
+        // Alt+S = Session listing
+        bind "Alt s" {
+            Run "bash" "-c" "bash ~/.vibecrafted/skills/vc-agents/scripts/marbles_ctl.sh session; read -p ''"
+        }
+        // Alt+I = Inspect latest session
+        bind "Alt i" {
+            Run "bash" "-c" "rid=$(ls -t ~/.vibecrafted/marbles/ 2>/dev/null | head -1); [ -n \"$rid\" ] && bash ~/.vibecrafted/skills/vc-agents/scripts/marbles_ctl.sh inspect \"$rid\"; read -p ''"
+        }
+    }
+}

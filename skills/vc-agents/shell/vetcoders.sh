@@ -513,6 +513,13 @@ codex-marbles() { _vetcoders_marbles codex "$@"; }
 claude-marbles() { _vetcoders_marbles claude "$@"; }
 gemini-marbles() { _vetcoders_marbles gemini "$@"; }
 
+# Marbles control subcommands
+marbles-pause()   { local s; s="$(_vetcoders_spawn_script claude "marbles_ctl.sh")" && bash "$s" pause "$@"; }
+marbles-stop()    { local s; s="$(_vetcoders_spawn_script claude "marbles_ctl.sh")" && bash "$s" stop "$@"; }
+marbles-resume()  { local s; s="$(_vetcoders_spawn_script claude "marbles_ctl.sh")" && bash "$s" resume "$@"; }
+marbles-session() { local s; s="$(_vetcoders_spawn_script claude "marbles_ctl.sh")" && bash "$s" session "$@"; }
+marbles-inspect() { local s; s="$(_vetcoders_spawn_script claude "marbles_ctl.sh")" && bash "$s" inspect "$@"; }
+
 codex-decorate() { _vetcoders_skill codex decorate "$@"; }
 claude-decorate() { _vetcoders_skill claude decorate "$@"; }
 gemini-decorate() { _vetcoders_skill gemini decorate "$@"; }

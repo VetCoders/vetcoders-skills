@@ -508,6 +508,39 @@ PY
 EOF_APPLE
 }
 
+spawn_open_iterm() {
+  local launcher="$1"
+  command -v osascript >/dev/null 2>&1 || return 1
+  [[ "${TERM_PROGRAM:-}" == "iTerm.app" || -n "${ITERM_SESSION_ID:-}" ]] || return 1
+
+  local command_json
+  command_json="$(python3 - "$launcher" "${SPAWN_ROOT:-}" <<'PY'
+import json
+import shlex
+import sys
+
+launcher = sys.argv[1]
+root = sys.argv[2] if len(sys.argv) > 2 else ""
+parts = []
+if root:
+    parts.append("cd " + shlex.quote(root))
+parts.append("bash " + shlex.quote(launcher))
+print(json.dumps(" && ".join(parts)))
+PY
+)"
+
+  osascript <<EOF_APPLE
+tell application "iTerm2"
+  tell current window
+    create tab with default profile
+    tell current session of current tab
+      write text $command_json
+    end tell
+  end tell
+end tell
+EOF_APPLE
+}
+
 spawn_in_zellij_pane() {
   local launcher="$1"
   local pane_name="${2:-agent}"
@@ -537,6 +570,8 @@ spawn_launch() {
   case "$runtime" in
     terminal|visible)
       if spawn_in_zellij_pane "$launcher" "$pane_name"; then
+        :
+      elif spawn_open_iterm "$launcher" 2>/dev/null; then
         :
       elif command -v osascript >/dev/null 2>&1; then
         spawn_open_terminal "$launcher"
