@@ -346,6 +346,18 @@
         ].join('');
     }
 
+    function replaceRootMarkup(root, markup) {
+        var parser = new window.DOMParser();
+        var parsed = parser.parseFromString(markup, 'text/html');
+        var fragment = document.createDocumentFragment();
+
+        while (parsed.body.firstChild) {
+            fragment.appendChild(parsed.body.firstChild);
+        }
+
+        root.replaceChildren(fragment);
+    }
+
     function initFrameworkPlayground(root, rootIndex) {
         if (!root || root.dataset.frameworkReady === 'true') return;
         root.dataset.frameworkReady = 'true';
@@ -355,7 +367,7 @@
         root.classList.add('framework-playground');
         root.classList.toggle('framework-playground--standalone', layout === 'standalone');
 
-        root.innerHTML = buildShowcaseMarkup(layout);
+        replaceRootMarkup(root, buildShowcaseMarkup(layout));
 
         var stage = root.querySelector('.framework-playground__stage');
         var canvas = root.querySelector('.framework-playground__canvas');
@@ -461,6 +473,15 @@
 
         function setRangePct(input, pct) {
             input.style.setProperty('--range-pct', pct + '%');
+        }
+
+        function createControlCaption(text, tagName) {
+            var node = document.createElement(tagName || 'label');
+            node.style.fontSize = '0.7rem';
+            node.style.color = 'var(--steel-dark)';
+            node.style.fontFamily = 'var(--font-mono)';
+            node.textContent = text;
+            return node;
         }
 
         function resolvePhaseIndex(name) {
@@ -700,7 +721,7 @@
 
         function renderPhaseControls(phaseIdx) {
             var p = PHASES[phaseIdx];
-            controlsEl.innerHTML = '';
+            controlsEl.replaceChildren();
 
             var wrap = document.createElement('div');
             wrap.className = 'framework-playground__controls-inner';
@@ -710,7 +731,7 @@
                 shapeRow.style.display = 'flex';
                 shapeRow.style.alignItems = 'center';
                 shapeRow.style.justifyContent = 'space-between';
-                shapeRow.innerHTML = '<span style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">LAYOUT</span>';
+                shapeRow.appendChild(createControlCaption('LAYOUT', 'span'));
 
                 var shapeNav = document.createElement('div');
                 shapeNav.style.display = 'flex';
@@ -718,7 +739,7 @@
 
                 var prevShape = document.createElement('button');
                 prevShape.className = 'framework-playground__control-btn';
-                prevShape.innerHTML = '&lt;';
+                prevShape.textContent = '<';
                 prevShape.onclick = function() {
                     boardShape = (boardShape - 1 + SHAPES.length) % SHAPES.length;
                     buildSlots();
@@ -735,7 +756,7 @@
 
                 var nextShape = document.createElement('button');
                 nextShape.className = 'framework-playground__control-btn';
-                nextShape.innerHTML = '&gt;';
+                nextShape.textContent = '>';
                 nextShape.onclick = function() {
                     boardShape = (boardShape + 1) % SHAPES.length;
                     buildSlots();
@@ -752,7 +773,7 @@
                 var densityRow = document.createElement('div');
                 densityRow.style.display = 'grid';
                 densityRow.style.gap = '0.35rem';
-                densityRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">FRAME: ' + SHAPES[boardShape].toUpperCase() + '</label>';
+                densityRow.appendChild(createControlCaption('FRAME: ' + SHAPES[boardShape].toUpperCase()));
                 var frameNote = document.createElement('div');
                 frameNote.className = 'framework-playground__side-copy';
                 frameNote.textContent = 'Lock the boundary first. Groove count belongs to Workflow.';
@@ -780,7 +801,7 @@
                 var densityRow = document.createElement('div');
                 densityRow.style.display = 'grid';
                 densityRow.style.gap = '0.35rem';
-                densityRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">DENSITY: ' + boardDensity.toFixed(1) + ' · GROOVES: ' + slots.length + '</label>';
+                densityRow.appendChild(createControlCaption('DENSITY: ' + boardDensity.toFixed(1) + ' · GROOVES: ' + slots.length));
                 var densitySlider = document.createElement('input');
                 densitySlider.type = 'range';
                 densitySlider.min = '0.5';
@@ -809,7 +830,7 @@
                 var agentBatchRow = document.createElement('div');
                 agentBatchRow.style.display = 'grid';
                 agentBatchRow.style.gap = '0.35rem';
-                agentBatchRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">SPECIALIST COUNT: ' + agentBatchSize + '</label>';
+                agentBatchRow.appendChild(createControlCaption('SPECIALIST COUNT: ' + agentBatchSize));
                 var agentSlider = document.createElement('input');
                 agentSlider.type = 'range';
                 agentSlider.min = '1';
@@ -851,7 +872,7 @@
                 var batchRow = document.createElement('div');
                 batchRow.style.display = 'grid';
                 batchRow.style.gap = '0.35rem';
-                batchRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">--COUNT: ' + marbleRunCount + '</label>';
+                batchRow.appendChild(createControlCaption('--COUNT: ' + marbleRunCount));
                 var batchSlider = document.createElement('input');
                 batchSlider.type = 'range';
                 batchSlider.min = '1';
@@ -870,7 +891,7 @@
                 var powerRow = document.createElement('div');
                 powerRow.style.display = 'grid';
                 powerRow.style.gap = '0.35rem';
-                powerRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">POWER: ' + marblePower.toFixed(1) + '</label>';
+                powerRow.appendChild(createControlCaption('POWER: ' + marblePower.toFixed(1)));
                 var powerSlider = document.createElement('input');
                 powerSlider.type = 'range';
                 powerSlider.min = '0.5';
@@ -938,7 +959,7 @@
                 var hydroBatchRow = document.createElement('div');
                 hydroBatchRow.style.display = 'grid';
                 hydroBatchRow.style.gap = '0.35rem';
-                hydroBatchRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">PRECISION FILL: ' + hydrateBatchSize + '</label>';
+                hydroBatchRow.appendChild(createControlCaption('PRECISION FILL: ' + hydrateBatchSize));
                 var hydroSlider = document.createElement('input');
                 hydroSlider.type = 'range'; hydroSlider.min = '1'; hydroSlider.max = '10';
                 hydroSlider.value = hydrateBatchSize;
@@ -966,7 +987,7 @@
                 var polishRow = document.createElement('div');
                 polishRow.style.display = 'grid';
                 polishRow.style.gap = '0.35rem';
-                polishRow.innerHTML = '<label style="font-size:0.7rem; color:var(--steel-dark); font-family:var(--font-mono);">POLISH INTENSITY: ' + Math.round(polishIntensity * 100) + '%</label>';
+                polishRow.appendChild(createControlCaption('POLISH INTENSITY: ' + Math.round(polishIntensity * 100) + '%'));
                 var polishSlider = document.createElement('input');
                 polishSlider.type = 'range'; polishSlider.min = '0'; polishSlider.max = '1'; polishSlider.step = '0.01';
                 polishSlider.value = polishIntensity;
@@ -1557,7 +1578,10 @@
             button.dataset.frameworkPhase = phaseDef.name;
             button.dataset.frameworkTooltip = phaseDef.title + ' — ' + phaseDef.description;
             button.setAttribute('aria-label', phaseDef.label + '. ' + phaseDef.title + '. ' + phaseDef.description);
-            button.innerHTML = '<span class="framework-playground__chip-label">' + phaseDef.label + '</span>';
+            var buttonLabel = document.createElement('span');
+            buttonLabel.className = 'framework-playground__chip-label';
+            buttonLabel.textContent = phaseDef.label;
+            button.appendChild(buttonLabel);
             button.addEventListener('click', function () {
                 showPhase(index);
             });
