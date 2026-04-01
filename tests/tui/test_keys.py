@@ -74,6 +74,26 @@ def test_vetcoders_install_env_paths_expand_user(
     )
 
 
+def test_helper_surface_label_prefers_canonical_helper(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    home = tmp_path / "home"
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
+
+    assert vetcoders_install._helper_surface_label() == "not installed"
+
+    legacy = home / ".config" / "zsh" / "vc-skills.zsh"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("# legacy\n", encoding="utf-8")
+    assert vetcoders_install._helper_surface_label() == "legacy zsh"
+
+    canonical = home / ".config" / "vetcoders" / "vc-skills.sh"
+    canonical.parent.mkdir(parents=True)
+    canonical.write_text("# canonical\n", encoding="utf-8")
+    assert vetcoders_install._helper_surface_label() == "bash + zsh"
+
+
 def test_strip_rc_entry_removes_duplicate_launcher_blocks() -> None:
     path_line = vetcoders_install._launcher_path_line()
     content = (

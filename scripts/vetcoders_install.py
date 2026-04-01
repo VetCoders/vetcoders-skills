@@ -907,6 +907,17 @@ def _old_zshrc_source_line() -> str:
     return '[[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/vc-skills.zsh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/vc-skills.zsh"'
 
 
+def _helper_surface_label() -> str:
+    helper_file = _helper_target_path()
+    legacy_file = _helper_legacy_path()
+
+    if helper_file.exists():
+        return "bash + zsh"
+    if legacy_file.exists():
+        return "legacy zsh"
+    return "not installed"
+
+
 def _launcher_path_line() -> str:
     return 'export PATH="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin:$PATH"'
 
@@ -2123,12 +2134,7 @@ def _print_unicode_summary(
         for a in ("claude", "codex", "gemini")
         if (store_path / "vc-agents" / "scripts" / f"{a}_spawn.sh").exists()
     )
-    shell_list = []
-    if (Path.home() / ".bashrc").exists():
-        shell_list.append("bash")
-    if (Path.home() / ".zshrc").exists():
-        shell_list.append("zsh")
-    shell_str = " + ".join(shell_list) if shell_list else "manual"
+    shell_str = _helper_surface_label()
     fnd_ok = [f.name for f in FOUNDATIONS if f.is_installed()]
     fnd_str = " \u00b7 ".join(fnd_ok[:3]) if fnd_ok else "none"
     if len(fnd_ok) > 3:
@@ -2334,16 +2340,11 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
                 print(f"  Shell installer not found: {shell_script}")
             print()
 
-        shell_list = []
-        if (Path.home() / ".bashrc").exists():
-            shell_list.append("bash")
-        if (Path.home() / ".zshrc").exists():
-            shell_list.append("zsh")
         _compact_line(
             out,
             green("\u2713"),
             "Helpers",
-            " + ".join(shell_list) if shell_list else "manual",
+            _helper_surface_label(),
         )
 
         # Foundations compact line
