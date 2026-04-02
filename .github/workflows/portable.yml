@@ -23,22 +23,22 @@ jobs:
         run: brew install shellcheck
       - name: Run shell checks
         run: make check
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Install pytest
-        run: python3 -m pip install pytest
+        run: uv pip install pytest --break-system-packages
       - name: Run installer tests
-        run: make test
+        run: uv run make test
       - name: Check marketplace bundle drift
-        run: make bundle-check
+        run: uv run make bundle-check
       - name: Install rsync on Ubuntu
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install -y rsync
       - name: Run portable checks
         run: bash scripts/check-portable.sh
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Run tests
-        run: make test
+        run: uv run make test
 
   curl-bootstrap:
     name: curl | bash bootstrap
