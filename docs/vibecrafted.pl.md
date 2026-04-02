@@ -1,4 +1,4 @@
-## ؞Vibecraftedٜ — The Founders’ Framework
+## ؞Vibecraftedٜ — The Founders’ Framework that created itself.
 
 ### Opis
 
