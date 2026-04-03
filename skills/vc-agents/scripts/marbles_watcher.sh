@@ -174,6 +174,47 @@ PY
   fi
 }
 
+# ── Background verification poller ───────────────────────────────────
+# Polls for *_verified.md file for a given loop, updates state.json on arrival.
+# Runs as background subshell — does not block main watcher loop.
+_bg_poll_verification() {
+  local loop_nr="$1" slug="$2" agent_name="$3"
+  local pattern="*_marbles-${slug}_L${loop_nr}_${agent_name}_verified.md"
+  local max_wait=600  # 10 minutes max
+  local elapsed=0
+
+  while (( elapsed < max_wait )); do
+    local found
+    found=$(find "$store/reports" -name "$pattern" -size +0c 2>/dev/null | head -1 || true)
+    if [[ -n "$found" ]]; then
+      _record_verification_done "$loop_nr" "$found"
+      printf '    %b✓ verified%b  L%s → %s\n' "$_green" "$_reset" "$loop_nr" "$(basename "$found")"
+      return 0
+    fi
+    sleep 10
+    (( elapsed += 10 ))
+  done
+
+  # Timed out — mark as skipped
+  if command -v python3 >/dev/null 2>&1 && [[ -f "$state_file" ]]; then
+    python3 - "$state_file" "$loop_nr" <<'PY'
+import json, sys, datetime
+with open(sys.argv[1]) as f: d = json.load(f)
+d["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+for loop in d["loops"]:
+    if loop["loop"] == int(sys.argv[2]):
+        if loop.get("verification_status") == "pending":
+            loop["verification_status"] = "timed_out"
+with open(sys.argv[1] + ".tmp", "w") as f: json.dump(d, f, indent=2)
+PY
+    mv "$state_file.tmp" "$state_file" 2>/dev/null || true
+  fi
+  printf '    %b⚠ verification timed out%b  L%s\n' "$_yellow" "$_reset" "$loop_nr"
+}
+
+# Track background poller PIDs for cleanup
+_verification_pids=()
+
 # ── Visual helpers ────────────────────────────────────────────────────
 _render_chain() {
   local current="$1" total="$2"
@@ -398,6 +439,10 @@ for ((loop_nr=1; loop_nr<=total_count; loop_nr++)); do
   fi
   _render_loop_phase "$loop_nr" "done" "$detail"
 
+  # ── Start background verification poller for this loop ──────────
+  _bg_poll_verification "$loop_nr" "$plan_slug" "$agent" &
+  _verification_pids+=($!)
+
   # ── Early convergence check ──────────────────────────────────────
   if [[ "${p0:-}" == "0" && "${p1:-}" == "0" && "${p2:-}" == "0" ]] \
      && [[ -n "$p0" && -n "$p1" && -n "$p2" ]]; then
@@ -442,8 +487,49 @@ else
   [[ -n "$trajectory" ]] && printf '  %s\n' "$trajectory"
 fi
 
+# ── Wait briefly for any pending verifications ───────────────────────
+if (( ${#_verification_pids[@]} > 0 )); then
+  printf '\n  %bverification:%b ' "$_dim" "$_reset"
+  # Give background pollers up to 30s grace period for quick completions
+  for _vpid in "${_verification_pids[@]}"; do
+    # Non-blocking check — if already done, great; if not, let it run
+    if kill -0 "$_vpid" 2>/dev/null; then
+      # Still running — wait up to 30s
+      _vwait=0
+      while kill -0 "$_vpid" 2>/dev/null && (( _vwait < 30 )); do
+        sleep 5
+        (( _vwait += 5 ))
+      done
+    fi
+  done
+
+  # Report final verification status from state.json
+  if command -v python3 >/dev/null 2>&1 && [[ -f "$state_file" ]]; then
+    python3 - "$state_file" <<'PY'
+import json, sys
+with open(sys.argv[1]) as f: d = json.load(f)
+pending = completed = timed = 0
+for loop in d.get("loops", []):
+    vs = loop.get("verification_status", "")
+    if vs == "completed": completed += 1
+    elif vs == "pending": pending += 1
+    elif vs == "timed_out": timed += 1
+parts = []
+if completed: parts.append(f"{completed} done")
+if pending: parts.append(f"{pending} pending")
+if timed: parts.append(f"{timed} timed out")
+print(", ".join(parts) if parts else "none tracked")
+PY
+  fi
+fi
+
 printf '\n  lock released: %s\n' "$run_id"
 printf '%b──────────────────────────────────%b\n\n' "$_steel" "$_reset"
+
+# Kill any remaining background pollers (they'll die naturally but be clean)
+for _vpid in "${_verification_pids[@]:-}"; do
+  kill "$_vpid" 2>/dev/null || true
+done
 
 # Cleanup lock
 rm -f "$session_lock" 2>/dev/null || true
