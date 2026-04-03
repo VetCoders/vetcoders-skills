@@ -130,7 +130,11 @@ evolving codebase.
 │     └─ Run gates on the changed codebase                 │
 │     └─ NEW findings may appear (cascade) — expected      │
 │                                                          │
-│  5. SCORE                                                │
+│  5. SELF-AUDIT (Verification)                            │
+│     └─ Agent runs _launch_verification or self-audits    │
+│     └─ Generates a *_verified.md report of its findings  │
+│                                                          │
+│  6. SCORE                                                │
 │     └─ Distinguish cascade from divergence               │
 │     └─ Decide: continue or converged?                    │
 │                                                          │

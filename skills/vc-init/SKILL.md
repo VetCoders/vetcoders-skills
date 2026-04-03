@@ -115,7 +115,7 @@ claims a command that contradicts current code, trust the code.
 
 #### 2c. Derive Conventions from Git History
 
-Run `repo-full` for a complete repository snapshot, or fall back to:
+Run the following git commands for a complete repository snapshot:
 
 ```bash
 git log --oneline --decorate --graph -n 15
