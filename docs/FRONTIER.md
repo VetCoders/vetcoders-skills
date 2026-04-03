@@ -64,6 +64,7 @@ The repo keeps an Atuin config at `config/atuin/config.toml` for:
 
 - fuzzy history
 - workspace-first filtering
+- home-scope fallback when the current repo/workspace is empty
 - preview-enabled recall
 - noise filtering for trivial commands
 
