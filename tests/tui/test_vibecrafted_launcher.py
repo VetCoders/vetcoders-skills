@@ -131,6 +131,52 @@ def test_repo_launcher_is_directly_executable() -> None:
     assert "vibecrafted dashboard" in result.stdout
 
 
+def test_skill_subcommand_help_is_human_readable_without_agent() -> None:
+    result = subprocess.run(
+        [str(LAUNCHER), "justdo", "--help"],
+        check=True,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "justdo" in result.stdout
+    assert "Autonomous end-to-end implementation" in result.stdout
+    assert "vibecrafted justdo <claude|codex|gemini> [flags]" in result.stdout
+    assert "vibecrafted implement <agent> [flags]" in result.stdout
+
+
+def test_skill_wrapper_help_is_human_readable_without_agent(tmp_path: Path) -> None:
+    wrapper = tmp_path / "vc-followup"
+    wrapper.symlink_to(LAUNCHER)
+
+    result = subprocess.run(
+        [str(wrapper), "--help"],
+        check=True,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "followup" in result.stdout
+    assert "Post-implementation audit" in result.stdout
+    assert "vc-followup <claude|codex|gemini> [flags]" in result.stdout
+
+
+def test_agent_subcommand_help_lists_modes() -> None:
+    result = subprocess.run(
+        [str(LAUNCHER), "codex", "--help"],
+        check=True,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "Plan-based helper modes for codex." in result.stdout
+    assert "implement <plan.md>" in result.stdout
+    assert "observe   --last" in result.stdout
+
+
 def test_dashboard_subcommand_launches_repo_owned_zellij_layout(tmp_path: Path) -> None:
     home = tmp_path / "home"
     fake_bin = tmp_path / "bin"
