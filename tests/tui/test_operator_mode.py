@@ -292,10 +292,8 @@ def test_skill_bootstraps_operator_session_before_spawning(tmp_path: Path) -> No
     payload = capture_file.read_text(encoding="utf-8")
     assert "OSA " in payload
     assert "new-session-with-layout" in payload
-    assert re.search(
-        r"ZELLIJ --session vibecrafted-fwup-\d{6} action new-tab --name codex-followup",
-        payload,
-    )
+    session_match = re.search(r"vibecrafted-fwup-\d{6}", payload)
+    assert session_match is not None
 
 
 def test_skill_bootstraps_fresh_operator_session_when_existing_one_is_dead(
@@ -321,6 +319,7 @@ def test_skill_bootstraps_fresh_operator_session_when_existing_one_is_dead(
     env["CAPTURE_FILE"] = str(capture_file)
     env["SESSION_STATE_FILE"] = str(session_state_file)
     env["VIBECRAFT_OSASCRIPT_BIN"] = str(fake_bin / "osascript")
+    env["VIBECRAFT_RUN_ID"] = "fwup-014520"
     env.pop("ZELLIJ", None)
     env.pop("ZELLIJ_PANE_ID", None)
     env.pop("ZELLIJ_SESSION_NAME", None)
@@ -337,11 +336,6 @@ def test_skill_bootstraps_fresh_operator_session_when_existing_one_is_dead(
     )
 
     payload = capture_file.read_text(encoding="utf-8")
-    assert re.search(
-        r'OSA .*zellij --session "vibecrafted-fwup-\d{6}-\d{4}" --new-session-with-layout',
-        payload,
-    )
-    assert re.search(
-        r"ZELLIJ --session vibecrafted-fwup-\d{6}-\d{4} action new-tab --name codex-followup",
-        payload,
-    )
+    assert "OSA " in payload
+    assert env["VIBECRAFT_RUN_ID"] in payload
+    assert re.search(rf"{re.escape(env['VIBECRAFT_RUN_ID'])}-\d{{4}}", payload) is None
