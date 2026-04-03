@@ -50,7 +50,7 @@ print('')
 # ── Collect report paths for loops L(1)..L(n) ───────────────────────
 _collect_reports() {
   local up_to="$1"
-  find "$store/reports" -name "marbles-${plan_slug}_L*.md" \
+  find "$store/reports" -name "*_marbles-${plan_slug}_L*.md" \
     ! -name '*_verified.md' \
     ! -name '*.meta.json' ! -name '*.transcript.log' 2>/dev/null \
     | sort | while IFS= read -r rpt; do
@@ -84,7 +84,7 @@ _launch_verification() {
 
   # Expected verified report path
   local verified_report
-  verified_report=$(find "$store/reports" -name "marbles-${plan_slug}_L${loop_nr}_${agent}.md" \
+  verified_report=$(find "$store/reports" -name "*_marbles-${plan_slug}_L${loop_nr}_${agent}.md" \
     ! -name '*_verified*' 2>/dev/null | sort | tail -1 || true)
   local verified_path="${verified_report%.md}_verified.md"
 
@@ -199,7 +199,7 @@ $total_count loops completed successfully.
 ## Loop Reports
 HEADER
 
-    find "$store/reports" -name "marbles-${plan_slug}_L*.md" \
+    find "$store/reports" -name "*_marbles-${plan_slug}_L*.md" \
       ! -name '*_verified.md' \
       ! -name '*.meta.json' ! -name '*.transcript.log' 2>/dev/null \
       | sort | while IFS= read -r rpt; do
