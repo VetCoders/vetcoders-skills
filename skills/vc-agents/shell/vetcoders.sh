@@ -52,7 +52,7 @@ _vetcoders_default_runtime() {
 }
 
 _vetcoders_in_zellij() {
-  [[ -n "${ZELLIJ:-}" && "${ZELLIJ}" != "0" ]]
+  [[ -n "${ZELLIJ_PANE_ID:-}" ]] || [[ -n "${ZELLIJ:-}" && "${ZELLIJ}" != "0" ]]
 }
 
 _vetcoders_atuin_bin() {
@@ -204,7 +204,10 @@ _vetcoders_prepare_operator_runtime() {
     *) return 0 ;;
   esac
 
-  _vetcoders_in_zellij && return 0
+  if _vetcoders_in_zellij; then
+    export VIBECRAFT_OPERATOR_SESSION="${ZELLIJ_SESSION_NAME:-$(_vetcoders_operator_session_name)}"
+    return 0
+  fi
   command -v zellij >/dev/null 2>&1 || return 0
 
   session_name="$(_vetcoders_operator_session_name)"
@@ -519,10 +522,17 @@ _vetcoders_launch_dashboard() {
   }
 
   if [[ "${VIBECRAFT_PREFER_REPO_ZELLIJ:-0}" == "1" ]]; then
-    repo_source="$(_vetcoders_frontier_source_root 2>/dev/null || true)"
-    repo_zellij_dir="${repo_source:+$repo_source/config/zellij}"
-    if [[ -n "$repo_zellij_dir" && -f "$repo_zellij_dir/config.kdl" && "$layout_file" == "$repo_zellij_dir"/layouts/* ]]; then
-      export ZELLIJ_CONFIG_DIR="$repo_zellij_dir"
+    # Use the git-derived repo root, not frontier source root, so that an
+    # ambient VIBECRAFT_ROOT pointing at a different repo cannot hijack the
+    # config dir when the launcher explicitly asked for repo-local zellij.
+    repo_source="$(_vetcoders_repo_root)"
+    repo_zellij_dir="$repo_source/config/zellij"
+    if [[ -d "$repo_zellij_dir" && -f "$repo_zellij_dir/config.kdl" ]]; then
+      local repo_layout="$repo_zellij_dir/layouts/${layout_name}.kdl"
+      if [[ -f "$repo_layout" ]]; then
+        layout_file="$repo_layout"
+        export ZELLIJ_CONFIG_DIR="$repo_zellij_dir"
+      fi
     fi
   fi
 
@@ -945,7 +955,11 @@ _vetcoders_marbles() {
 
   # Inside zellij: run marbles orchestrator in a pane below, keep operator free
   if _vetcoders_in_zellij && command -v zellij >/dev/null 2>&1; then
-    zellij run --name "marbles" --direction down -- /bin/zsh -l -c "$marbles_cmd"
+    zellij action new-pane \
+      --direction down \
+      --name "marbles" \
+      --cwd "${_vetcoders_contract_root:-$(_vetcoders_repo_root)}" \
+      -- /bin/zsh -l -c "$marbles_cmd"
   elif [[ "$(_vetcoders_effective_runtime)" =~ ^(terminal|visible)$ ]]; then
     _vetcoders_prepare_operator_runtime "$(_vetcoders_effective_runtime)" || return 1
     if [[ -n "${VIBECRAFT_OPERATOR_SESSION:-}" ]]; then

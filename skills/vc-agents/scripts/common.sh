@@ -586,7 +586,7 @@ EOF_APPLE
 }
 
 spawn_in_zellij_context() {
-  [[ -n "${ZELLIJ:-}" && "${ZELLIJ}" != "0" ]]
+  [[ -n "${ZELLIJ_PANE_ID:-}" ]] || [[ -n "${ZELLIJ:-}" && "${ZELLIJ}" != "0" ]]
 }
 
 spawn_in_zellij_pane() {
@@ -594,7 +594,11 @@ spawn_in_zellij_pane() {
   local pane_name="${2:-agent}"
   local direction="${VIBECRAFT_ZELLIJ_SPAWN_DIRECTION:-right}"
   if spawn_in_zellij_context && command -v zellij >/dev/null 2>&1; then
-    zellij run --name "$pane_name" --direction "$direction" -- /bin/zsh -l -c "bash '$launcher'"
+    zellij action new-pane \
+      --direction "$direction" \
+      --name "$pane_name" \
+      --cwd "${SPAWN_ROOT:-$(pwd)}" \
+      -- /bin/zsh -l -c "bash '$launcher'"
     return 0
   fi
   return 1
