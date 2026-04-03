@@ -141,6 +141,29 @@ def test_generated_launcher_preserves_operator_session_contract(tmp_path: Path) 
     assert payload == ["vibecrafted", "right"]
 
 
+def test_spawn_prepare_paths_warns_when_run_id_falls_back(tmp_path: Path) -> None:
+    prompt_file = tmp_path / "prompt.md"
+    prompt_file.write_text("# Prompt\n", encoding="utf-8")
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        source "{COMMON_SH}"
+        unset VIBECRAFT_RUN_ID
+        export VIBECRAFT_SKILL_CODE="fwup"
+        export VIBECRAFT_LOOP_NR="0"
+        spawn_prepare_paths claude "{prompt_file}" "{tmp_path}"
+        printf '%s\\n' "$SPAWN_RUN_ID"
+        '''
+    )
+
+    assert result.stdout.strip().endswith("fwup-000")
+    assert (
+        "Warning: VIBECRAFT_RUN_ID missing; falling back to synthetic run_id fwup-000"
+        in result.stderr
+    )
+
+
 def test_spawn_in_operator_session_targets_named_session(tmp_path: Path) -> None:
     launcher = tmp_path / "launch.sh"
     launcher.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")

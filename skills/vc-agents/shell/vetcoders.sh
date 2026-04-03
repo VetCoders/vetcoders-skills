@@ -50,7 +50,7 @@ _vetcoders_repo_root() {
 _vetcoders_org_repo() {
   local root="${1:-$(_vetcoders_repo_root)}"
   local org_repo=""
-  org_repo="$(cd "$root" && git remote get-url origin 2>/dev/null | sed -E 's|.*[:/]([^/]+)/([^/.]+)(\\.git)?$|\\1/\\2|' || true)"
+  org_repo="$(cd "$root" && git remote get-url origin 2>/dev/null | sed -E 's|.*[:/]([^/]+)/([^/.]+)(\.git)?$|\1/\2|' || true)"
   if [[ -n "$org_repo" ]]; then
     printf '%s\n' "$org_repo"
   else
@@ -540,7 +540,8 @@ _vetcoders_atuin_run_with_home_scope() {
   local -a argv=()
 
   argv+=("search" "--cwd" "$fallback_cwd")
-  shift
+  # Skip "search" from caller args if present
+  [[ "${1:-}" == "search" ]] && shift
   argv+=("$@")
   _vetcoders_atuin_run "${argv[@]}"
 }
@@ -550,7 +551,8 @@ _vetcoders_atuin_probe_current_scope() {
   local -a argv=()
 
   argv+=("search" "--cmd-only" "--limit" "1")
-  shift
+  # Skip "search" from caller args if present
+  [[ "${1:-}" == "search" ]] && shift
   for arg in "$@"; do
     case "$arg" in
       -i|--interactive|--shell-up-key-binding)
