@@ -949,6 +949,98 @@ def _run_smoke_command(
     return True, detail
 
 
+def _clean_legacy_rc_entries(content: str) -> Tuple[str, int]:
+    import re
+
+    lines = content.splitlines()
+    kept = []
+    skip_until = None
+    removed = 0
+
+    for cl in lines:
+        stripped = cl.strip()
+
+        # 1. Block cleanup
+        if skip_until:
+            removed += 1
+            if skip_until in stripped:
+                skip_until = None
+            continue
+
+        if (
+            stripped.startswith("# >>> VibeCraft")
+            or stripped.startswith("# <<< VibeCraft")
+            or stripped.startswith("# >>> 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝")
+            or stripped.startswith("# <<< 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝")
+        ):
+            removed += 1
+            skip_until = "VibeCraft" if "VibeCraft" in stripped else "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝"
+            continue
+
+        # 2. Known source lines
+        if stripped.startswith("[[ -r ") and (
+            "vc-skills" in stripped or "vetcoders" in stripped
+        ):
+            removed += 1
+            continue
+        if stripped.startswith("source ") and (
+            "vc-skills" in stripped or "vetcoders" in stripped
+        ):
+            removed += 1
+            continue
+
+        # 3. Known exports
+        if (
+            stripped.startswith("export VIBECRAFT_ROOT")
+            or stripped.startswith("export VIBECRAFTED_HOME")
+            or stripped.startswith("export LOCTREE_NUDGE")
+        ):
+            removed += 1
+            continue
+        if stripped.startswith("export PATH=") and (
+            "vibecraft" in stripped.lower() and "/bin" in stripped.lower()
+        ):
+            removed += 1
+            continue
+
+        # 4. Known comments
+        if stripped.startswith("#"):
+            lower_comment = stripped.lower()
+            if (
+                any(
+                    x in lower_comment
+                    for x in [
+                        "vetcoders shell helpers",
+                        "vibecraft shell helpers",
+                        "vibecrafted shell helpers",
+                        "vibecraft launcher",
+                        "vibecrafted launcher",
+                        "vibecrafted. helper shim",
+                        "vibecrafted. launcher",
+                        "vibecrafted. shell helpers",
+                    ]
+                )
+                or "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝" in stripped
+            ):
+                removed += 1
+                continue
+
+        kept.append(cl)
+
+    joined = "\n".join(kept)
+    joined = re.sub(r"\n{3,}", "\n\n", joined)
+    if content.endswith("\n") and not joined.endswith("\n"):
+        joined += "\n"
+    if not joined:
+        joined = ""
+
+    # If the text changed, adjust removed count safely
+    if joined != content and removed == 0:
+        removed = 1
+
+    return joined, removed
+
+
 def _strip_rc_entry(
     content: str, line: str, comment: Optional[str] = None
 ) -> Tuple[str, int]:
@@ -962,9 +1054,12 @@ def _strip_rc_entry(
         stripped = current.strip()
         if comment and stripped == f"# {comment}":
             next_idx = idx + 1
+            # allow empty lines in between comment and line
+            while next_idx < len(raw_lines) and not raw_lines[next_idx].strip():
+                next_idx += 1
             if next_idx < len(raw_lines) and raw_lines[next_idx].strip() == line:
-                removed += 2
-                idx += 2
+                removed += next_idx - idx + 1
+                idx = next_idx + 1
                 continue
         if stripped == line:
             removed += 1
@@ -2093,6 +2188,21 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
         store_path, all_runtimes, dry_run=dry_run, interactive=interactive
     )
 
+    # --- Execute: clean legacy and duplicate RC entries ---
+    for rcname in (".bashrc", ".zshrc"):
+        rcfile = Path.home() / rcname
+        if rcfile.exists():
+            rc_content = rcfile.read_text()
+            if not _is_writable(rcfile):
+                print(f"  {WARN} {rcfile} is locked — cannot clean old entries")
+                continue
+            cleaned_rc, removed_rc = _clean_legacy_rc_entries(rc_content)
+            if removed_rc > 0 and not dry_run:
+                rcfile.write_text(cleaned_rc)
+                print(f"  {OK} Cleaned {removed_rc} old entries from {rcname}")
+            elif removed_rc > 0:
+                print(f"  {dim('would clean')} {removed_rc} old entries from {rcname}")
+
     # --- Execute: shell helpers ---
     if install_shell:
         print(bold("Installing shell helper..."))
@@ -2396,6 +2506,17 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
         prune_legacy_skills(
             store_path, all_runtimes, dry_run=dry_run, interactive=False
         )
+
+        # Clean legacy RC entries
+        for rcname in (".bashrc", ".zshrc"):
+            rcfile = Path.home() / rcname
+            if rcfile.exists():
+                rc_content = rcfile.read_text()
+                if not _is_writable(rcfile):
+                    continue
+                cleaned_rc, removed_rc = _clean_legacy_rc_entries(rc_content)
+                if removed_rc > 0 and not dry_run:
+                    rcfile.write_text(cleaned_rc)
 
         # Shell helpers
         if install_shell:
