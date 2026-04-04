@@ -28,7 +28,7 @@ next=$((current + 1))
 plan_slug="$(spawn_slug_from_path "$original_plan")"
 
 # ── State directory (watcher writes session_id here) ─────────────────
-state_dir="$HOME/.vibecrafted/marbles/$run_id"
+state_dir="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/marbles/$run_id"
 state_file="$state_dir/state.json"
 
 # ── Read session_id for a loop from state.json ───────────────────────
@@ -245,9 +245,9 @@ success_hook="bash $q_scripts/marbles_next.sh $q_agent $q_plan $total_count $nex
 failure_hook="bash $q_scripts/marbles_next.sh --failed $q_agent $q_plan $total_count $next $run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
 
 # Set env for next iteration
-export VIBECRAFT_LOOP_NR=$next
-export VIBECRAFT_SKILL_CODE="marb"
-export VIBECRAFT_RUN_ID="${run_id}-$(printf '%03d' "$next")"
+export VIBECRAFTED_LOOP_NR=$next
+export VIBECRAFTED_SKILL_CODE="marb"
+export VIBECRAFTED_RUN_ID="${run_id}-$(printf '%03d' "$next")"
 
 spawn_args=(
   --mode marbles
@@ -257,4 +257,4 @@ spawn_args=(
   --failure-hook "$failure_hook"
 )
 
-VIBECRAFT_STORE_DIR="$store" bash "$scripts_dir/${agent}_spawn.sh" "${spawn_args[@]}" "$ln_plan"
+VIBECRAFTED_STORE_DIR="$store" bash "$scripts_dir/${agent}_spawn.sh" "${spawn_args[@]}" "$ln_plan"

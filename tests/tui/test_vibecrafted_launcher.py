@@ -68,7 +68,7 @@ def test_init_prefers_repo_skill_path_when_repo_launcher_runs_with_portable_home
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
-    env["VIBECRAFTED_HOME"] = "~/.portable-vc"
+    env["VIBECRAFTED_HOME"] = "$VIBECRAFTED_ROOT/.portable-vc"
     env["CAPTURE_FILE"] = str(capture_file)
 
     subprocess.run(

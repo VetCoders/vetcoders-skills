@@ -3,17 +3,17 @@ set -euo pipefail
 
 # Skrypt migracyjny dla legacy katalogów z `.ai-agents/`
 # Wykonuje "twardą" przeprowadzkę legacy katalogów z `.ai-agents/`
-# do centralnego archiwum ~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
+# do centralnego archiwum $VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
 # Przenosi wyłącznie foldery: plans, pipeline, reports, tmp
 # Pozostawia nietknięte ewentualne inne pliki w .ai-agents/ (np. GUIDELINES.md)
 #
 # Użycie:
 #   ./migrate_agents_workspace.sh [--dry-run] [dir1 dir2 ...]
-#   Domyślnie przeszukuje $HOME
+#   Domyślnie przeszukuje $VIBECRAFTED_ROOT/
 #
 # Do weryfikacji org/repo można też użyć: zsh -ic 'repo-full'
 
-VIBECRAFTED_HOME="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
+VIBECRAFTED_HOME="${VIBECRAFTED_HOME:-$VIBECRAFTED_ROOT/.vibecrafted}"
 
 # Parsowanie argumentów: pierwszy arg może być --dry-run, reszta to katalogi
 DRY_RUN=""
@@ -25,14 +25,14 @@ for arg in "$@"; do
     SEARCH_DIRS+=("$arg")
   fi
 done
-[[ ${#SEARCH_DIRS[@]} -eq 0 ]] && SEARCH_DIRS=("$HOME")
+[[ ${#SEARCH_DIRS[@]} -eq 0 ]] && SEARCH_DIRS=("$VIBECRAFTED_ROOT/")
 
 info()  { printf '  \033[32m[ok]\033[0m %s\n' "$*"; }
 warn()  { printf '  \033[33m[skip]\033[0m %s\n' "$*"; }
 dry()   { printf '  \033[36m[dry]\033[0m %s\n' "$*"; }
 
 echo ""
-echo "  Migrating legacy .ai-agents/ workspace folders to ~/.vibecrafted/artifacts/"
+echo "  Migrating legacy .ai-agents/ workspace folders to $VIBECRAFTED_ROOT/.vibecrafted/artifacts/"
 echo "  Searching: ${SEARCH_DIRS[*]}"
 echo "  ─────────────────────────────────────────────────────────"
 echo ""

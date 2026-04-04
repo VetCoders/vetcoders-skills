@@ -137,7 +137,7 @@ require_file "$home_dir/.gemini/skills/vc-agents/scripts/gemini_spawn.sh"
 require_file "$config_dir/vetcoders/vc-skills.sh"
 require_file "$config_dir/zsh/vc-skills.zsh"
 assert_contains "$config_dir/vetcoders/vc-skills.sh" '𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. helper shim'
-bad_helper_candidate="\${VIBECRAFT_ROOT:-}/skills/vc-agents/shell/vetcoders.sh"
+bad_helper_candidate="\${VIBECRAFTED_ROOT:-}/skills/vc-agents/shell/vetcoders.sh"
 assert_not_contains "$config_dir/vetcoders/vc-skills.sh" "$bad_helper_candidate"
 # At least one rcfile must have the source line (depends on SHELL/platform)
 rc_found=0
@@ -360,7 +360,7 @@ sync_output="$(env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bi
 echo "$sync_output" | grep -q "Syncing skills from" || die "Sync dry-run failed to start"
 echo "$sync_output" | grep -q "rsync .* --dry-run" || die "Sync dry-run didn't pass dry-run to rsync"
 # shellcheck disable=SC2088 # matching literal ~ in sync output, not expanding
-echo "$sync_output" | grep -q "~/.vibecrafted/skills\|~/.agents/skills" || die "Sync dry-run didn't target the shared canonical skill store"
+echo "$sync_output" | grep -q "$VIBECRAFTED_ROOT/.vibecrafted/skills\|$HOME/.agents/skills" || die "Sync dry-run didn't target the shared canonical skill store"
 
 log "docs truth checks"
 # shellcheck disable=SC2016 # backticks are literal content we're matching, not command substitution

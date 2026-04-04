@@ -125,7 +125,7 @@ def test_vc_start_launches_operator_entrypoint_layout(tmp_path: Path) -> None:
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(tmp_path / "xdg")
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env.pop("ZELLIJ_CONFIG_DIR", None)
     env.pop("ZELLIJ", None)
@@ -162,11 +162,11 @@ def test_marbles_from_operator_mode_spawns_launcher_below_and_loops_right(
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env["ZELLIJ"] = "operator"
-    env["VIBECRAFT_RUN_ID"] = "marb-014520"
-    env["ZELLIJ_SESSION_NAME"] = _expected_operator_session(env["VIBECRAFT_RUN_ID"])
+    env["VIBECRAFTED_RUN_ID"] = "marb-014520"
+    env["ZELLIJ_SESSION_NAME"] = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
 
     subprocess.run(
         [
@@ -183,7 +183,7 @@ def test_marbles_from_operator_mode_spawns_launcher_below_and_loops_right(
     assert "--direction" in payload
     assert "down" in payload
     command_line = next(line for line in payload if "marbles_spawn.sh" in line)
-    assert "VIBECRAFT_ZELLIJ_SPAWN_DIRECTION=right" in command_line
+    assert "VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right" in command_line
 
 
 def test_vc_start_reports_dead_session_with_resume_hint(tmp_path: Path) -> None:
@@ -201,7 +201,7 @@ def test_vc_start_reports_dead_session_with_resume_hint(tmp_path: Path) -> None:
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(tmp_path / "xdg")
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env["SESSION_STATE_FILE"] = str(session_state_file)
     env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session()
@@ -240,7 +240,7 @@ def test_vc_start_resume_resurrects_dead_session(tmp_path: Path) -> None:
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(tmp_path / "xdg")
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env["SESSION_STATE_FILE"] = str(session_state_file)
     env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session()
@@ -278,11 +278,11 @@ def test_vc_dashboard_recreates_dead_run_id_session_without_layout_suffix(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(tmp_path / "xdg")
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env["SESSION_STATE_FILE"] = str(session_state_file)
-    env["VIBECRAFT_RUN_ID"] = "marb-014520"
-    env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session(env["VIBECRAFT_RUN_ID"])
+    env["VIBECRAFTED_RUN_ID"] = "marb-014520"
+    env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
     env.pop("ZELLIJ", None)
     env.pop("ZELLIJ_PANE_ID", None)
     env.pop("ZELLIJ_SESSION_NAME", None)
@@ -295,7 +295,7 @@ def test_vc_dashboard_recreates_dead_run_id_session_without_layout_suffix(
     )
 
     payload = capture_file.read_text(encoding="utf-8")
-    expected_session = _expected_operator_session(env["VIBECRAFT_RUN_ID"])
+    expected_session = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
     assert f"ZELLIJ delete-session {expected_session}" in payload
     assert f"ZELLIJ --session {expected_session} --new-session-with-layout" in payload
     assert f"{expected_session}-marbles" not in payload
@@ -317,10 +317,10 @@ def test_skill_bootstraps_operator_session_before_spawning(tmp_path: Path) -> No
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(tmp_path / "xdg")
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env["SESSION_STATE_FILE"] = str(session_state_file)
-    env["VIBECRAFT_OSASCRIPT_BIN"] = str(fake_bin / "osascript")
+    env["VIBECRAFTED_OSASCRIPT_BIN"] = str(fake_bin / "osascript")
     env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session()
     env.pop("ZELLIJ", None)
     env.pop("ZELLIJ_PANE_ID", None)
@@ -361,12 +361,12 @@ def test_skill_bootstraps_fresh_operator_session_when_existing_one_is_dead(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(tmp_path / "xdg")
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env["SESSION_STATE_FILE"] = str(session_state_file)
-    env["VIBECRAFT_OSASCRIPT_BIN"] = str(fake_bin / "osascript")
-    env["VIBECRAFT_RUN_ID"] = "fwup-014520"
-    env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session(env["VIBECRAFT_RUN_ID"])
+    env["VIBECRAFTED_OSASCRIPT_BIN"] = str(fake_bin / "osascript")
+    env["VIBECRAFTED_RUN_ID"] = "fwup-014520"
+    env["FAKE_ZELLIJ_SESSION"] = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
     env.pop("ZELLIJ", None)
     env.pop("ZELLIJ_PANE_ID", None)
     env.pop("ZELLIJ_SESSION_NAME", None)
@@ -378,7 +378,7 @@ def test_skill_bootstraps_fresh_operator_session_when_existing_one_is_dead(
             (
                 f'source "{HELPER_SCRIPT}"; '
                 "_vetcoders_prepare_operator_runtime terminal; "
-                'printf "%s\\n" "$VIBECRAFT_OPERATOR_SESSION"'
+                'printf "%s\\n" "$VIBECRAFTED_OPERATOR_SESSION"'
             ),
         ],
         cwd=REPO_ROOT,
@@ -387,7 +387,7 @@ def test_skill_bootstraps_fresh_operator_session_when_existing_one_is_dead(
         text=True,
     )
 
-    expected_session = _expected_operator_session(env["VIBECRAFT_RUN_ID"])
+    expected_session = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
     assert result.returncode == 0
     assert result.stdout.strip().endswith(expected_session)
     payload = capture_file.read_text(encoding="utf-8")

@@ -101,12 +101,12 @@ curl -fsSLO https://raw.githubusercontent.com/VetCoders/vibecrafted/main/install
 bash install.sh
 ```
 
-The installer stages a local control plane under `~/.vibecrafted/tools/`, then runs the orchestrator interactively. It tells you what it does before it does it. It asks before touching your shell config.
+The installer stages a local control plane under `$VIBECRAFTED_ROOT/.vibecrafted/tools/`, then runs the orchestrator interactively. It tells you what it does before it does it. It asks before touching your shell config.
 
 Verify:
 
 ```bash
-make -C ~/.vibecrafted/tools/vibecrafted-current doctor
+make -C $VIBECRAFTED_ROOT/.vibecrafted/tools/vibecrafted-current doctor
 ```
 
 ---
@@ -114,7 +114,7 @@ make -C ~/.vibecrafted/tools/vibecrafted-current doctor
 ## Quick Start
 
 ```bash
-cd ~/your-project
+cd $VIBECRAFTED_ROOT/your-project
 vibecrafted init claude
 vibecrafted justdo codex --prompt "Add JWT authentication"
 ```

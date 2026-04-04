@@ -73,10 +73,10 @@ If AICX MCP is unavailable, fall back to the `aicx` CLI if present.
 
 Create pipeline artifacts:
 
-- `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_CONTEXT.md`
-- `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`
-- `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/`
-- `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`
+- `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_CONTEXT.md`
+- `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`
+- `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/`
+- `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`
 
 `CONTEXT.md` must include:
 
@@ -137,8 +137,8 @@ Context:
 ### Spawn method
 
 Use the portable scripts from `vc-agents` (see `vc-agents` SKILL.md for commands).
-Write plans to `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/`
-and reports to `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
+Write plans to `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/`
+and reports to `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
 
 ## Phase D - Follow-up Synthesis (Primary Agent)
 

@@ -54,7 +54,7 @@ jobs:
           bash install.sh --archive-file "$archive"
       - name: Verify bootstrap result
         run: |
-          test -L "$HOME/.vibecrafted/tools/vibecrafted-current"
-          test -f "$HOME/.vibecrafted/skills/vc-agents/scripts/codex_spawn.sh"
+          test -L "$VIBECRAFTED_ROOT/.vibecrafted/tools/vibecrafted-current"
+          test -f "$VIBECRAFTED_ROOT/.vibecrafted/skills/vc-agents/scripts/codex_spawn.sh"
           test -f "$HOME/.config/vetcoders/vc-skills.sh"
           echo "Bootstrap OK"

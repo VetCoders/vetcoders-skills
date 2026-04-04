@@ -95,7 +95,7 @@ model: pending
 $prompt
 EOF_PROMPT
 elif [[ -n "$depth" ]]; then
-  original_plan="$(VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/marbles_plan.sh" --agent "$agent" --run-id "$marbles_run_id" --depth "$depth" --root "$root_dir")"
+  original_plan="$(VIBECRAFTED_STORE_DIR="$store" bash "$SCRIPT_DIR/marbles_plan.sh" --agent "$agent" --run-id "$marbles_run_id" --depth "$depth" --root "$root_dir")"
 fi
 
 org_repo=""
@@ -103,7 +103,7 @@ if cd "$root_dir" && git remote get-url origin >/dev/null 2>&1; then
   org_repo="$(git remote get-url origin | sed -E 's|.*[:/]([^/]+)/([^/.]+)(\.git)?$|\1/\2|')"
 fi
 [[ -n "$org_repo" ]] || org_repo="$(basename "$root_dir")"
-lock_dir="$HOME/.vibecrafted/locks/$org_repo"
+lock_dir="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/locks/$org_repo"
 mkdir -p "$lock_dir"
 
 session_lock="$lock_dir/${marbles_run_id}.lock"
@@ -154,9 +154,9 @@ if (( use_watcher )); then
   # runs inside the watcher's observation loop.
 
   # Spawn L1 first (watcher observes from the start)
-  export VIBECRAFT_LOOP_NR=1
-  export VIBECRAFT_SKILL_CODE="marb"
-  export VIBECRAFT_RUN_ID="${marbles_run_id}-001"
+  export VIBECRAFTED_LOOP_NR=1
+  export VIBECRAFTED_SKILL_CODE="marb"
+  export VIBECRAFTED_RUN_ID="${marbles_run_id}-001"
 
   spawn_args=(
     --mode marbles
@@ -166,7 +166,7 @@ if (( use_watcher )); then
     --failure-hook "$failure_hook"
   )
 
-  VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan" &
+  VIBECRAFTED_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan" &
 
   # Hand off to watcher as foreground process
   exec bash "$SCRIPT_DIR/marbles_watcher.sh" \
@@ -174,9 +174,9 @@ if (( use_watcher )); then
     "$root_dir" "$runtime" "$store" "$session_lock"
 else
   # Legacy fire-and-forget (--no-watch)
-  export VIBECRAFT_LOOP_NR=1
-  export VIBECRAFT_SKILL_CODE="marb"
-  export VIBECRAFT_RUN_ID="${marbles_run_id}-001"
+  export VIBECRAFTED_LOOP_NR=1
+  export VIBECRAFTED_SKILL_CODE="marb"
+  export VIBECRAFTED_RUN_ID="${marbles_run_id}-001"
 
   spawn_args=(
     --mode marbles
@@ -186,5 +186,5 @@ else
     --failure-hook "$failure_hook"
   )
 
-  VIBECRAFT_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"
+  VIBECRAFTED_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"
 fi

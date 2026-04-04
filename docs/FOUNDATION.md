@@ -100,7 +100,7 @@ The recommended install order:
 |                | Foundation            | Skills                          |
 | -------------- | --------------------- | ------------------------------- |
 | **What**       | Infrastructure binary | Instruction set (SKILL.md)      |
-| **Where**      | System PATH           | `~/.vibecrafted/skills/`        |
+| **Where**      | System PATH           | `$VIBECRAFTED_ROOT/.vibecrafted/skills/`        |
 | **Updates**    | Binary releases       | `make install` or `skills-sync` |
 | **Without it** | Skill degrades        | Agent doesn't know the workflow |
 | **Example**    | loctree-mcp           | vc-workflow                     |

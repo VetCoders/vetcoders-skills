@@ -106,10 +106,10 @@ def test_spawn_in_zellij_pane_honors_requested_direction(tmp_path: Path) -> None
         export CAPTURE_FILE="{capture_file}"
         export ZELLIJ=1
         export ZELLIJ_PANE_ID=terminal_1
-        export VIBECRAFT_RUN_ID="{run_id}"
+        export VIBECRAFTED_RUN_ID="{run_id}"
         export ZELLIJ_SESSION_NAME="{operator_session}"
-        export VIBECRAFT_OPERATOR_SESSION="{operator_session}"
-        export VIBECRAFT_ZELLIJ_SPAWN_DIRECTION=down
+        export VIBECRAFTED_OPERATOR_SESSION="{operator_session}"
+        export VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=down
         source "{COMMON_SH}"
         spawn_in_zellij_pane "{launcher}" "workflow"
         '''
@@ -140,10 +140,10 @@ def test_generated_launcher_preserves_operator_session_contract(tmp_path: Path) 
         export SPAWN_RUN_ID="run-123"
         export SPAWN_LOOP_NR="2"
         export SPAWN_SKILL_CODE="marb"
-        export VIBECRAFT_RUN_ID="{run_id}"
-        export VIBECRAFT_OPERATOR_SESSION="{operator_session}"
-        export VIBECRAFT_ZELLIJ_SPAWN_DIRECTION="right"
-        cmd='printf "%s\\n%s\\n" "$VIBECRAFT_OPERATOR_SESSION" "$VIBECRAFT_ZELLIJ_SPAWN_DIRECTION" > "{report}"'
+        export VIBECRAFTED_RUN_ID="{run_id}"
+        export VIBECRAFTED_OPERATOR_SESSION="{operator_session}"
+        export VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION="right"
+        cmd='printf "%s\\n%s\\n" "$VIBECRAFTED_OPERATOR_SESSION" "$VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION" > "{report}"'
         spawn_write_meta "{meta}" "launching" "claude" "marbles" "{tmp_path}" "{launcher}" "{report}" "{transcript}" "{launcher}"
         spawn_generate_launcher "{launcher}" "{meta}" "{report}" "{transcript}" "{COMMON_SH}" "$cmd"
         chmod +x "{launcher}"
@@ -165,12 +165,12 @@ def test_spawn_prepare_paths_generates_real_run_context_when_missing(
         f'''
         set -euo pipefail
         export HOME="{tmp_path / "home"}"
-        mkdir -p "$HOME"
+        mkdir -p "$VIBECRAFTED_ROOT/"
         source "{COMMON_SH}"
-        unset VIBECRAFT_RUN_ID
-        unset VIBECRAFT_RUN_LOCK
-        unset VIBECRAFT_SKILL_CODE
-        export VIBECRAFT_LOOP_NR="0"
+        unset VIBECRAFTED_RUN_ID
+        unset VIBECRAFTED_RUN_LOCK
+        unset VIBECRAFTED_SKILL_CODE
+        export VIBECRAFTED_LOOP_NR="0"
         spawn_prepare_paths claude "{prompt_file}" "{tmp_path}" "followup"
         printf 'RUN_ID=%s\\n' "$SPAWN_RUN_ID"
         printf 'SKILL_CODE=%s\\n' "$SPAWN_SKILL_CODE"
@@ -226,8 +226,8 @@ def test_spawn_in_operator_session_targets_named_session(tmp_path: Path) -> None
         set -euo pipefail
         export PATH="{fake_bin}:$PATH"
         export CAPTURE_FILE="{capture_file}"
-        export VIBECRAFT_RUN_ID="{run_id}"
-        export VIBECRAFT_OPERATOR_SESSION="{operator_session}"
+        export VIBECRAFTED_RUN_ID="{run_id}"
+        export VIBECRAFTED_OPERATOR_SESSION="{operator_session}"
         export SPAWN_ROOT="{tmp_path}"
         source "{COMMON_SH}"
         spawn_in_operator_session "{launcher}" "workflow"

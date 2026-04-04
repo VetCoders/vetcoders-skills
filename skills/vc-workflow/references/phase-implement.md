@@ -116,7 +116,7 @@ Split implementation into independent, parallel-safe units:
 ### Canonical Artifact Structure
 
 ```
-~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
+$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
 ├── plans/
 │   ├── <ts>_<slug>_CONTEXT.md
 │   ├── <ts>_<slug>_RESEARCH.md
@@ -139,7 +139,7 @@ environment setup automatically.
 ### Codex (default for implementation)
 
 ```bash
-ARTIFACT_DAY="$HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>"
+ARTIFACT_DAY="$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>"
 PLAN="$ARTIFACT_DAY/plans/<ts>_<agent-task>.md"
 
 bash vc-agents/scripts/codex_spawn.sh "$PLAN" --mode implement --runtime terminal
@@ -175,7 +175,7 @@ After agents complete:
 ### 1. Collect Reports
 
 Read all reports from
-`~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
+`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
 
 ### 2. Quality Gate
 

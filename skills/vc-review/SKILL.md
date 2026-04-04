@@ -118,13 +118,13 @@ artifacts only.
 
 ## Artifact Pack Layout
 
-Output: `~/.prview/pr-artifacts/<branch>/<timestamp>/`
-Symlink: `~/.prview/pr-artifacts/<branch>/latest`
+Output: `$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/<timestamp>/`
+Symlink: `$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/latest`
 
 Always select the **newest** `<timestamp>`. Empty or missing directory → **P0**.
 
 ```
-~/.prview/pr-artifacts/<branch>/<timestamp>/
+$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/<timestamp>/
 ├── dashboard.html                # Interactive HTML report
 ├── AI_INDEX.md                   # Artifact map + suggested reading order
 ├── report.json                   # Canonical structured report (PARSE FIRST)
@@ -406,14 +406,14 @@ Auto-detected from repo contents. Override: `--profile <PROFILE>`.
 
 ```bash
 prview --pr $PR_NUMBER --with-tests --with-lint
-ARTIFACTS="~/.prview/pr-artifacts/<branch>/latest"
+ARTIFACTS="$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/latest"
 ```
 
 ### Subagent delegation context
 
 ```
 ## Context Bootstrap
-- prview artifacts at: ~/.prview/pr-artifacts/<branch>/latest/
+- prview artifacts at: $VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/latest/
 - Parse report.json first (canonical)
 - Read 00_summary/MERGE_GATE.json for quick verdict
 - Read 20_quality/checks-errors.log for error details

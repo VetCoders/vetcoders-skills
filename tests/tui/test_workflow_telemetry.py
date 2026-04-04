@@ -28,10 +28,10 @@ def _write_fake_spawn(script_path: Path) -> None:
                 "#!/usr/bin/env bash",
                 "set -euo pipefail",
                 "{",
-                '  printf "RUN_ID=%s\\n" "${VIBECRAFT_RUN_ID:-}"',
-                '  printf "SKILL_CODE=%s\\n" "${VIBECRAFT_SKILL_CODE:-}"',
-                '  printf "SKILL_NAME=%s\\n" "${VIBECRAFT_SKILL_NAME:-}"',
-                '  printf "RUN_LOCK=%s\\n" "${VIBECRAFT_RUN_LOCK:-}"',
+                '  printf "RUN_ID=%s\\n" "${VIBECRAFTED_RUN_ID:-}"',
+                '  printf "SKILL_CODE=%s\\n" "${VIBECRAFTED_SKILL_CODE:-}"',
+                '  printf "SKILL_NAME=%s\\n" "${VIBECRAFTED_SKILL_NAME:-}"',
+                '  printf "RUN_LOCK=%s\\n" "${VIBECRAFTED_RUN_LOCK:-}"',
                 '  printf "ARGS=%s\\n" "$*"',
                 '} > "$CAPTURE_FILE"',
             ]
@@ -58,7 +58,7 @@ def _run_helper(
     env["HOME"] = str(home)
     env["CAPTURE_FILE"] = str(capture_file)
     env["VETCODERS_SPAWN_RUNTIME"] = "headless"
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
 
     quoted_args = " ".join(shlex.quote(arg) for arg in args)
     subprocess.run(
@@ -102,7 +102,7 @@ def _run_prompt_capture(
     env["HOME"] = str(home)
     env["CAPTURE_FILE"] = str(capture_file)
     env["VETCODERS_SPAWN_RUNTIME"] = "headless"
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
 
     quoted_args = " ".join(shlex.quote(arg) for arg in args)
     subprocess.run(
@@ -119,10 +119,10 @@ def _run_prompt_capture(
                     "  {",
                     '    printf "TOOL=%s\\n" "$tool"',
                     '    printf "MODE=%s\\n" "$mode"',
-                    '    printf "RUN_ID=%s\\n" "${VIBECRAFT_RUN_ID:-}"',
-                    '    printf "SKILL_CODE=%s\\n" "${VIBECRAFT_SKILL_CODE:-}"',
-                    '    printf "SKILL_NAME=%s\\n" "${VIBECRAFT_SKILL_NAME:-}"',
-                    '    printf "RUN_LOCK=%s\\n" "${VIBECRAFT_RUN_LOCK:-}"',
+                    '    printf "RUN_ID=%s\\n" "${VIBECRAFTED_RUN_ID:-}"',
+                    '    printf "SKILL_CODE=%s\\n" "${VIBECRAFTED_SKILL_CODE:-}"',
+                    '    printf "SKILL_NAME=%s\\n" "${VIBECRAFTED_SKILL_NAME:-}"',
+                    '    printf "RUN_LOCK=%s\\n" "${VIBECRAFTED_RUN_LOCK:-}"',
                     '  } > "$CAPTURE_FILE"',
                     "}",
                     f"{helper} {quoted_args}".rstrip(),
@@ -156,8 +156,8 @@ def test_workflow_skill_helpers_reuse_one_run_id_from_prompt_to_spawn(
                 "#!/usr/bin/env bash",
                 "set -euo pipefail",
                 "{",
-                '  printf "SPAWN_RUN_ID=%s\\n" "${VIBECRAFT_RUN_ID:-}"',
-                '  printf "SPAWN_RUN_LOCK=%s\\n" "${VIBECRAFT_RUN_LOCK:-}"',
+                '  printf "SPAWN_RUN_ID=%s\\n" "${VIBECRAFTED_RUN_ID:-}"',
+                '  printf "SPAWN_RUN_LOCK=%s\\n" "${VIBECRAFTED_RUN_LOCK:-}"',
                 '} >> "$CAPTURE_FILE"',
             ]
         )
@@ -170,7 +170,7 @@ def test_workflow_skill_helpers_reuse_one_run_id_from_prompt_to_spawn(
     env["HOME"] = str(home)
     env["CAPTURE_FILE"] = str(capture_file)
     env["VETCODERS_SPAWN_RUNTIME"] = "headless"
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["RUN_ID_COUNTER_FILE"] = str(counter_file)
 
     subprocess.run(
@@ -203,8 +203,8 @@ def test_workflow_skill_helpers_reuse_one_run_id_from_prompt_to_spawn(
                     '  local mode="$2"',
                     '  local prompt_text="$3"',
                     "  {",
-                    '    printf "PROMPT_RUN_ID=%s\\n" "${VIBECRAFT_RUN_ID:-}"',
-                    '    printf "PROMPT_RUN_LOCK=%s\\n" "${VIBECRAFT_RUN_LOCK:-}"',
+                    '    printf "PROMPT_RUN_ID=%s\\n" "${VIBECRAFTED_RUN_ID:-}"',
+                    '    printf "PROMPT_RUN_LOCK=%s\\n" "${VIBECRAFTED_RUN_LOCK:-}"',
                     '  } > "$CAPTURE_FILE"',
                     "  shift 3",
                     '  _vetcoders_spawn_plan "$tool" "$mode" /dev/null "$@"',

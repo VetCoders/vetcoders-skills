@@ -80,11 +80,13 @@
                     <article class="faq-group">
                         <h2>Instalacja</h2>
                         <details class="faq-item" open>
-                            <summary>Dlaczego ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. instaluje się do <code>~/.vibecrafted/</code>, a
+                            <summary>Dlaczego ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. instaluje się do
+                                <code>$VIBECRAFTED_ROOT/.vibecrafted/</code>, a
                                 nie do
-                                <code>~/.agents/</code>?
+                                <code>$HOME/.agents/</code>?
                             </summary>
-                            <p><code>~/.vibecrafted/</code> to miejsce, w którym działa cały system. Katalogi agentów
+                            <p><code>$VIBECRAFTED_ROOT/.vibecrafted/</code> to miejsce, w którym działa cały system.
+                                Katalogi agentów
                                 tylko odwołują się do tego jednego wspólnego miejsca. To właśnie tam trafiają logika,
                                 artefakty i skrypty pomocnicze.</p>
                         </details>
@@ -147,7 +149,7 @@
                                 decyzji architektonicznych.</p>
                         </details>
                         <details class="faq-item">
-                            <summary>Co znajduje się w <code>~/.vibecrafted/artifacts/</code>?</summary>
+                            <summary>Co znajduje się w <code>$VIBECRAFTED_ROOT/.vibecrafted/artifacts/</code>?</summary>
                             <p>To tutaj trafiają plany, raporty, transkrypty i metadane z większych uruchomień. Powstało
                                 po to, żeby praca agentów zostawiała trwały ślad, a nie znikała w historii terminala.
                             </p>

@@ -991,7 +991,7 @@ def _clean_legacy_rc_entries(content: str) -> Tuple[str, int]:
 
         # 3. Known exports
         if (
-            stripped.startswith("export VIBECRAFT_ROOT")
+            stripped.startswith("export VIBECRAFTED_ROOT")
             or stripped.startswith("export VIBECRAFTED_HOME")
             or stripped.startswith("export LOCTREE_NUDGE")
         ):
@@ -1431,7 +1431,7 @@ def _configure_gemini_plans(dry_run: bool = False) -> None:
 
     Gemini resolves symlinks with realpath() and rejects plans directories
     that resolve outside the project root.  Our .vibecrafted/plans symlink
-    points to ~/.vibecrafted/artifacts/…  which is always outside the repo.
+    points to $VIBECRAFTED_ROOT/.vibecrafted/artifacts/…  which is always outside the repo.
 
     Fix: reset plan.directory to the Gemini-native default so Gemini writes
     plans into $PWD/.gemini/plans/ (its own space).  Our spawn system handles
@@ -2267,7 +2267,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
 
 
 def _install_launcher(repo_root: Path, dry_run: bool) -> None:
-    """Install vibecrafted launcher to ~/.vibecrafted/bin/."""
+    """Install vibecrafted launcher to $VIBECRAFTED_ROOT/.vibecrafted/bin/."""
     launcher_src = repo_root / "scripts" / "vibecrafted"
     launcher_bin_dir = vibecrafted_home() / "bin"
     launcher_dst = launcher_bin_dir / "vibecrafted"
@@ -2289,7 +2289,7 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
                 create_symlink(
                     Path("vibecrafted"), launcher_bin_dir / wrapper, dry_run=True
                 )
-        # Ensure ~/.vibecrafted/bin is in PATH via shell rc files
+        # Ensure $VIBECRAFTED_ROOT/.vibecrafted/bin is in PATH via shell rc files
         path_line = _launcher_path_line()
         path_comment = "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher"
         for rcname in (".bashrc", ".zshrc"):
@@ -2831,7 +2831,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     print(f"  Will remove {len(skill_names)} skills from:")
     print(f"    Store: {store_path}")
     for rt in runtimes:
-        print(f"    Symlinks: ~/.{rt}/skills/")
+        print(f"    Symlinks: $VIBECRAFTED_ROOT/.{rt}/skills/")
     print()
 
     if _IS_TTY and not dry_run:

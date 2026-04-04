@@ -80,7 +80,8 @@
                     <article class="docs-card">
                         <p class="docs-kicker">Krok 1</p>
                         <h3>Zainstaluj ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. lokalnie</h3>
-                        <p>To polecenie tworzy kopię w <code>~/.vibecrafted/tools</code> i uruchamia system w tej
+                        <p>To polecenie tworzy kopię w <code>$VIBECRAFTED_ROOT/.vibecrafted/tools</code> i uruchamia
+                            system w tej
                             wersji.</p>
                         <div class="code-block">
                             <button class="copy-btn" type="button">Kopiuj</button>
@@ -111,7 +112,7 @@ bash install.sh</code></pre>
                             bramki jakości, zanim cokolwiek zmieni.</p>
                         <div class="code-block">
                             <button class="copy-btn" type="button">Kopiuj</button>
-                            <pre><code>cd ~/twoj-projekt
+                            <pre><code>cd $VIBECRAFTED_ROOT/twoj-projekt
 vc-init claude</code></pre>
                         </div>
                         <p class="docs-note"><code>vc-init</code> czyta historię, mapuje strukturę i uruchamia bramki
@@ -183,14 +184,14 @@ vc-release codex</code></pre>
                         <p class="resource-kicker">Po instalacji</p>
                         <h3>Co dostajesz po instalacji</h3>
                         <ul class="resource-list">
-                            <li>Centralny magazyn skilli w <code>~/.vibecrafted/skills/</code></li>
+                            <li>Centralny magazyn skilli w <code>$VIBECRAFTED_ROOT/.vibecrafted/skills/</code></li>
                             <li>Artefakty pogrupowane według repozytorium i daty w
-                                <code>~/.vibecrafted/artifacts/</code>
+                                <code>$VIBECRAFTED_ROOT/.vibecrafted/artifacts/</code>
                             </li>
                             <li>Helpery shellowe do uruchamiania agentów, obserwacji sesji, Marbles, DoU, Hydrate i
                                 Release
                             </li>
-                            <li>Lokalną kopię frameworka w <code>~/.vibecrafted/tools/</code></li>
+                            <li>Lokalną kopię frameworka w <code>$VIBECRAFTED_ROOT/.vibecrafted/tools/</code></li>
                         </ul>
                     </article>
                 </div>

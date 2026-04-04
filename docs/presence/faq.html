@@ -81,11 +81,13 @@
                     <article class="faq-group">
                         <h2>Installation</h2>
                         <details class="faq-item" open>
-                            <summary>Why does ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. install into <code>~/.vibecrafted/</code> instead
+                            <summary>Why does ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. install into
+                                <code>$VIBECRAFTED_ROOT/.vibecrafted/</code> instead
                                 of
-                                <code>~/.agents/</code>?
+                                <code>$HOME/.agents/</code>?
                             </summary>
-                            <p><code>~/.vibecrafted/</code> is the central store and control plane. Agent-specific
+                            <p><code>$VIBECRAFTED_ROOT/.vibecrafted/</code> is the central store and control plane.
+                                Agent-specific
                                 directories are only views or symlink targets. The real source of truth, artifacts, and
                                 helper state live in one place.</p>
                         </details>
@@ -93,7 +95,8 @@
                             <summary>Can I install ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. without editing my shell config?</summary>
                             <p>Yes. During the interactive path you can opt out of shell-helper installation. If you
                                 still want helpers in the current session, source
-                                <code>${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh</code> manually.
+                                <code>${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh</code>
+                                manually.
                             </p>
                         </details>
                         <details class="faq-item">
@@ -154,7 +157,7 @@
                                 release are explicitly shaped to work as repeatable quality or packaging gates.</p>
                         </details>
                         <details class="faq-item">
-                            <summary>What lives in <code>~/.vibecrafted/artifacts/</code>?</summary>
+                            <summary>What lives in <code>$VIBECRAFTED_ROOT/.vibecrafted/artifacts/</code>?</summary>
                             <p>Plans, reports, transcripts, and metadata from major runs. The artifact store exists so
                                 agent work leaves durable evidence instead of disappearing into terminal scrollback.</p>
                         </details>

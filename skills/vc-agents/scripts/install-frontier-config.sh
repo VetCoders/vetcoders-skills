@@ -10,7 +10,7 @@ Install the repo-owned frontier shell presets:
 - atuin
 - zellij (config + layouts)
 
-By default this creates sidecar symlinks in ~/.config/vetcoders/frontier so the
+By default this creates sidecar symlinks in $HOME/.config/vetcoders/frontier so the
 repo remains the source of truth without taking over your global shell layout.
 EOF_USAGE
 }

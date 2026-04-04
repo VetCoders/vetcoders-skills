@@ -53,30 +53,33 @@ def test_installer_tui_vibecrafted_home_expands_user(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     home = tmp_path / "home"
+    portable_vc = tmp_path / "portable-vc"
     monkeypatch.setenv("HOME", str(home))
-    monkeypatch.setenv("VIBECRAFTED_HOME", "~/.portable-vc")
+    monkeypatch.setenv("VIBECRAFTED_HOME", str(portable_vc))
 
-    assert installer_tui.vibecrafted_home() == home / ".portable-vc"
-    assert installer_tui.framework_store_dir() == home / ".portable-vc" / "skills"
-    assert installer_tui.install_log_path() == home / ".portable-vc" / "install.log"
+    assert installer_tui.vibecrafted_home() == portable_vc
+    assert installer_tui.framework_store_dir() == portable_vc / "skills"
+    assert installer_tui.install_log_path() == portable_vc / "install.log"
 
 
 def test_vetcoders_install_env_paths_expand_user(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     home = tmp_path / "home"
+    portable_vc = tmp_path / "portable-vc"
+    portable_config = tmp_path / "portable-config"
     monkeypatch.setenv("HOME", str(home))
-    monkeypatch.setenv("VIBECRAFTED_HOME", "~/.portable-vc")
-    monkeypatch.setenv("XDG_CONFIG_HOME", "~/.portable-config")
+    monkeypatch.setenv("VIBECRAFTED_HOME", str(portable_vc))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(portable_config))
 
-    assert vetcoders_install.vibecrafted_home() == home / ".portable-vc"
+    assert vetcoders_install.vibecrafted_home() == portable_vc
     assert (
         vetcoders_install._helper_target_path()
-        == home / ".portable-config" / "vetcoders" / "vc-skills.sh"
+        == portable_config / "vetcoders" / "vc-skills.sh"
     )
     assert (
         vetcoders_install._helper_legacy_path()
-        == home / ".portable-config" / "zsh" / "vc-skills.zsh"
+        == portable_config / "zsh" / "vc-skills.zsh"
     )
 
 

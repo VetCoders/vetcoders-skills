@@ -81,10 +81,10 @@ work the same.
 ## Where To Find Input Files
 
 ```
-~/.claude/projects/<project>/<session-id>/tool-results/<hash>.txt     # Agent result (most common)
-~/.claude/projects/<project>/<session-id>/subagents/agent-<id>.jsonl  # Subagent session
+$HOME/.claude/projects/<project>/<session-id>/tool-results/<hash>.txt     # Agent result (most common)
+$HOME/.claude/projects/<project>/<session-id>/subagents/agent-<id>.jsonl  # Subagent session
 /private/tmp/claude-501/.../tasks/<task-id>.output                    # Background task
-~/.claude/projects/<project>/<uuid>.jsonl                             # Full session
+$HOME/.claude/projects/<project>/<uuid>.jsonl                             # Full session
 ```
 
 ## Useful Flags
@@ -100,7 +100,7 @@ work the same.
 ```bash
 # 1. Extract (output path derived automatically from input basename)
 aicx extract --format claude \
-  ~/.claude/projects/-Users-foo-myrepo/abc123/tool-results/xy9z.txt \
+  $HOME/.claude/projects/-Users-foo-myrepo/abc123/tool-results/xy9z.txt \
   -o /tmp/aicx-extract-xy9z.md
 
 # 2. Read the result

@@ -202,7 +202,7 @@ def _framework_checks() -> dict[str, dict[str, Any]]:
             "found": bool(active_views),
             "detail": ", ".join(active_views)
             if active_views
-            else "No runtime skill views detected in ~/.agents, ~/.claude, ~/.codex, or ~/.gemini",
+            else "No runtime skill views detected in $HOME/.agents, $HOME/.claude, $HOME/.codex, or $HOME/.gemini",
             "kind": "path",
         },
     }

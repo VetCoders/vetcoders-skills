@@ -12,7 +12,7 @@ bash install.sh
 
 Non-destructive. Interactive. Tells you what it does before it does it.
 Asks before touching your shell config. Everything reversible with
-`make -C ~/.vibecrafted/tools/vibecrafted-current uninstall`.
+`make -C $VIBECRAFTED_ROOT/.vibecrafted/tools/vibecrafted-current uninstall`.
 
 After install, open a new terminal or:
 
@@ -23,7 +23,7 @@ source "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh"
 ## 2. Verify
 
 ```bash
-make -C ~/.vibecrafted/tools/vibecrafted-current doctor
+make -C $VIBECRAFTED_ROOT/.vibecrafted/tools/vibecrafted-current doctor
 ```
 
 Green means ready. Yellow means the doctor tells you why.
@@ -33,7 +33,7 @@ Green means ready. Yellow means the doctor tells you why.
 Go to any git repo:
 
 ```bash
-cd ~/your-project
+cd $VIBECRAFTED_ROOT/your-project
 vibecrafted init claude
 ```
 

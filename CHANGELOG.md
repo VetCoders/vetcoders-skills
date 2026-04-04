@@ -34,7 +34,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   - Filesystem-based loop chaining via `success_hook` — no cron, no watcher
   - Convergence through CODE STATE, not report chaining — each loop gets the same plan, sees improved repo
   - `CONVERGENCE.md` written after final loop (or on failure)
-  - Lock files in `~/.vibecrafted/locks/<org>/<repo>/`
+  - Lock files in `$VIBECRAFTED_ROOT/.vibecrafted/locks/<org>/<repo>/`
 - `--success-hook` and `--failure-hook` flags for all spawn scripts (claude, codex, gemini)
 - Landing page: 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. → 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. rebrand, sprite caching for Safari performance
 - Installer TUI wizard (in progress): Rich-based step-by-step flow from docs/installer/ mockups
@@ -106,7 +106,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - Spawn launcher: `zsh -ic` -> `eval` — removes zsh runtime dependency
 - Terminal.app spawn: `zsh -ic` -> `bash`
 - Shell helpers renamed `vetcoders.zsh` -> `vetcoders.sh` (compat symlink kept)
-- Helper install path: `~/.config/vetcoders/vc-skills.sh` (was `~/.config/zsh/vc-skills.zsh`)
+- Helper install path: `$HOME/.config/vetcoders/vc-skills.sh` (was `$HOME/.config/zsh/vc-skills.zsh`)
 - CI no longer requires zsh on Ubuntu
 - Installer: zsh downgraded from required to optional dependency
 - No hardcoded model flags in spawn scripts — agents choose their own
@@ -131,7 +131,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - Skill taxonomy refactor: 17 skills with coherent pipeline references
 - `vc-justdo`, `vc-scaffold`, `vc-release` skills
 - FAQ-ANSWERED.md
-- Centralized artifacts under `~/.vibecrafted/`
+- Centralized artifacts under `$VIBECRAFTED_ROOT/.vibecrafted/`
 - OG image and social card meta tags
 - GitHub issue templates
 

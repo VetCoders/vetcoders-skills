@@ -40,7 +40,7 @@ def test_sourcing_helper_respects_existing_user_config(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["STARSHIP_CONFIG"] = user_starship
     env["ATUIN_CONFIG"] = user_atuin
     env["ZELLIJ_CONFIG_DIR"] = user_zellij
@@ -90,7 +90,7 @@ def test_sourcing_helper_sets_frontier_when_no_user_config(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     # No STARSHIP_CONFIG, ATUIN_CONFIG, ZELLIJ_CONFIG_DIR set
     env.pop("STARSHIP_CONFIG", None)
     env.pop("ATUIN_CONFIG", None)

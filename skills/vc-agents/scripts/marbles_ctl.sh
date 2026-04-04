@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 source "$SCRIPT_DIR/common.sh"
 
-MARBLES_DIR="$HOME/.vibecrafted/marbles"
+MARBLES_DIR="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/marbles"
 
 _bold='\033[1m'
 _copper='\033[38;5;173m'

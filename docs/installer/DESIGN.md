@@ -41,7 +41,7 @@ Total: ~80+ lines. User scrolls past everything to see the result.
 - During proces Each line appears on the visible portion but only **some** STAYS as a summary.
 - They are built from current lines.
 - The final state on screen IS the complete summary but the details are hidden and can be shown by pressing ->| key.
-- Introduce the installer's ~/.vibecrafted/logs/install.log.
+- Introduce the installer's $VIBECRAFTED_ROOT/.vibecrafted/logs/install.log.
 
 ---
 
@@ -198,7 +198,7 @@ Verification:
   ✓ Agents       claude · codex · gemini
   ✓ Helpers      zsh
   ✓ Foundations   aicx-mcp · loctree-mcp · prview +6
-  ✓ Store        ~/.vibecrafted/skills
+  ✓ Store        $VIBECRAFTED_ROOT/.vibecrafted/skills
 
   ─────────────────────────────────────
     Start        vibecrafted help
@@ -360,7 +360,7 @@ III. Action prompt or progress bar
     - Workflows (9 basic, 7 advanced)
     - Helpers and binaries (executables and functions)
   3. Post-installation setup
-    - Workspace directories (in $HOME/.vibecrafted/)
+    - Workspace directories (in $VIBECRAFTED_ROOT/.vibecrafted/)
     - Symlinks for AI coding agents (in $HOME/.agents/)
   4. Verification and quick tour
 
@@ -418,7 +418,7 @@ When NOT compact (direct `make install` or `python3 installer.py`):
 ### Verbose log
 
 All the verbose output that gets suppressed in compact mode should go to:
-`~/.vibecrafted/logs/installer/install.log`
+`$VIBECRAFTED_ROOT/.vibecrafted/logs/installer/install.log`
 
 The user can always check it if something went wrong.
 
@@ -504,7 +504,7 @@ The installer runs without additional prompts when called with --compact.
 
 - `make vibecrafted` fits on one screen (~25 lines)
 - `make install` still works (verbose by default)
-- `~/.vibecrafted/install.log` contains full verbose output
+- `$VIBECRAFTED_ROOT/.vibecrafted/install.log` contains full verbose output
 - `bash scripts/check-portable.sh` passes
 - All 16 skills installed correctly
 - Doctor passes after compact install

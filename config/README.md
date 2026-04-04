@@ -8,7 +8,7 @@ This layer is intentionally separate from personal shell identity:
 - shell helpers stay in `vc-agents/shell/`
 - these files cover reproducible prompt/history presets plus optional Zellij layouts
 - per-asset frontier resolution lets companion overrides win without shadowing the repo defaults
-- `vc-frontier-install` stages them under `~/.config/vetcoders/frontier/` as sidecars, not as a global takeover
+- `vc-frontier-install` stages them under `$HOME/.config/vetcoders/frontier/` as sidecars, not as a global takeover
 
 Current presets:
 

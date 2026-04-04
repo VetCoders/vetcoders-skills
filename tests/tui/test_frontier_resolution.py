@@ -58,7 +58,7 @@ def test_vc_frontier_paths_mix_repo_prompt_with_companion_zellij(
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env.pop("STARSHIP_CONFIG", None)
     env.pop("ZELLIJ_CONFIG_DIR", None)
 
@@ -98,7 +98,7 @@ def test_vc_dashboard_mixes_companion_zellij_config_with_repo_layout(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
     env.pop("ZELLIJ_CONFIG_DIR", None)
     env.pop("ZELLIJ", None)
@@ -142,9 +142,9 @@ def test_vc_dashboard_uses_base_run_id_session_without_layout_suffix(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["CAPTURE_FILE"] = str(capture_file)
-    env["VIBECRAFT_RUN_ID"] = "marb-014520"
+    env["VIBECRAFTED_RUN_ID"] = "marb-014520"
     env.pop("ZELLIJ_CONFIG_DIR", None)
     env.pop("ZELLIJ", None)
     env.pop("ZELLIJ_PANE_ID", None)
@@ -159,9 +159,9 @@ def test_vc_dashboard_uses_base_run_id_session_without_layout_suffix(
 
     payload = capture_file.read_text(encoding="utf-8").splitlines()
     assert "--session" in payload
-    assert _expected_operator_session(env["VIBECRAFT_RUN_ID"]) in payload
+    assert _expected_operator_session(env["VIBECRAFTED_RUN_ID"]) in payload
     assert (
-        f"{_expected_operator_session(env['VIBECRAFT_RUN_ID'])}-marbles" not in payload
+        f"{_expected_operator_session(env['VIBECRAFTED_RUN_ID'])}-marbles" not in payload
     )
 
 
@@ -185,7 +185,7 @@ def test_sourcing_helper_exports_frontier_sidecars_per_asset(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env.pop("STARSHIP_CONFIG", None)
     env.pop("ATUIN_CONFIG", None)
     env.pop("ZELLIJ_CONFIG_DIR", None)
@@ -297,7 +297,7 @@ def test_spawn_export_frontier_sidecars_mix_repo_prompt_with_companion_zellij(
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
     env["XDG_CONFIG_HOME"] = str(xdg_config_home)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
     env["SPAWN_ROOT"] = str(REPO_ROOT)
     env["VIBECRAFTED_HOME"] = str(home / ".vibecrafted")
     env.pop("STARSHIP_CONFIG", None)

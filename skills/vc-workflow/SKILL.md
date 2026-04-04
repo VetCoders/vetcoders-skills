@@ -41,7 +41,7 @@ scaffold → init → [WORKFLOW] → followup → marbles → dou → decorate �
    CONTEXT.md                 RESEARCH.md              REPORTS/*.md
 ```
 
-Canonical artifact root: `~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/`.
+Canonical artifact root: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/`.
 `CONTEXT.md` and `RESEARCH.md` live in `plans/` as `<ts>_<slug>_CONTEXT.md`
 and `<ts>_<slug>_RESEARCH.md`. `skills/vc-agents/scripts/common.sh`
 `spawn_prepare_paths()` is the source of truth for day-root resolution.
@@ -72,7 +72,7 @@ Map the codebase before touching anything. The **Foundation Skills** are the pri
 ### Output: CONTEXT.md
 
 Write structured examination output to
-`~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_CONTEXT.md`:
+`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_CONTEXT.md`:
 
 ```markdown
 # Examination: <slug>
@@ -134,7 +134,7 @@ Formulate queries from Examination findings:
 ### Output: RESEARCH.md
 
 Write to
-`~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`:
+`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`:
 
 ```markdown
 # Research: <slug>
@@ -194,7 +194,7 @@ Never edit code without mapping it first.
 
 Follow vc-agents skill for spawn commands (portable scripts preferred).
 Plans go to the canonical `plans/` directory under
-`~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/`.
+`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/`.
 Reports go to the canonical `reports/` directory under the same day root.
 Repo-local `.vibecrafted/plans` and `.vibecrafted/reports` remain convenience symlinks only.
 

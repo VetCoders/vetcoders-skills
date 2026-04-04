@@ -14,7 +14,7 @@ ROOT_INPUT="${2:-$(pwd)}"
 ROOT="$(spawn_abspath "$ROOT_INPUT")"
 [[ -d "$ROOT" ]] || spawn_die "Root directory not found: $ROOT"
 
-# Canonical store: ~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/
+# Canonical store: $VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/
 STORE_BASE="$(spawn_store_dir "$ROOT")"
 PLAN_DIR="$STORE_BASE/plans"
 REPORT_DIR="$STORE_BASE/reports"

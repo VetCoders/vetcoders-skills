@@ -78,9 +78,9 @@ def test_atuin_interactive_search_falls_back_to_home_scope(tmp_path: Path) -> No
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
-    env["VIBECRAFT_ATUIN_BIN"] = str(fake_atuin)
+    env["VIBECRAFTED_ATUIN_BIN"] = str(fake_atuin)
     env["CAPTURE_FILE"] = str(capture_file)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
 
     result = subprocess.run(
         [
@@ -122,9 +122,9 @@ def test_atuin_noninteractive_search_respects_explicit_scope(tmp_path: Path) -> 
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
-    env["VIBECRAFT_ATUIN_BIN"] = str(fake_atuin)
+    env["VIBECRAFTED_ATUIN_BIN"] = str(fake_atuin)
     env["CAPTURE_FILE"] = str(capture_file)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
 
     result = subprocess.run(
         [
@@ -158,9 +158,9 @@ def test_atuin_noninteractive_search_falls_back_to_home_scope(tmp_path: Path) ->
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
-    env["VIBECRAFT_ATUIN_BIN"] = str(fake_atuin)
+    env["VIBECRAFTED_ATUIN_BIN"] = str(fake_atuin)
     env["CAPTURE_FILE"] = str(capture_file)
-    env["VIBECRAFT_ROOT"] = str(REPO_ROOT)
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
 
     result = subprocess.run(
         [

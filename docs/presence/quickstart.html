@@ -82,7 +82,8 @@
                         <p class="docs-kicker">Step 1</p>
                         <h3>Install the framework</h3>
                         <p>Use the public bootstrap path. It stages a local snapshot under
-                            <code>~/.vibecrafted/tools/</code> and runs the orchestrator from that local copy.
+                            <code>$VIBECRAFTED_ROOT/.vibecrafted/tools/</code> and runs the orchestrator from that local
+                            copy.
                         </p>
                         <div class="code-block">
                             <button class="copy-btn" type="button">Copy</button>
@@ -113,7 +114,7 @@ bash install.sh</code></pre>
                             context gathering before edits.</p>
                         <div class="code-block">
                             <button class="copy-btn" type="button">Copy</button>
-                            <pre><code>cd ~/your-project
+                            <pre><code>cd $VIBECRAFTED_ROOT/your-project
 vibecrafted init claude</code></pre>
                         </div>
                         <p class="docs-note"><code>vibecrafted init</code> is the main front door. It reads history,
@@ -186,10 +187,12 @@ vibecrafted release codex --prompt "Prepare release steps"</code></pre>
                         <p class="resource-kicker">What you get</p>
                         <h3>Operational surfaces after install</h3>
                         <ul class="resource-list">
-                            <li>A central skill store under <code>~/.vibecrafted/skills/</code></li>
-                            <li>Artifacts grouped by repo and date under <code>~/.vibecrafted/artifacts/</code></li>
+                            <li>A central skill store under <code>$VIBECRAFTED_ROOT/.vibecrafted/skills/</code></li>
+                            <li>Artifacts grouped by repo and date under
+                                <code>$VIBECRAFTED_ROOT/.vibecrafted/artifacts/</code></li>
                             <li>Shell helpers for spawning, observing, marbles, DoU, hydrate, and release</li>
-                            <li>A staging-friendly control plane under <code>~/.vibecrafted/tools/</code></li>
+                            <li>A staging-friendly control plane under
+                                <code>$VIBECRAFTED_ROOT/.vibecrafted/tools/</code></li>
                         </ul>
                     </article>
                 </div>

@@ -75,19 +75,19 @@ def _run_marbles_prompt(tmp_path: Path, *, inside_zellij: bool) -> list[str]:
     env["VIBECRAFTED_HOME"] = str(crafted_home)
     env["CAPTURE_FILE"] = str(capture_file)
     env["ZELLIJ_CAPTURE_FILE"] = str(zellij_capture_file)
-    env.pop("VIBECRAFT_OPERATOR_SESSION", None)
+    env.pop("VIBECRAFTED_OPERATOR_SESSION", None)
     env.pop("ZELLIJ", None)
     env.pop("ZELLIJ_PANE_ID", None)
     env.pop("ZELLIJ_SESSION_NAME", None)
-    env["VIBECRAFT_RUN_ID"] = "marb-014520"
-    operator_session = _expected_operator_session(env["VIBECRAFT_RUN_ID"])
+    env["VIBECRAFTED_RUN_ID"] = "marb-014520"
+    operator_session = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
 
     if inside_zellij:
         env["ZELLIJ"] = "operator"
         env["ZELLIJ_PANE_ID"] = "terminal_7"
         env["ZELLIJ_SESSION_NAME"] = operator_session
     else:
-        env["VIBECRAFT_OPERATOR_SESSION"] = operator_session
+        env["VIBECRAFTED_OPERATOR_SESSION"] = operator_session
 
     subprocess.run(
         [

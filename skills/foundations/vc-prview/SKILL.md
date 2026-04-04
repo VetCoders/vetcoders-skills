@@ -22,7 +22,7 @@ It is the foundation for `vc-review` and any high-stakes code verification.
 ### 1) Generate artifacts
 
 - Run `prview --pr <NUMBER>` or `prview -R <branch> <base>`.
-- Artifacts are stored at `~/.prview/pr-artifacts/<branch>/latest`.
+- Artifacts are stored at `$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/latest`.
 
 ### 2) Deep Audit
 

@@ -6,7 +6,7 @@ usage() {
 Usage: install-shell.sh [--source <repo-root>] [--dry-run] [--no-zshrc] [--no-bashrc]
 
 Install the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helper layer. The helpers work in both bash and zsh.
-By default, sources the helper from ~/.bashrc and ~/.zshrc for shells that are
+By default, sources the helper from $HOME/.bashrc and $HOME/.zshrc for shells that are
 available. Use --no-zshrc or --no-bashrc to skip a shell.
 EOF_USAGE
 }
@@ -79,7 +79,7 @@ write_helper_shim() {
 _vibecrafted_helper_candidates() {
   local crafted_home="\${VIBECRAFTED_HOME:-\$HOME/.vibecrafted}"
   printf '%s\n' \
-    "\${VIBECRAFT_ROOT:+\$VIBECRAFT_ROOT/skills/vc-agents/shell/vetcoders.sh}" \
+    "\${VIBECRAFTED_ROOT:+\$VIBECRAFTED_ROOT/skills/vc-agents/shell/vetcoders.sh}" \
     "$repo_root/skills/vc-agents/shell/vetcoders.sh" \
     "\$crafted_home/skills/vc-agents/shell/vetcoders.sh" \
     "\$crafted_home/tools/vibecrafted-current/skills/vc-agents/shell/vetcoders.sh"

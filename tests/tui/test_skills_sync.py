@@ -54,8 +54,8 @@ def test_skills_sync_with_shell_targets_canonical_helper_and_both_shells(
     assert "Syncing optional shell helper layer to fakehost" in stdout
     assert "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh" in stdout
     assert "ssh fakehost ln -sfn" in stdout
-    assert "Skipping remote ~/.bashrc update" not in stdout
-    assert "Skipping remote ~/.zshrc update" not in stdout
+    assert "Skipping remote $HOME/.bashrc update" not in stdout
+    assert "Skipping remote $HOME/.zshrc update" not in stdout
     assert "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh" in log
     assert ".bashrc" in log
     assert ".zshrc" in log

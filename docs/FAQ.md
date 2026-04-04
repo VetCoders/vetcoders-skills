@@ -7,8 +7,8 @@ For the long-form answer bank, see [FAQ-ANSWERED.md](FAQ-ANSWERED.md).
 
 ## Installation
 
-- **Why does 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. install into `~/.vibecrafted/` instead of `~/.agents/`?**
-  `~/.vibecrafted/` is the central store and control plane. Agent-specific directories are only views or symlink
+- **Why does 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. install into `$VIBECRAFTED_ROOT/.vibecrafted/` instead of `$HOME/.agents/`?**
+  `$VIBECRAFTED_ROOT/.vibecrafted/` is the central store and control plane. Agent-specific directories are only views or symlink
   targets.
 
 - **Can I install without editing my shell config?**
@@ -49,7 +49,7 @@ For the long-form answer bank, see [FAQ-ANSWERED.md](FAQ-ANSWERED.md).
   Yes. The direct install path is non-interactive, and review/followup/release flows are shaped to work as repeatable
   gates.
 
-- **What lives in `~/.vibecrafted/artifacts/`?**
+- **What lives in `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/`?**
   Plans, reports, transcripts, and metadata from major runs. The artifact store exists so agent work leaves durable
   evidence.
 

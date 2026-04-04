@@ -4,16 +4,16 @@ Answers from the trenches. This is the truth as of April 2026.
 
 ## Installation
 
-- **Why does the installer write to `~/.vibecrafted/` and not `~/.agents/` like other tools?**
-  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is the _orchestrator_, not just a collection of scripts. `~/.agents/` is the legacy dumping ground for
-  standalone agent configs. `~/.vibecrafted/` is the central command store where the actual skill source code lives,
+- **Why does the installer write to `$VIBECRAFTED_ROOT/.vibecrafted/` and not `$HOME/.agents/` like other tools?**
+  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is the _orchestrator_, not just a collection of scripts. `$HOME/.agents/` is the legacy dumping ground for
+  standalone agent configs. `$VIBECRAFTED_ROOT/.vibecrafted/` is the central command store where the actual skill source code lives,
   where artifacts are archived, and where the multi-agent state is managed. We separate the _source_ (vibecrafted) from
   the _view_ (the symlinks in agent-specific dirs).
 
-- **What happens to my existing skills in `~/.agents/skills/` after installation?**
+- **What happens to my existing skills in `$HOME/.agents/skills/` after installation?**
   The installer is surgical. It detects legacy `vetcoders-*` skills and offers to prune them. If you have custom,
-  non-VetCoders skills there, it leaves them alone. 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. skills are symlinked into `~/.agents/skills/` (and
-  others) so your agents "see" them, but the source of truth remains in `~/.vibecrafted/`.
+  non-VetCoders skills there, it leaves them alone. 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. skills are symlinked into `$HOME/.agents/skills/` (and
+  others) so your agents "see" them, but the source of truth remains in `$VIBECRAFTED_ROOT/.vibecrafted/`.
 
 - **Why does `make vibecrafted` ask me questions instead of just installing silently?**
   Because your environment is yours, not ours. 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. checks for Starship, Atuin, and toolchain conflicts. It
@@ -51,7 +51,7 @@ Answers from the trenches. This is the truth as of April 2026.
 
 - **Why does the installer back up my existing state before every install?**
   Because things break. We snapshot your shell rc files, existing skills, and symlinks into
-  `~/.vibecrafted/skills/.backup/` before touching anything. Safety over speed.
+  `$VIBECRAFTED_ROOT/.vibecrafted/skills/.backup/` before touching anything. Safety over speed.
 
 ## Skills & Agents
 
@@ -110,17 +110,17 @@ Answers from the trenches. This is the truth as of April 2026.
   To prevent "skill drift." If every project has its own version of `vc-workflow`, updates become impossible. Central
   storage allows you to improve your agent's "brain" once and have it apply across all your repos.
 
-- **What is the relationship between `~/.vibecrafted/skills/`, `~/.claude/skills/`, and `~/.agents/skills/`?**
+- **What is the relationship between `$VIBECRAFTED_ROOT/.vibecrafted/skills/`, `$HOME/.claude/skills/`, and `$HOME/.agents/skills/`?**
 
-  - `~/.vibecrafted/skills/`: The **Central Store** (Source of Truth).
-  - `~/.claude/skills/`, `~/.agents/skills/`: **Symlink Views**. These are portals that let specific agent CLIs find
+  - `$VIBECRAFTED_ROOT/.vibecrafted/skills/`: The **Central Store** (Source of Truth).
+  - `$HOME/.claude/skills/`, `$HOME/.agents/skills/`: **Symlink Views**. These are portals that let specific agent CLIs find
     the skills. They point back to the Central Store.
 
 - **Why does 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. use symlinks instead of copying skill files?**
   Instant updates. If you change a skill in the central store, every agent on your system gets the new version
   immediately without a re-install.
 
-- **What is the `~/.vibecrafted/artifacts/` directory for?**
+- **What is the `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/` directory for?**
   Persistence. Agents are ephemeral; their logs and reports shouldn't be. Every major run (review, research, workflow)
   dumps a structured report here so you have a "paper trail" of AI decisions.
 
@@ -129,10 +129,10 @@ Answers from the trenches. This is the truth as of April 2026.
   folder than by searching a multi-gigabyte vector database.
 
 - **How does the central store know which GitHub org/repo I'm working in?**
-  It detects it via `git remote` and organizes artifacts accordingly: `~/.vibecrafted/artifacts/<org>/<repo>/...`.
+  It detects it via `git remote` and organizes artifacts accordingly: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/...`.
 
 - **What is `VIBECRAFTED_HOME` and when would I change it?**
-  It defaults to `~/.vibecrafted`. You'd change it if you want to store your 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. data on an external drive, a
+  It defaults to `$VIBECRAFTED_ROOT/.vibecrafted`. You'd change it if you want to store your 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. data on an external drive, a
   synced Dropbox folder, or in a shared team location.
 
 - **Why is there a `config/` directory with Starship and Atuin configs?**

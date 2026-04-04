@@ -78,7 +78,7 @@ spawn_generate_run_id() {
   printf '%s-%s\n' "$prefix" "$(date +%H%M%S)"
 }
 
-# Central artifact store: ~/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
+# Central artifact store: $HOME/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
 # Override with VIBECRAFTED_HOME env var for custom location
 # Falls back to <repo>/.vibecrafted/ if git remote unavailable
 VIBECRAFTED_HOME="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
@@ -99,8 +99,8 @@ spawn_store_dir() {
 
 spawn_effective_store_dir() {
   local root="${1:-$(spawn_repo_root)}"
-  if [[ -n "${VIBECRAFT_STORE_DIR:-}" ]]; then
-    spawn_abspath "$VIBECRAFT_STORE_DIR"
+  if [[ -n "${VIBECRAFTED_STORE_DIR:-}" ]]; then
+    spawn_abspath "$VIBECRAFTED_STORE_DIR"
     return 0
   fi
   spawn_store_dir "$root"
@@ -143,7 +143,7 @@ spawn_framework_version() {
   script_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." 2>/dev/null && pwd || true)"
 
   for candidate in \
-    "${VIBECRAFT_ROOT:+$VIBECRAFT_ROOT/VERSION}" \
+    "${VIBECRAFTED_ROOT:+$VIBECRAFTED_ROOT/VERSION}" \
     "${SPAWN_ROOT:+$SPAWN_ROOT/VERSION}" \
     "${script_root:+$script_root/VERSION}" \
     "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tools/vibecrafted-current/VERSION"
@@ -320,8 +320,8 @@ spawn_prepare_paths() {
   local agent="$1"
   local prompt_file="$2"
   local root="${3:-}"
-  local mode="${4:-${VIBECRAFT_SKILL_NAME:-}}"
-  local skill_name="${VIBECRAFT_SKILL_NAME:-$mode}"
+  local mode="${4:-${VIBECRAFTED_SKILL_NAME:-}}"
+  local skill_name="${VIBECRAFTED_SKILL_NAME:-$mode}"
   local lock_file=""
 
   if [[ -n "$root" ]]; then
@@ -336,22 +336,22 @@ spawn_prepare_paths() {
   SPAWN_TS="$(spawn_timestamp)"
   SPAWN_AGENT="$agent"
   SPAWN_PROMPT_ID="${SPAWN_SLUG}_${SPAWN_TS%%_*}"
-  SPAWN_SKILL_CODE="${VIBECRAFT_SKILL_CODE:-}"
+  SPAWN_SKILL_CODE="${VIBECRAFTED_SKILL_CODE:-}"
   if [[ -z "$SPAWN_SKILL_CODE" && -n "$skill_name" ]]; then
     SPAWN_SKILL_CODE="$(spawn_skill_prefix "$skill_name")"
   fi
-  SPAWN_LOOP_NR="${VIBECRAFT_LOOP_NR:-0}"
+  SPAWN_LOOP_NR="${VIBECRAFTED_LOOP_NR:-0}"
   case "$SPAWN_LOOP_NR" in
     ''|*[!0-9]*)
       SPAWN_LOOP_NR=0
       ;;
   esac
-  if [[ -n "${VIBECRAFT_RUN_ID:-}" ]]; then
-    SPAWN_RUN_ID="$VIBECRAFT_RUN_ID"
+  if [[ -n "${VIBECRAFTED_RUN_ID:-}" ]]; then
+    SPAWN_RUN_ID="$VIBECRAFTED_RUN_ID"
   else
     SPAWN_RUN_ID="$(spawn_generate_run_id "${SPAWN_SKILL_CODE:-impl}")"
   fi
-  lock_file="${VIBECRAFT_RUN_LOCK:-}"
+  lock_file="${VIBECRAFTED_RUN_LOCK:-}"
   if [[ -z "$lock_file" || ! -f "$lock_file" ]]; then
     lock_file="$VIBECRAFTED_HOME/locks/$(spawn_org_repo "$SPAWN_ROOT")/${SPAWN_RUN_ID}.lock"
   fi
@@ -470,7 +470,7 @@ spawn_frontier_candidates() {
   for candidate in \
     "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/frontier" \
     "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tools/vibecrafted-current/config" \
-    "${VIBECRAFT_ROOT:+$VIBECRAFT_ROOT/config}" \
+    "${VIBECRAFTED_ROOT:+$VIBECRAFTED_ROOT/config}" \
     "${SPAWN_ROOT:+$SPAWN_ROOT/config}" \
     "${script_root:+$script_root/config}"
   do
@@ -556,8 +556,8 @@ spawn_generate_launcher() {
   q_run_lock="$(printf '%q' "${SPAWN_RUN_LOCK:-}")"
   q_loop_nr="$(printf '%q' "${SPAWN_LOOP_NR:-0}")"
   q_skill_code="$(printf '%q' "${SPAWN_SKILL_CODE:-}")"
-  q_operator_session="$(printf '%q' "${VIBECRAFT_OPERATOR_SESSION:-}")"
-  q_spawn_direction="$(printf '%q' "${VIBECRAFT_ZELLIJ_SPAWN_DIRECTION:-}")"
+  q_operator_session="$(printf '%q' "${VIBECRAFTED_OPERATOR_SESSION:-}")"
+  q_spawn_direction="$(printf '%q' "${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-}")"
 
   cat > "$launcher" <<EOF_LAUNCH
 #!/usr/bin/env bash
@@ -575,11 +575,11 @@ export SPAWN_RUN_ID=$q_run_id
 export SPAWN_RUN_LOCK=$q_run_lock
 export SPAWN_LOOP_NR=$q_loop_nr
 export SPAWN_SKILL_CODE=$q_skill_code
-export VIBECRAFT_RUN_ID=$q_run_id
-export VIBECRAFT_RUN_LOCK=$q_run_lock
-export VIBECRAFT_SKILL_CODE=$q_skill_code
-export VIBECRAFT_OPERATOR_SESSION=$q_operator_session
-export VIBECRAFT_ZELLIJ_SPAWN_DIRECTION=$q_spawn_direction
+export VIBECRAFTED_RUN_ID=$q_run_id
+export VIBECRAFTED_RUN_LOCK=$q_run_lock
+export VIBECRAFTED_SKILL_CODE=$q_skill_code
+export VIBECRAFTED_OPERATOR_SESSION=$q_operator_session
+export VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=$q_spawn_direction
 
 rm -f "\$transcript" "\$report"
 if [[ -n "\${SPAWN_ROOT:-}" ]]; then
@@ -628,7 +628,7 @@ spawn_launch_headless() {
 }
 
 spawn_osascript_bin() {
-  local override="${VIBECRAFT_OSASCRIPT_BIN:-}"
+  local override="${VIBECRAFTED_OSASCRIPT_BIN:-}"
   if [[ -n "$override" && -x "$override" ]]; then
     printf '%s\n' "$override"
     return 0
@@ -709,7 +709,7 @@ spawn_current_zellij_session_name() {
 }
 
 spawn_in_target_zellij_session() {
-  local target_session="${VIBECRAFT_OPERATOR_SESSION:-}"
+  local target_session="${VIBECRAFTED_OPERATOR_SESSION:-}"
   spawn_in_zellij_context || return 1
   [[ -n "$target_session" ]] || return 0
   [[ "$(spawn_current_zellij_session_name)" == "$target_session" ]]
@@ -717,8 +717,8 @@ spawn_in_target_zellij_session() {
 
 spawn_pane_direction() {
   # Grid policy: 4 per row, 8 per tab, 9th opens new tab.
-  # Uses SPAWN_LOOP_NR (marbles) or VIBECRAFT_PANE_SEQ (manual).
-  local seq="${SPAWN_LOOP_NR:-${VIBECRAFT_PANE_SEQ:-0}}"
+  # Uses SPAWN_LOOP_NR (marbles) or VIBECRAFTED_PANE_SEQ (manual).
+  local seq="${SPAWN_LOOP_NR:-${VIBECRAFTED_PANE_SEQ:-0}}"
   local max_per_row=4
   local max_per_tab=8
 
@@ -734,7 +734,7 @@ spawn_pane_direction() {
 spawn_in_zellij_pane() {
   local launcher="$1"
   local pane_name="${2:-agent}"
-  local direction="${VIBECRAFT_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
+  local direction="${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
 
   if spawn_in_target_zellij_session && command -v zellij >/dev/null 2>&1; then
     if [[ "$direction" == "new-tab" ]]; then
@@ -757,8 +757,8 @@ spawn_in_zellij_pane() {
 spawn_in_operator_session() {
   local launcher="$1"
   local pane_name="${2:-agent}"
-  local session_name="${VIBECRAFT_OPERATOR_SESSION:-}"
-  local direction="${VIBECRAFT_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
+  local session_name="${VIBECRAFTED_OPERATOR_SESSION:-}"
+  local direction="${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
 
   [[ -n "$session_name" ]] || return 1
   command -v zellij >/dev/null 2>&1 || return 1

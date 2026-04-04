@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/memory-context-loader.sh"
+            "command": "$HOME/.claude/hooks/memory-context-loader.sh"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/memory-on-compact.sh"
+            "command": "$HOME/.claude/hooks/memory-on-compact.sh"
           }
         ]
       },
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/memory-on-compact.sh"
+            "command": "$HOME/.claude/hooks/memory-on-compact.sh"
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/loct-grep-augment.sh"
+            "command": "$HOME/.claude/hooks/loct-grep-augment.sh"
           }
         ]
       },
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/loct-grep-augment.sh --bash-filter"
+            "command": "$HOME/.claude/hooks/loct-grep-augment.sh --bash-filter"
           }
         ]
       }
@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/memory-on-explicit.sh"
+            "command": "$HOME/.claude/hooks/memory-on-explicit.sh"
           }
         ]
       }
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/memory-on-ultrathink.sh"
+            "command": "$HOME/.claude/hooks/memory-on-ultrathink.sh"
           }
         ]
       }

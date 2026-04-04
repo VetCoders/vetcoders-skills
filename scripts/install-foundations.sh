@@ -26,7 +26,7 @@ AICX_REPO="VetCoders/ai-contexters"
 PRVIEW_CRATE="prview"
 PRVIEW_REPO="VetCoders/prview"
 
-PREFIX="${VIBECRAFTED_BIN:-$HOME/.vibecrafted/bin}"
+PREFIX="${VIBECRAFTED_BIN:-$VIBECRAFTED_ROOT/.vibecrafted/bin}"
 CHECK_ONLY=0
 INSTALL_ALL=0
 TARGETS=()
@@ -329,7 +329,7 @@ Targets:
 Options:
   --all        Install all foundations (including optional)
   --check      Dry-run: show what would be installed
-  --prefix DIR Install binaries to DIR (default: ~/.vibecrafted/bin)
+  --prefix DIR Install binaries to DIR (default: $VIBECRAFTED_ROOT/.vibecrafted/bin)
   --help       Show this help
 EOF
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export VIBECRAFT_OPERATOR_MODE=1
-export VIBECRAFT_ZELLIJ_SPAWN_DIRECTION=down
+export VIBECRAFTED_OPERATOR_MODE=1
+export VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=down
 
 shell_bin="${SHELL:-}"
 if [[ -z "$shell_bin" || ! -x "$shell_bin" ]]; then

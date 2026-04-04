@@ -77,8 +77,8 @@ vc-frontier-install
 If `zellij` is on your machine, the same command also stages the repo-owned
 `config.kdl` and dashboard layouts. Nothing gets forced on until you run a
 dashboard command or point your shell at those files. The installer places all
-three assets under `~/.config/vetcoders/frontier/`, not into your global
-`~/.config/zellij` or `~/.config/starship.toml`.
+three assets under `$HOME/.config/vetcoders/frontier/`, not into your global
+`$HOME/.config/zellij` or `$HOME/.config/starship.toml`.
 
 ---
 
@@ -88,7 +88,7 @@ The helper layer resolves each artifact independently:
 
 1. `$XDG_CONFIG_HOME/vetcoders/frontier/`
 2. `$VIBECRAFTED_HOME/tools/vibecrafted-current/config/`
-3. `$VIBECRAFT_ROOT/config/`
+3. `$VIBECRAFTED_ROOT/config/`
 4. `<current vibecrafted repo>/config/`
 
 That means repo-owned `starship` / `atuin` presets can stay local to the core
@@ -117,7 +117,7 @@ What stays outside the core repo:
 
 If you prefer `zellij`, keep using it. The spawn runtime still detects an
 active session and opens panes there when possible. If a companion repo stages
-`zellij/config.kdl` under `~/.config/vetcoders/frontier/`, the helper layer can
+`zellij/config.kdl` under `$HOME/.config/vetcoders/frontier/`, the helper layer can
 pick it up without changing the core repo contract. The difference is simple:
 the framework owns an optional dashboard surface, not your whole terminal
 identity.

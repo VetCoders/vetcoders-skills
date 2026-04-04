@@ -6,12 +6,12 @@ usage() {
 Usage: skills_sync.sh <host> [--source <repo-root>] [--tool <codex|claude|gemini>]... [--dry-run] [--mirror] [--with-shell] [--no-zshrc] [--no-bashrc] [--no-verify]
 
 Sync canonical skill directories from this repo to another machine's shared store:
-  ~/.vibecrafted/skills
+  $HOME/.vibecrafted/skills
 
 Then create symlink views inside the remote tool homes:
-  ~/.codex/skills
-  ~/.claude/skills
-  ~/.gemini/skills
+  $HOME/.codex/skills
+  $HOME/.claude/skills
+  $HOME/.gemini/skills
 
 Examples:
   bash skills/vc-agents/scripts/skills_sync.sh mgbook16
@@ -152,8 +152,8 @@ if (( dry_run )); then
 fi
 
 printf 'Syncing skills from %s to %s\n' "$repo_root" "$host"
-# shellcheck disable=SC2088
-remote_shared_target='~/.vibecrafted/skills'
+# shellcheck disable=SC2088,SC2016
+remote_shared_target='$HOME/.vibecrafted/skills'
 printf -- '-- canonical store -> %s:%s\n' "$host" "$remote_shared_target"
 if (( dry_run )); then
   printf '  ssh %s mkdir -p %s\n' "$host" "$remote_shared_target"
@@ -173,7 +173,7 @@ printf '\n'
 
 for tool in "${tools[@]}"; do
   # shellcheck disable=SC2088
-  remote_target="~/.${tool}/skills"
+  remote_target="$HOME/.${tool}/skills"
   printf -- '-- %s symlink view -> %s:%s\n' "$tool" "$host" "$remote_target"
   if (( dry_run )); then
     printf '  ssh %s mkdir -p %s\n' "$host" "$remote_target"
@@ -216,17 +216,19 @@ if (( with_shell )); then
   fi
 
   if (( shell_no_zshrc )); then
-    printf 'Skipping remote ~/.zshrc update (--no-zshrc).\n'
+    # shellcheck disable=SC2016
+    printf 'Skipping remote $HOME/.zshrc update (--no-zshrc).\n'
   else
-    ssh -n "$host" "touch ~/.zshrc && if ! grep -Fqx '$source_line' ~/.zshrc; then printf '\n# VetCoders shell helpers\n%s\n' '$source_line' >> ~/.zshrc; fi" \
-      || die "Could not update ~/.zshrc on $host"
+    ssh -n "$host" "touch $HOME/.zshrc && if ! grep -Fqx '$source_line' $HOME/.zshrc; then printf '\n# VetCoders shell helpers\n%s\n' '$source_line' >> $HOME/.zshrc; fi" \
+      || die "Could not update $HOME/.zshrc on $host"
   fi
 
   if (( shell_no_bashrc )); then
-    printf 'Skipping remote ~/.bashrc update (--no-bashrc).\n'
+    # shellcheck disable=SC2016
+    printf 'Skipping remote $HOME/.bashrc update (--no-bashrc).\n'
   else
-    ssh -n "$host" "touch ~/.bashrc && if ! grep -Fqx '$source_line' ~/.bashrc; then printf '\n# VetCoders shell helpers\n%s\n' '$source_line' >> ~/.bashrc; fi" \
-      || die "Could not update ~/.bashrc on $host"
+    ssh -n "$host" "touch $HOME/.bashrc && if ! grep -Fqx '$source_line' $HOME/.bashrc; then printf '\n# VetCoders shell helpers\n%s\n' '$source_line' >> $HOME/.bashrc; fi" \
+      || die "Could not update $HOME/.bashrc on $host"
   fi
 
   printf '\n'
@@ -239,10 +241,10 @@ fi
 
 printf 'Verifying shared skill store on %s\n' "$host"
 ssh -n "$host" 'for f in \
-  ~/.vibecrafted/skills/vc-agents/scripts/codex_spawn.sh \
-  ~/.vibecrafted/skills/vc-agents/scripts/claude_spawn.sh \
-  ~/.vibecrafted/skills/vc-agents/scripts/gemini_spawn.sh \
-  ~/.vibecrafted/skills/vc-agents/scripts/observe.sh; do
+  $HOME/.vibecrafted/skills/vc-agents/scripts/codex_spawn.sh \
+  $HOME/.vibecrafted/skills/vc-agents/scripts/claude_spawn.sh \
+  $HOME/.vibecrafted/skills/vc-agents/scripts/gemini_spawn.sh \
+  $HOME/.vibecrafted/skills/vc-agents/scripts/observe.sh; do
   if [ -e "$f" ]; then
     echo "OK $f"
   else
@@ -252,7 +254,7 @@ done'
 
 for tool in "${tools[@]}"; do
   printf 'Verifying %s symlink view on %s\n' "$tool" "$host"
-  ssh -n "$host" "if [ -L ~/.${tool}/skills/vc-agents ]; then echo OK_LINK ~/.${tool}/skills/vc-agents; else echo MISSING_LINK ~/.${tool}/skills/vc-agents; fi"
+  ssh -n "$host" "if [ -L $HOME/.${tool}/skills/vc-agents ]; then echo OK_LINK $HOME/.${tool}/skills/vc-agents; else echo MISSING_LINK $HOME/.${tool}/skills/vc-agents; fi"
 done
 
 if (( with_shell )); then

@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 # 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helpers (bash/zsh compatible)
-# Source this from your ~/.bashrc or ~/.zshrc to get consistent wrapper commands
+# Source this from your $HOME/.bashrc or $HOME/.zshrc to get consistent wrapper commands
 # for the 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. framework installed under your local repository path.
 # These are shell functions, not standalone binaries. Non-interactive callers
-# should use an interactive shell so ~/.zshrc sources this file; fall back
+# should use an interactive shell so $HOME/.zshrc sources this file; fall back
 # to `bash -ic` on bash-only systems.
 
 _vetcoders_spawn_home() {
@@ -16,7 +16,7 @@ _vetcoders_spawn_home() {
   fi
 
   local repo_root
-  repo_root="${VIBECRAFT_ROOT:-$(_vetcoders_repo_root)}"
+  repo_root="${VIBECRAFTED_ROOT:-$(_vetcoders_repo_root)}"
   if [[ -d "$repo_root/skills/vc-agents" ]]; then
     printf '%s/skills/vc-agents' "$repo_root"
     return 0
@@ -101,7 +101,7 @@ _vetcoders_create_run_lock() {
   local root="$4"
   local org_repo lock_dir lock_file
   org_repo="$(_vetcoders_org_repo "$root")"
-  lock_dir="$HOME/.vibecrafted/locks/$org_repo"
+  lock_dir="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/locks/$org_repo"
   mkdir -p "$lock_dir"
   lock_file="$lock_dir/${run_id}.lock"
   cat > "$lock_file" <<LOCK
@@ -135,29 +135,29 @@ _vetcoders_ensure_run_context() {
   local tool="$1"
   local mode="$2"
   local root="${3:-$(_vetcoders_repo_root)}"
-  local skill_name="${VIBECRAFT_SKILL_NAME:-$mode}"
-  local skill_code="${VIBECRAFT_SKILL_CODE:-}"
-  local run_id="${VIBECRAFT_RUN_ID:-}"
-  local lock_file="${VIBECRAFT_RUN_LOCK:-}"
+  local skill_name="${VIBECRAFTED_SKILL_NAME:-$mode}"
+  local skill_code="${VIBECRAFTED_SKILL_CODE:-}"
+  local run_id="${VIBECRAFTED_RUN_ID:-}"
+  local lock_file="${VIBECRAFTED_RUN_LOCK:-}"
 
   [[ -n "$skill_code" ]] || skill_code="$(_vetcoders_skill_prefix "$skill_name")"
-  [[ -n "${VIBECRAFT_SKILL_NAME:-}" ]] || export VIBECRAFT_SKILL_NAME="$skill_name"
-  export VIBECRAFT_SKILL_CODE="$skill_code"
+  [[ -n "${VIBECRAFTED_SKILL_NAME:-}" ]] || export VIBECRAFTED_SKILL_NAME="$skill_name"
+  export VIBECRAFTED_SKILL_CODE="$skill_code"
 
   # Preserve the first run_id created for this workflow so prompts, locks,
   # operator sessions, and spawned workers stay traceable as one run.
   if [[ -z "$run_id" ]]; then
     run_id="$(_vetcoders_generate_run_id "$skill_code")"
   fi
-  export VIBECRAFT_RUN_ID="$run_id"
+  export VIBECRAFTED_RUN_ID="$run_id"
 
   if [[ -z "$lock_file" || ! -f "$lock_file" ]]; then
-    lock_file="$HOME/.vibecrafted/locks/$(_vetcoders_org_repo "$root")/${run_id}.lock"
+    lock_file="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/locks/$(_vetcoders_org_repo "$root")/${run_id}.lock"
   fi
   if [[ ! -f "$lock_file" ]]; then
     lock_file="$(_vetcoders_create_run_lock "$run_id" "$tool" "$skill_name" "$root")"
   fi
-  export VIBECRAFT_RUN_LOCK="$lock_file"
+  export VIBECRAFTED_RUN_LOCK="$lock_file"
 }
 
 _vetcoders_default_runtime() {
@@ -173,7 +173,7 @@ _vetcoders_current_zellij_session_name() {
 }
 
 _vetcoders_atuin_bin() {
-  local override="${VIBECRAFT_ATUIN_BIN:-}"
+  local override="${VIBECRAFTED_ATUIN_BIN:-}"
   if [[ -n "$override" && -x "$override" ]]; then
     printf '%s\n' "$override"
     return 0
@@ -192,7 +192,7 @@ _vetcoders_strip_ansi() {
 }
 
 _vetcoders_osascript_bin() {
-  local override="${VIBECRAFT_OSASCRIPT_BIN:-}"
+  local override="${VIBECRAFTED_OSASCRIPT_BIN:-}"
   if [[ -n "$override" && -x "$override" ]]; then
     printf '%s\n' "$override"
     return 0
@@ -284,7 +284,7 @@ _vetcoders_operator_session_name() {
   root="$(_vetcoders_repo_root)"
   base="$(basename "$root" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/^-*//; s/-*$//')"
   [[ -n "$base" ]] || base="vibecrafted"
-  run_id="${VIBECRAFT_RUN_ID:-}"
+  run_id="${VIBECRAFTED_RUN_ID:-}"
   if [[ -n "$run_id" ]]; then
     printf '%s-%s\n' "$base" "$run_id"
   else
@@ -344,9 +344,9 @@ _vetcoders_prepare_operator_runtime() {
     *) return 0 ;;
   esac
 
-  session_name="${VIBECRAFT_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
+  session_name="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
   if _vetcoders_in_target_session "$session_name"; then
-    export VIBECRAFT_OPERATOR_SESSION="$session_name"
+    export VIBECRAFTED_OPERATOR_SESSION="$session_name"
     return 0
   fi
   command -v zellij >/dev/null 2>&1 || return 0
@@ -357,7 +357,7 @@ _vetcoders_prepare_operator_runtime() {
   state="$(_vetcoders_zellij_session_state "$session_name")"
   case "$state" in
     live)
-      export VIBECRAFT_OPERATOR_SESSION="$session_name"
+      export VIBECRAFTED_OPERATOR_SESSION="$session_name"
       return 0
       ;;
     dead)
@@ -377,14 +377,14 @@ _vetcoders_prepare_operator_runtime() {
   fi
 
   if _vetcoders_wait_for_zellij_session "$session_name"; then
-    export VIBECRAFT_OPERATOR_SESSION="$session_name"
+    export VIBECRAFTED_OPERATOR_SESSION="$session_name"
   fi
 }
 
 _vetcoders_spawn_into_operator_session() {
   local tab_name="$1"
   local command_text="$2"
-  local session_name="${VIBECRAFT_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
+  local session_name="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
   local root_dir="${_vetcoders_contract_root:-$(_vetcoders_repo_root)}"
 
   command -v zellij >/dev/null 2>&1 || return 1
@@ -404,7 +404,7 @@ _vetcoders_frontier_candidates() {
   for candidate in \
     "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/frontier" \
     "$crafted_sidecar" \
-    "${VIBECRAFT_ROOT:+$VIBECRAFT_ROOT/config}" \
+    "${VIBECRAFTED_ROOT:+$VIBECRAFTED_ROOT/config}" \
     "$repo_root/config"
   do
     [[ -n "$candidate" && -d "$candidate" ]] || continue
@@ -449,7 +449,7 @@ _vetcoders_frontier_source_root() {
   crafted_root="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tools/vibecrafted-current"
 
   for candidate in \
-    "${VIBECRAFT_ROOT:-}" \
+    "${VIBECRAFTED_ROOT:-}" \
     "$repo_root" \
     "$crafted_root"
   do
@@ -495,11 +495,11 @@ _vetcoders_load_frontier_sidecars
 _VETCODERS_ATUIN_BIN="$(_vetcoders_atuin_bin 2>/dev/null || true)"
 
 _vetcoders_atuin_home_fallback_enabled() {
-  [[ "${VIBECRAFT_ATUIN_HOME_FALLBACK:-1}" != "0" ]]
+  [[ "${VIBECRAFTED_ATUIN_HOME_FALLBACK:-1}" != "0" ]]
 }
 
 _vetcoders_atuin_home_fallback_cwd() {
-  printf '%s\n' "${VIBECRAFT_ATUIN_FALLBACK_CWD:-$HOME}"
+  printf '%s\n' "${VIBECRAFTED_ATUIN_FALLBACK_CWD:-$HOME}"
 }
 
 _vetcoders_same_physical_dir() {
@@ -586,7 +586,7 @@ _vetcoders_wrap_atuin() {
   # Only wrap an explicit override target. This preserves normal Atuin init
   # behavior in user shells while keeping the controlled fallback contract
   # available for tests and opt-in environments.
-  [[ -n "${VIBECRAFT_ATUIN_BIN:-}" ]] || return 0
+  [[ -n "${VIBECRAFTED_ATUIN_BIN:-}" ]] || return 0
 
   atuin() {
     if _vetcoders_atuin_home_fallback_enabled && _vetcoders_atuin_search_can_fallback "$@"; then
@@ -635,8 +635,8 @@ _vetcoders_dashboard_layout_file() {
 _vetcoders_dashboard_session_name() {
   local layout_name slug base_session
   layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")"
-  base_session="${VIBECRAFT_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
-  if [[ -n "${VIBECRAFT_RUN_ID:-}" ]]; then
+  base_session="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
+  if [[ -n "${VIBECRAFTED_RUN_ID:-}" ]]; then
     printf '%s\n' "$base_session"
     return 0
   fi
@@ -667,9 +667,9 @@ _vetcoders_launch_dashboard() {
     return 1
   }
 
-  if [[ "${VIBECRAFT_PREFER_REPO_ZELLIJ:-0}" == "1" ]]; then
+  if [[ "${VIBECRAFTED_PREFER_REPO_ZELLIJ:-0}" == "1" ]]; then
     # Use the git-derived repo root, not frontier source root, so that an
-    # ambient VIBECRAFT_ROOT pointing at a different repo cannot hijack the
+    # ambient VIBECRAFTED_ROOT pointing at a different repo cannot hijack the
     # config dir when the launcher explicitly asked for repo-local zellij.
     repo_source="$(_vetcoders_repo_root)"
     repo_zellij_dir="$repo_source/config/zellij"
@@ -688,7 +688,7 @@ _vetcoders_launch_dashboard() {
       zellij attach "$session_name"
       ;;
     dead)
-      if [[ -n "${VIBECRAFT_RUN_ID:-}" ]]; then
+      if [[ -n "${VIBECRAFTED_RUN_ID:-}" ]]; then
         _vetcoders_delete_dead_zellij_session "$session_name" || {
           _vetcoders_print_session_recovery_hint "$session_name"
           return 1
@@ -1036,9 +1036,9 @@ _vetcoders_skill() {
   local tool="$1"
   local skill="$2"
   shift 2
-  local loop_nr="${VIBECRAFT_LOOP_NR:-0}"
-  local inherited_run_id="${VIBECRAFT_RUN_ID:-}"
-  local inherited_run_lock="${VIBECRAFT_RUN_LOCK:-}"
+  local loop_nr="${VIBECRAFTED_LOOP_NR:-0}"
+  local inherited_run_id="${VIBECRAFTED_RUN_ID:-}"
+  local inherited_run_lock="${VIBECRAFTED_RUN_LOCK:-}"
   _vetcoders_parse_contract "$@" || return 1
   [[ -z "$_vetcoders_contract_count" ]] || {
     echo "--count is only supported by vibecrafted marbles." >&2
@@ -1066,11 +1066,11 @@ _vetcoders_skill() {
   local spawn_args=(--runtime "$(_vetcoders_effective_runtime)")
   [[ -n "$_vetcoders_contract_root" ]] && spawn_args+=(--root "$_vetcoders_contract_root")
   (
-    export VIBECRAFT_RUN_ID="$run_id"
-    export VIBECRAFT_RUN_LOCK="$run_lock"
-    export VIBECRAFT_SKILL_CODE="$skill_code"
-    export VIBECRAFT_LOOP_NR="$loop_nr"
-    export VIBECRAFT_SKILL_NAME="$skill"
+    export VIBECRAFTED_RUN_ID="$run_id"
+    export VIBECRAFTED_RUN_LOCK="$run_lock"
+    export VIBECRAFTED_SKILL_CODE="$skill_code"
+    export VIBECRAFTED_LOOP_NR="$loop_nr"
+    export VIBECRAFTED_SKILL_NAME="$skill"
     _vetcoders_prompt_text "$tool" implement "$prompt" "${spawn_args[@]}"
   )
 }
@@ -1126,7 +1126,7 @@ _vetcoders_marbles() {
 
   quoted_args="$(_vetcoders_shell_quote_join "${marbles_args[@]}")"
   marbles_cmd="bash $(printf '%q' "$script") ${quoted_args}"
-  operator_session="${VIBECRAFT_OPERATOR_SESSION:-}"
+  operator_session="${VIBECRAFTED_OPERATOR_SESSION:-}"
   if [[ -z "$operator_session" ]] && _vetcoders_in_zellij; then
     operator_session="$(_vetcoders_current_zellij_session_name)"
   fi
@@ -1136,7 +1136,7 @@ _vetcoders_marbles() {
 
   # Inside zellij: run marbles orchestrator in a pane below, keep operator free
   if _vetcoders_in_target_session "$operator_session" && command -v zellij >/dev/null 2>&1; then
-    export VIBECRAFT_OPERATOR_SESSION="$operator_session"
+    export VIBECRAFTED_OPERATOR_SESSION="$operator_session"
     zellij action new-pane \
       --direction down \
       --height 40% \
@@ -1145,7 +1145,7 @@ _vetcoders_marbles() {
       -- /bin/zsh -l -c "$marbles_cmd"
   elif [[ "$(_vetcoders_effective_runtime)" =~ ^(terminal|visible)$ ]]; then
     _vetcoders_prepare_operator_runtime "$(_vetcoders_effective_runtime)" || return 1
-    if [[ -n "${VIBECRAFT_OPERATOR_SESSION:-}" ]]; then
+    if [[ -n "${VIBECRAFTED_OPERATOR_SESSION:-}" ]]; then
       _vetcoders_spawn_into_operator_session "marbles" "$marbles_cmd"
     else
       bash "$script" "${marbles_args[@]}"
