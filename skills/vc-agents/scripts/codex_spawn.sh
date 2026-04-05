@@ -92,17 +92,6 @@ qtranscript="$(printf '%q' "$SPAWN_TRANSCRIPT")"
 qfilter="$(printf '%q' "$SCRIPT_DIR/codex_stream_filter.jq")"
 launch_cmd="set -o pipefail && cd $qroot && codex exec -C $qroot --json --dangerously-bypass-approvals-and-sandbox --output-last-message $qreport - < $qruntime 2>&1 | grep --line-buffered '^{' | jq --unbuffered -rj -f $qfilter | tee -a $qtranscript ; echo ; { grep -o 'session: [a-f0-9-]*' $qtranscript 2>/dev/null | tail -1 | awk '{print \$2}' | xargs -I{} printf '\\n\\033[33m━━━ session: {} ━━━\\033[0m\\n'; } || true"
 
-spawn_generate_launcher "$SPAWN_LAUNCHER" \
-  "$SPAWN_META" \
-  "$SPAWN_REPORT" \
-  "$SPAWN_TRANSCRIPT" \
-  "$SCRIPT_DIR/common.sh" \
-  "$launch_cmd" \
-  "" \
-  "$combined_success" \
-  "$combined_failure"
-
-
 # shellcheck disable=SC2016
 codex_success_hook='
   if [[ ! -s "$report" ]]; then
@@ -129,6 +118,17 @@ combined_success="${codex_success_hook}${success_hook_extra:+
 $success_hook_extra}"
 combined_failure="${codex_failure_hook}${failure_hook_extra:+
 $failure_hook_extra}"
+
+spawn_generate_launcher "$SPAWN_LAUNCHER" \
+  "$SPAWN_META" \
+  "$SPAWN_REPORT" \
+  "$SPAWN_TRANSCRIPT" \
+  "$SCRIPT_DIR/common.sh" \
+  "$launch_cmd" \
+  "" \
+  "$combined_success" \
+  "$combined_failure"
+
 
 chmod +x "$SPAWN_LAUNCHER"
 spawn_print_launch codex "$mode" "$runtime"

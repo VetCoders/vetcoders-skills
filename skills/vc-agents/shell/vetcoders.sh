@@ -168,6 +168,16 @@ _vetcoders_in_zellij() {
   [[ -n "${ZELLIJ_PANE_ID:-}" ]] || [[ -n "${ZELLIJ:-}" && "${ZELLIJ}" != "0" ]]
 }
 
+_vetcoders_guess_active_zellij_session() {
+  command -v zellij >/dev/null 2>&1 || return 0
+  local active
+  active="$(zellij ls 2>/dev/null | _vetcoders_strip_ansi | grep -E '\(attached\)|\(current\)' | head -1 | awk '{print $1}')"
+  if [[ -z "$active" ]]; then
+    active="$(zellij ls 2>/dev/null | _vetcoders_strip_ansi | grep -v '(EXITED' | head -1 | awk '{print $1}')"
+  fi
+  printf '%s\n' "$active"
+}
+
 _vetcoders_current_zellij_session_name() {
   printf '%s\n' "${ZELLIJ_SESSION_NAME:-}"
 }
@@ -308,11 +318,6 @@ _vetcoders_operator_session_name() {
   fi
 }
 
-_vetcoders_in_target_session() {
-  local session_name="${1:-$(_vetcoders_operator_session_name)}"
-  _vetcoders_in_zellij || return 1
-  [[ "$(_vetcoders_current_zellij_session_name)" == "$session_name" ]]
-}
 
 _vetcoders_wait_for_zellij_session() {
   local session_name="$1"
@@ -366,11 +371,21 @@ _vetcoders_prepare_operator_runtime() {
     *) return 0 ;;
   esac
 
-  session_name="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
-  if _vetcoders_in_target_session "$session_name"; then
-    export VIBECRAFTED_OPERATOR_SESSION="$session_name"
+  # If we are already inside a Zellij session, naturally attach to it.
+  if _vetcoders_in_zellij; then
+    export VIBECRAFTED_OPERATOR_SESSION="$(_vetcoders_current_zellij_session_name)"
     return 0
   fi
+
+  # If spawned by a headless agent, attempt to naturally latch onto the user's active session.
+  local guessed_session
+  guessed_session="$(_vetcoders_guess_active_zellij_session)"
+  if [[ -n "$guessed_session" ]]; then
+    export VIBECRAFTED_OPERATOR_SESSION="$guessed_session"
+    return 0
+  fi
+
+  session_name="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
   command -v zellij >/dev/null 2>&1 || return 0
 
   layout_file="$(_vetcoders_operator_layout_file 2>/dev/null || true)"
