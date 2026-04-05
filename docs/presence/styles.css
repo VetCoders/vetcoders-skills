@@ -59,7 +59,7 @@
     --banner-height: 36px;
     --chrome-offset: 108px;
     --page-shell: min(1240px, calc(100% - 8vw));
-    --footer-peek: clamp(4.6rem, 8vh, 5.6rem);
+    --footer-peek: clamp(2.85rem, 4.6vh, 3.2rem);
     --footer-hover-bridge: clamp(1.05rem, 2vw, 1.8rem);
     --strip-bleed-pad: clamp(1rem, 3vw, 2.25rem);
     --strip-fade-width: clamp(4.5rem, 9vw, 8rem);
