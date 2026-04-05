@@ -269,3 +269,80 @@ def test_start_subcommand_launches_operator_entrypoint_layout(tmp_path: Path) ->
         str(REPO_ROOT / "config" / "zellij" / "layouts" / "vibecrafted.kdl") in payload
     )
     assert f"ZELLIJ_CONFIG_DIR={REPO_ROOT / 'config' / 'zellij'}" in payload
+
+
+def test_resume_subcommand_forwards_session_and_prompt_to_agent(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    fake_bin = tmp_path / "bin"
+    capture_file = tmp_path / "codex-args.txt"
+
+    home.mkdir()
+    fake_bin.mkdir()
+    _write_fake_agent(fake_bin, "codex", capture_file)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
+    env["VETCODERS_SPAWN_RUNTIME"] = "headless"
+    env["CAPTURE_FILE"] = str(capture_file)
+
+    subprocess.run(
+        [
+            "bash",
+            str(LAUNCHER),
+            "resume",
+            "codex",
+            "--session",
+            "resume-session-123",
+            "--prompt",
+            "Continue the fix",
+        ],
+        check=True,
+        cwd=REPO_ROOT,
+        env=env,
+    )
+
+    payload = capture_file.read_text(encoding="utf-8").splitlines()
+    assert payload == ["resume", "resume-session-123", "Continue the fix"]
+
+
+def test_resume_wrapper_symlink_forwards_session_and_prompt_to_agent(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    fake_bin = tmp_path / "bin"
+    capture_file = tmp_path / "codex-args.txt"
+    wrapper = tmp_path / "vc-resume"
+
+    home.mkdir()
+    fake_bin.mkdir()
+    wrapper.symlink_to(LAUNCHER)
+    _write_fake_agent(fake_bin, "codex", capture_file)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
+    env["VIBECRAFTED_ROOT"] = str(REPO_ROOT)
+    env["VETCODERS_SPAWN_RUNTIME"] = "headless"
+    env["CAPTURE_FILE"] = str(capture_file)
+
+    subprocess.run(
+        [
+            "bash",
+            str(wrapper),
+            "codex",
+            "--session",
+            "resume-session-456",
+            "--prompt",
+            "Continue from wrapper",
+        ],
+        check=True,
+        cwd=REPO_ROOT,
+        env=env,
+    )
+
+    payload = capture_file.read_text(encoding="utf-8").splitlines()
+    assert payload == ["resume", "resume-session-456", "Continue from wrapper"]

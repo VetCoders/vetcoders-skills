@@ -159,6 +159,9 @@ cat > "$fake_bin/codex" <<'EOF_CODEX'
 set -euo pipefail
 report=""
 json_mode=0
+if [[ -n "${FAKE_CODEX_CAPTURE:-}" ]]; then
+  printf "%s\n" "$@" > "$FAKE_CODEX_CAPTURE"
+fi
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --output-last-message)
@@ -311,6 +314,15 @@ jq -e '.run_id | test("^impl-[0-9]{6}$")' "$gemini_meta" >/dev/null || die "gemi
 jq -e '.loop_nr == 0' "$codex_meta" >/dev/null || die "codex meta missing loop_nr"
 jq -e '.framework_version != null and .framework_version != ""' "$codex_meta" >/dev/null || die "codex meta missing framework_version"
 jq -e '.completed_at != null and .duration_s != null' "$codex_meta" >/dev/null || die "codex meta missing completion telemetry"
+
+log "launcher resume smoke"
+resume_capture="$workspace/resume-codex.txt"
+env HOME="$home_dir" XDG_CONFIG_HOME="$config_dir" PATH="$fake_bin:$PATH" FAKE_CODEX_CAPTURE="$resume_capture" \
+  "$home_dir/.vibecrafted/bin/vibecrafted" resume codex --session fake-session-001 --prompt "resume smoke"
+require_file "$resume_capture"
+assert_contains "$resume_capture" 'resume'
+assert_contains "$resume_capture" 'fake-session-001'
+assert_contains "$resume_capture" 'resume smoke'
 
 log "helper bash smoke"
 # shellcheck disable=SC2016
