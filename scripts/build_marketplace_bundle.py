@@ -97,6 +97,31 @@ def discover_bundle_skills(repo_root: Path) -> list[Path]:
     )
 
 
+def discover_foundation_skills(repo_root: Path) -> list[Path]:
+    """Find foundation skill directories under skills/foundations/vc-*.
+
+    The main discover_skills helper (in vetcoders_install) scans only direct
+    children of skills/ with a vc- or vetcoders- prefix, so foundation skills
+    nested under skills/foundations/ are invisible to it. The bundle must still
+    ship them so relative links from pipeline skills (e.g. ../foundations/vc-loctree)
+    resolve inside the extracted plugin tree.
+    """
+    foundations_dir = repo_root / "skills" / "foundations"
+    if not foundations_dir.exists() or not foundations_dir.is_dir():
+        return []
+    return sorted(
+        (
+            entry
+            for entry in foundations_dir.iterdir()
+            if entry.is_dir()
+            and not entry.name.startswith(".")
+            and entry.name.startswith("vc-")
+            and (entry / "SKILL.md").exists()
+        ),
+        key=lambda path: path.name,
+    )
+
+
 def should_skip_path(path: Path) -> bool:
     if path.name.endswith(".pyc"):
         return True
@@ -190,6 +215,17 @@ def build_bundle_bytes(repo_root: Path) -> bytes:
             for source_file in iter_skill_files(skill_dir):
                 relative = source_file.relative_to(skill_dir).as_posix()
                 arcname = f"skills/{skill_dir.name}/{relative}"
+                write_zip_entry(
+                    bundle,
+                    arcname,
+                    source_file.read_bytes(),
+                    source_file.stat().st_mode,
+                )
+
+        for foundation_dir in discover_foundation_skills(repo_root):
+            for source_file in iter_skill_files(foundation_dir):
+                relative = source_file.relative_to(foundation_dir).as_posix()
+                arcname = f"skills/foundations/{foundation_dir.name}/{relative}"
                 write_zip_entry(
                     bundle,
                     arcname,

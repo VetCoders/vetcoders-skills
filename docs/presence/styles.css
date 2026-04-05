@@ -2177,8 +2177,10 @@ footer {
 }
 
 .footer-brand {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 0.7rem;
     color: var(--steel-edge);
     font-family: var(--font-mono);
@@ -2203,9 +2205,17 @@ footer {
 .footer-tagline {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     letter-spacing: 0.04em;
     color: var(--steel-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-left: 0.9rem;
+    margin-left: 0.1rem;
+    border-left: 1px solid rgba(163, 184, 199, 0.16);
+    line-height: 1.35;
+    text-transform: none;
 }
 
 .footer-links {
@@ -2271,8 +2281,11 @@ footer {
     }
 
     .footer-tagline {
-        width: min(100%, 28rem);
-        padding: 0 1.5rem;
+        width: auto;
+        padding: 0;
+        margin-left: 0;
+        border-left: 0;
+        text-align: center;
         line-height: 1.5;
     }
 

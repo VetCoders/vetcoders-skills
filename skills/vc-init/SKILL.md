@@ -11,6 +11,13 @@ description: >-
 
 # vc-init — Technical Due Diligence
 
+<details>
+<summary>Foundation Dependencies (Loaded with framework)</summary>
+
+- [vc-loctree](../foundations/vc-loctree/SKILL.md) — primary map and structural awareness.
+- [vc-aicx](../foundations/vc-aicx/SKILL.md) — primary memory and steerability index.
+</details>
+
 > 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚜𝚖𝚊𝚗𝚜𝚑𝚒𝚙 is the ansfwer for the failure of vibe coding
 > and vibe coders community (that newer grew up unfortunately)
 > stuck in the 80/20 <-> 20/80 trap; look the reference:

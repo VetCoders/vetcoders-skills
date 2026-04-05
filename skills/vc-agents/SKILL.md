@@ -8,13 +8,29 @@ description: >
   Trigger: "vc-agents", "/vc-agents", "delegate to agents", "spawn".
 ---
 
-# vc-agents — The AI-Native Fleet
+# vc-agents — The Unified Execution Fleet
 
 > We do not outsource thought. We deploy equally capable minds on parallel execution paths to protect the main context buffer.
 
 A single agent session carries immense context. Attempting to execute every small rewrite, forensic deep-dive, or radical structural shift in-thread causes prompt bloat and dilutes your focus.
 
-`vc-agents` is the delegation layer. You identify the structural gap, pick the right mind for the job from the **`vc-why-matrix`**, spin up the autonomous worker, and return to your main orchestration.
+`vc-agents` is the unified delegation layer. You identify the structural gap, pick the right mind for the job from the **`vc-why-matrix`**, choose the appropriate execution mode (Terminal vs Native Task), spin up the autonomous worker, and return to your main orchestration.
+
+## Execution Modes (Terminal vs Native)
+
+| Capability      | Native Task Delegation (Fallback)   | Terminal Agent Swarm (Default)               |
+| --------------- | ----------------------------------- | -------------------------------------------- |
+| **Execution**   | Claude Task tool (in-process)       | Portable scripts (out-of-process)            |
+| **Agents**      | Claude subagents only               | Claude + Codex + Gemini                      |
+| **Parallelism** | Multiple Task calls in one message  | Multiple Terminal windows                    |
+| **Robustness**  | Limited by context window           | Full agent session per task                  |
+| **Environment** | Inherits parent env                 | Clean Terminal env                           |
+| **Best for**    | Small bounded work, native fallback | Default choice; large or model-specific work |
+
+**Rule of Thumb:**
+
+1. Default to **Terminal Agent Swarms** for robustness and cognitive-specific choices.
+2. Fallback to **Native Task Delegation** for very small tasks, quick in-thread verification, or when external Terminal processes are unavailable.
 
 ## The `vc-why-matrix`
 
@@ -52,42 +68,47 @@ You do not spawn agents blindly. You pick the cognitive profile required for the
 
 ## Plan template
 
-Use this structure:
-
+```markdown
 ---
-
-run_id: <unique-run-id>
-agent: <agent-name>
+run_id: <generated-unique-id>
+agent: <claude|codex|gemini>
+skill: vc-agents
+project: <repo-name>
 status: <pending|in-progress|completed|failed>
 loops_completed: <number>
-
 ---
 
-```text
 # Task: <short title>
 
 Goal:
+
 - <1-3 bullets>
 
 Scope:
+
 - In scope: <files/areas> as high-level suggestions
 - Out of scope: <explicit>
 
 Constraints:
+
 - No --no-verify
 - Follow repo conventions
 
 Acceptance:
+
 - [ ] <objective outcome>
 - [ ] <objective outcome>
 
 Test gate:
+
 - <command(s)>
 
 Context:
+
 - <very short summary>
 
 Living tree note:
+
 - You work on a living tree with 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚜𝚖𝚊𝚗𝚜𝚑𝚒𝚙 methodology, so concurrent changes are expected.
 - Adapt proactively and continue, but this is never permission to skip quality, security, or test gates.
 - Run required checks. If something is blocked, report the exact blocker and run the closest safe equivalent.
@@ -98,16 +119,19 @@ Living tree note:
 
 ## Spawn commands
 
-The canonical launch path for agent-to-agent delegation is through the portable spawn scripts.
+The launch path depends on your chosen Execution Mode.
 
-If the environment has optional shell aliases (like `codex-implement`), those are just convenience wrappers around these
-exact same scripts. Always use the portable scripts to ensure maximum compatibility.
+### Mode 1: Terminal Agent Swarm (Default)
+
+The canonical launch path for out-of-process delegation is through the portable spawn scripts.
+
+If the environment has optional shell aliases (like `codex-implement`), those are just convenience wrappers around these exact same scripts. Always use the portable scripts to ensure maximum compatibility.
 
 ### Codex
 
 ```bash
 # 1. Save the target plan
-PLAN="$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan-slug>.md"
+PLAN="$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan-slug>.md"
 
 # 2. Spawn the chosen mind
 bash $VIBECRAFTED_ROOT/skills/vc-agents/scripts/codex_spawn.sh "$PLAN" --mode implement
@@ -116,30 +140,44 @@ bash $VIBECRAFTED_ROOT/skills/vc-agents/scripts/codex_spawn.sh "$PLAN" --mode im
 ### Claude
 
 ```bash
-PLAN="$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
+PLAN="$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
 bash $VIBECRAFTED_ROOT/skills/vc-agents/scripts/claude_spawn.sh "$PLAN" --mode implement
 ```
 
 ### Gemini
 
 ```bash
-PLAN="$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
+PLAN="$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<plan>.md"
 bash $VIBECRAFTED_ROOT/skills/vc-agents/scripts/gemini_spawn.sh "$PLAN" --mode implement
 ```
 
 If these tools are unavailable, stop pretending spawn is correctly configured and say so explicitly.
 
+### Mode 2: Native Task Delegation (Fallback)
+
+If you chose native delegation for a small or constrained task, invoke the `Task` tool directly rather than calling a shell script.
+
+```
+Task(
+  subagent_type: "general-purpose",
+  description: "<3-5 word summary>",
+  prompt: "<full plan content from plan file>"
+)
+```
+
+Wait for the subagent to report its findings directly back into your chat context.
+
 ## Output convention
 
-- Plans: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<timestamp>_<slug>.md` or another stable per-task
+- Plans: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<timestamp>_<slug>.md` or another stable per-task
   filename
-- Reports: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.md`
-- Transcripts: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.transcript.log`
-- Metadata: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.meta.json`
+- Reports: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.md`
+- Transcripts: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.transcript.log`
+- Metadata: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.meta.json`
 
 ## Observation
 
-Observe progress through durable artifacts in `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
+Observe progress through durable artifacts in `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
 
 If your environment exposes the observer helper, the standard check is:
 

@@ -92,7 +92,7 @@ Report depth level in RESEARCH.md header.
 
 Date: <YYYY-MM-DD>
 Depth: quick | standard | deep
-Artifact root: $VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
+Artifact root: $VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/
 
 ## Open Questions (from CONTEXT.md)
 

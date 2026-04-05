@@ -23,6 +23,13 @@ compatibility:
 
 # vc-research — Triple-Agent Research Swarm
 
+<details>
+<summary>Foundation Dependencies (Loaded with framework)</summary>
+
+- [vc-loctree](../foundations/vc-loctree/SKILL.md) — primary map and structural awareness.
+- [vc-aicx](../foundations/vc-aicx/SKILL.md) — primary memory and steerability index.
+</details>
+
 > One perspective is an opinion. Three perspectives are evidence.
 
 ## Purpose
@@ -69,6 +76,14 @@ Output: a short problem statement (3-5 sentences) agreed with the user.
 Create one plan file. The plan is what every agent receives. It contains:
 
 ```markdown
+---
+run_id: <generated-unique-id>
+agent: <claude|codex|gemini>
+skill: vc-research
+project: <repo-name>
+status: in-progress
+---
+
 # Research Plan: <title>
 
 ## Problem
@@ -121,7 +136,7 @@ Write your findings to the report file as markdown with this structure:
 ```
 
 Save to
-`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_research-plan.md`.
+`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_research-plan.md`.
 
 Plans can be split if the problem has clearly separable domains. Each agent
 gets ALL plans — they are independent researchers, not specialists.
@@ -131,7 +146,7 @@ gets ALL plans — they are independent researchers, not specialists.
 Canonical launch path is through the portable spawn scripts:
 
 ```bash
-PLAN="$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_research-plan.md"
+PLAN="$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_research-plan.md"
 
 bash $VIBECRAFTED_ROOT/skills/vc-agents/scripts/claude_spawn.sh "$PLAN" --mode research
 bash $VIBECRAFTED_ROOT/skills/vc-agents/scripts/codex_spawn.sh "$PLAN" --mode research
@@ -149,9 +164,9 @@ divergence between reports reveals blind spots.
 Reports land in:
 
 ```
-$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_claude.md
-$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_codex.md
-$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_gemini.md
+$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_claude.md
+$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_codex.md
+$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_gemini.md
 ```
 
 Wait for all three. Use the observe scripts:
@@ -185,9 +200,17 @@ Rules for synthesis:
 ### Step 6 — Produce gap-free research document
 
 Write the final document to
-`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`:
+`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`:
 
 ```markdown
+---
+run_id: <generated-unique-id>
+agent: <claude|codex|gemini>
+skill: vc-research
+project: <repo-name>
+status: completed
+---
+
 # Research: <title>
 
 ## Problem

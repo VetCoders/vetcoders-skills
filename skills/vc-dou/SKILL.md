@@ -13,17 +13,22 @@ description: >
   "co brakuje do launchu", "readiness audit", "packaging gap".
 ---
 
-# vc-dou — Definition of Undone Audit
+# vc-dou — Definition of Undone (Action Engine)
 
-> "Green gates are necessary, not sufficient. Runtime truth wins."
+> "Audit skills are dead. Work is taking initiative, not just pointing out flaws."
 > "The engineering is done. The packaging is not."
 
 The DoU skill answers the question no agent asks by default:
-**"What remains incomplete across the entire product surface, and why?"**
+**"What remains incomplete across the entire product surface, and how do we fix it right now?"**
 
-This is the completion oracle described in the DoU manifesto — not a one-off report,
-but a structured, repeatable audit that measures the gap between "it runs on my machine"
-and "someone can buy this."
+This is the completion engine described in the DoU manifesto. It is not a passive checklist generator. It is an **active** engine that measures the gap between "it runs on my machine" and "someone can buy this" — and then immediately starts patching those gaps by creating the missing CI scripts, generating the missing representation layer, and writing the missing docs.
+
+<details>
+<summary>Foundation Dependencies (Loaded with framework)</summary>
+
+- [vc-loctree](../foundations/vc-loctree/SKILL.md) — primary map and structural awareness.
+- [vc-aicx](../foundations/vc-aicx/SKILL.md) — primary memory and steerability index.
+</details>
 
 One critical rule:
 

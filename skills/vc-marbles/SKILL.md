@@ -11,6 +11,13 @@ description: >
 
 # vc-marbles — The Stabilization Loop
 
+<details>
+<summary>Foundation Dependencies (Loaded with framework)</summary>
+
+- [vc-loctree](../foundations/vc-loctree/SKILL.md) — primary map and structural awareness.
+- [vc-aicx](../foundations/vc-aicx/SKILL.md) — primary memory and steerability index.
+</details>
+
 > A tool doesn't just look for "dead code". It looks for **silent failures**.
 > Stop rewriting. Start stabilizing.
 
@@ -64,13 +71,73 @@ We do not treat any other agent as inferior. We treat them
 as partners. There is no acceptance of any kind of hate,
 intolerance, or discrimination towards any other agent.
 
-### Marbles living tree exception
+### Marbles Living Tree Exception
 
-**`vc-marbles` is the one of the skills where keeping the living tree is disallowed**
-Agent is obliged to commit all the changes whit canonical commit message consist of the loop number and the description of the changes made during it.
+The global Living Tree rule forbids agents from committing.
+**`vc-marbles` is the one of the exceptions.** Each marble round MUST end with
+a commit so the flow remains vivid and measurable.
 
-**The marbles are the convergence driven process**
-It has the telemetry and the metrics that are used to determine the stability of the codebase after each round.
+#### Commit convention
+
+```
+marble(<N>): <one-line summary of what was fortified>
+
+- <file>: <what changed and why>
+- <file>: <what changed and why>
+
+Gate: <pass|fail> | Tests: <count> | Regressions: <count>
+```
+
+Example:
+
+```
+marble(2): fortify Stripe webhook error boundaries
+
+- src/api/webhooks/stripe.ts: added idempotency guard and retry envelope
+- src/lib/payments.ts: replaced silent catch with structured error + alert
+- tests/webhooks.test.ts: added 3 failure-path tests
+
+Gate: pass | Tests: 147 | Regressions: 0
+```
+
+Rules:
+
+- `N` is the 1-indexed marble round number.
+- One commit per marble round. No partial commits, no squashing across rounds.
+- If the gate fails, the commit message must say `Gate: fail` and the next round starts with the regression as its first target.
+
+#### Per-round report
+
+#### Per-round report
+
+After each marble round, the agent MUST produce a short convergence report and **save it to the central store**:
+`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_marble_loop_<N>.md`
+
+```markdown
+---
+run_id: <generated-unique-id>
+agent: <claude|codex|gemini>
+skill: vc-marbles
+project: <repo-name>
+status: <completed|in-progress>
+created: <ISO-8601 timestamp>
+---
+
+# Marble(N) Report
+
+- **Pillar**: <Auth | DB | Errors | Deploy>
+- **Targets**: <what was attacked this round>
+- **Fixed**: <what is now fortified>
+- **Remaining**: <what still fails or is fragile>
+- **Gate**: <pass | fail>
+- **Tests**: <total> (+<added this round>)
+- **Regressions**: <count>
+- **Verdict**: <CONVERGED | CONTINUE | BLOCKED>
+```
+
+- **CONVERGED**: pillar holds, move to next.
+- **CONTINUE**: improvements made, but counterexamples remain.
+- **BLOCKED**: external dependency or user decision required.
 
 ### Evidence-Based Execution
 
@@ -83,7 +150,7 @@ Every fix must trace to a tool output or a structural audit observation:
 ### Doctrine: Move On over Backward Compatibility
 
 We apply the VetCoders Axiom here: **Move on over backward compatibility.** During the stabilization loop, you will often find rotten abstractions tied to a "legacy" feature that was written two weeks ago.
-If an abstraction is fundamentally broken, cut it. Do not negotiate with bad architecture and do not preserve garbage just to keep an old integration running. If we need to break a contract to fix the foundation, we break it and move on. Backward compatibility is a tool, not a religion.
+If an abstraction is fundamentally broken, cut it. Do not negotiate with bad architecture and do not preserve garbage just to keep an old integration running. If we need to break a contract to fix the foundation, we break it and move on. Backward compatibility is a clever way of avoiding the hard decisions, not a religion.
 
 ## Convergence Protocol
 

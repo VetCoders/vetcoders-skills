@@ -14,6 +14,13 @@ description: >
 
 # 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Workflow — ERi Pipeline
 
+<details>
+<summary>Foundation Dependencies (Loaded with framework)</summary>
+
+- [vc-loctree](../foundations/vc-loctree/SKILL.md) — primary map and structural awareness.
+- [vc-aicx](../foundations/vc-aicx/SKILL.md) — primary memory and steerability index.
+</details>
+
 **Examine. Research. Implement.**
 
 Three-phase pipeline that chains structural code intelligence, ground truth research,
@@ -41,7 +48,7 @@ scaffold → init → [WORKFLOW] → followup → marbles → dou → decorate �
    CONTEXT.md                 RESEARCH.md              REPORTS/*.md
 ```
 
-Canonical artifact root: `$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/`.
+Canonical artifact root: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/`.
 `CONTEXT.md` and `RESEARCH.md` live in `plans/` as `<ts>_<slug>_CONTEXT.md`
 and `<ts>_<slug>_RESEARCH.md`. `skills/vc-agents/scripts/common.sh`
 `spawn_prepare_paths()` is the source of truth for day-root resolution.
@@ -72,9 +79,18 @@ Map the codebase before touching anything. The **Foundation Skills** are the pri
 ### Output: CONTEXT.md
 
 Write structured examination output to
-`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_CONTEXT.md`:
+`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_CONTEXT.md`:
 
 ```markdown
+---
+run_id: <generated-unique-id>
+agent: <claude|codex|gemini>
+skill: vc-workflow
+project: <repo-name>
+status: completed
+created: <ISO-8601 timestamp>
+---
+
 # Examination: <slug>
 
 ## Repo Health
@@ -112,31 +128,30 @@ If domain is well-understood, skip Phase 2. Otherwise proceed.
 
 ## Phase 2: RESEARCH
 
-Investigate ground truth — APIs, libraries, prior art, best practices.
-Combine Brave Search, WebFetch, and Context7 for comprehensive coverage.
+For deep architectural unknowns or major feature investigations, **DO NOT run ad-hoc research yourself.** Hand off the exact questions derived from the Examination phase to the `vc-research` skill. Use its triple-agent swarm protocol to get gap-free analysis, and then consume its resulting report.
 
-### Research Sources (priority order)
+### Simple Lookups (No swarm needed)
 
-1. **Context7** (`resolve-library-id` → `query-docs`) — authoritative library docs
-2. **Brave Search** — use the Brave Search tool / API path available in the runtime
-3. **WebFetch** — fetch specific URLs found via search
-4. **Codebase grep** — internal patterns and prior art (only after loctree mapping)
+If you only need to look up a simple API parameter or a single file syntax (e.g., using Brave Search, Context7, or WebFetch), you can do it directly.
 
-### Query Strategy
-
-Formulate queries from Examination findings:
-
-- Unknown API → `"<API name> usage example <year>"`
-- Architecture pattern → `"<pattern> Rust/Swift/etc best practices"`
-- Integration → `"<library> + <library> integration"`
-- Always append current year for freshness
+- Formulate query: `"<API name> usage example <year>"`
+- Fetch standard docs.
 
 ### Output: RESEARCH.md
 
 Write to
-`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`:
+`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/plans/<ts>_<slug>_RESEARCH.md`:
 
 ```markdown
+---
+run_id: <generated-unique-id>
+agent: <claude|codex|gemini>
+skill: vc-workflow
+project: <repo-name>
+status: completed
+created: <ISO-8601 timestamp>
+---
+
 # Research: <slug>
 
 ## Questions (from Examination)
@@ -175,8 +190,9 @@ delegate implementation to parallel agents.
 
 Every agent plan MUST include:
 
-1. **Pipeline context** — paste relevant sections from CONTEXT.md + RESEARCH.md
-2. **Loctree instruction** — mandatory preamble (proven 98% vs 85% completeness):
+1. **Mandatory Frontmatter** — The plan must have the `run_id`, `agent`, `skill(vc-workflow/vc-agents)`, etc.
+2. **Pipeline context** — paste relevant sections from CONTEXT.md + RESEARCH.md
+3. **Loctree instruction** — mandatory preamble (proven 98% vs 85% completeness):
 
 ```
 Use loctree MCP tools as your primary exploration layer:
@@ -194,18 +210,22 @@ Never edit code without mapping it first.
 
 Follow vc-agents skill for spawn commands (portable scripts preferred).
 Plans go to the canonical `plans/` directory under
-`$VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/`.
+`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/`.
 Reports go to the canonical `reports/` directory under the same day root.
 Repo-local `.vibecrafted/plans` and `.vibecrafted/reports` remain convenience symlinks only.
 
-### Review
+### Review & Mandatory Marbles Escalation
 
-After agents complete:
+After implementation agents complete:
 
 1. Read all reports
 2. Run quality gate (`make check` or equivalent)
-3. Verify against CONTEXT.md risk map
-4. Present diff summary to user
+3. Verify against `CONTEXT.md` risk map
+4. **MANDATORY ESCALATION**: If the quality gate fails or there are implementation gaps/regressions:
+   - **DO NOT STOP.** Do not just present a diff summary with broken tests or known gaps.
+   - Explain the gaps and immediately invoke the `vc-marbles` skill.
+   - Run `vc-marbles` loops to iteratively patch the gaps until the quality gates are green.
+5. Once converged (or if gates passed initially), present the final diff summary to the user.
 
 ## Quick Reference
 
