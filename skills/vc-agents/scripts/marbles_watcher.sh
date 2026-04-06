@@ -22,6 +22,13 @@ session_lock="$8"
 state_dir="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/marbles/$run_id"
 mkdir -p "$state_dir"
 state_file="$state_dir/state.json"
+report_timeout_s="${VIBECRAFTED_MARBLES_REPORT_TIMEOUT_S:-900}"
+case "$report_timeout_s" in
+  ''|*[!0-9]*)
+    report_timeout_s=900
+    ;;
+esac
+report_poll_s=5
 
 # ── Colors ────────────────────────────────────────────────────────────
 _bold='\033[1m'
@@ -134,6 +141,27 @@ for loop in d["loops"]:
         loop["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         loop["metrics"] = {"p0": p0, "p1": p1, "p2": p2, "score": score}
 d["trajectory"].append(score)
+with open(sys.argv[1] + ".tmp", "w") as f: json.dump(d, f, indent=2)
+PY
+    mv "$state_file.tmp" "$state_file"
+  fi
+}
+
+_record_loop_timeout() {
+  local loop_nr="$1" reason="$2" duration="$3"
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "$state_file" "$loop_nr" "$reason" "$duration" <<'PY'
+import json, sys, datetime
+with open(sys.argv[1]) as f: d = json.load(f)
+d["status"] = "timed_out"
+d["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+nr, reason, dur = int(sys.argv[2]), sys.argv[3], int(sys.argv[4])
+for loop in d["loops"]:
+    if loop["loop"] == nr:
+        loop["status"] = "timed_out"
+        loop["failure_reason"] = reason
+        loop["duration_s"] = dur
+        loop["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
 with open(sys.argv[1] + ".tmp", "w") as f: json.dump(d, f, indent=2)
 PY
     mv "$state_file.tmp" "$state_file"
@@ -256,6 +284,11 @@ _render_loop_phase() {
       printf '\n %bL%s%b %s\n' "$_bold" "$loop_nr" "$_reset" "$done_chain"
       printf '    %breport ✓%b   %s\n' "$_green" "$_reset" "$detail"
       ;;
+    timeout)
+      printf '\r\033[3A'
+      printf '\n %bL%s%b %s\n' "$_bold" "$loop_nr" "$_reset" "$chain"
+      printf '    %btimeout%b   %s\n' "$_red" "$_reset" "$detail"
+      ;;
   esac
 }
 
@@ -299,16 +332,39 @@ _extract_metrics() {
 }
 
 # ── Wait for report file ─────────────────────────────────────────────
+_find_report() {
+  local report_pattern="$1"
+  find "$store/reports" -name "$report_pattern" \
+    ! -name '*_verified*' \
+    ! -name '*.meta.json' ! -name '*.transcript.log' \
+    2>/dev/null | sort | tail -1 || true
+}
+
 _wait_for_report() {
-  local report_path="$1"
-  while [[ ! -s "$report_path" ]]; do
-    sleep 5
+  local report_pattern="$1"
+  local timeout_s="${2:-0}"
+  local elapsed=0
+  local found=""
+
+  while true; do
+    found="$(_find_report "$report_pattern")"
+    if [[ -n "$found" && -s "$found" ]]; then
+      printf '%s\n' "$found"
+      return 0
+    fi
+
     # Check for stop/pause between polls
     if [[ -f "$state_dir/stop" ]]; then
       return 1
     fi
+
+    if (( timeout_s > 0 && elapsed >= timeout_s )); then
+      return 2
+    fi
+
+    sleep "$report_poll_s"
+    (( elapsed += report_poll_s ))
   done
-  return 0
 }
 
 # ── Check sentinels ──────────────────────────────────────────────────
@@ -355,11 +411,20 @@ _init_state
 plan_slug="$(spawn_slug_from_path "$original_plan")"
 total_start=$(date +%s)
 converged=0
+stopped=0
+timed_out=0
+timed_out_loop=0
 
 for ((loop_nr=1; loop_nr<=total_count; loop_nr++)); do
   # ── Sentinel checks ──────────────────────────────────────────────
-  _check_stop || break
-  _check_pause || break
+  if ! _check_stop; then
+    stopped=1
+    break
+  fi
+  if ! _check_pause; then
+    stopped=1
+    break
+  fi
 
   # ── Locker advisory ──────────────────────────────────────────────
   _check_locker
@@ -408,18 +473,26 @@ for ((loop_nr=1; loop_nr<=total_count; loop_nr++)); do
 
   # ── Wait for report ──────────────────────────────────────────────
   actual_report=""
-  while [[ -z "$actual_report" || ! -s "$actual_report" ]]; do
-    sleep 5
-    actual_report=$(find "$store/reports" -name "$report_pattern" \
-      ! -name '*_verified*' \
-      ! -name '*.meta.json' ! -name '*.transcript.log' \
-      2>/dev/null | sort | tail -1 || true)
-    # Check stop during wait
-    if [[ -f "$state_dir/stop" ]]; then
-      _check_stop
-      break 2  # break outer for loop
+  if actual_report="$(_wait_for_report "$report_pattern" "$report_timeout_s")"; then
+    :
+  else
+    wait_status=$?
+    loop_end=$(date +%s)
+    duration=$((loop_end - loop_start))
+    duration_fmt="$(printf '%dm %02ds' $((duration/60)) $((duration%60)))"
+
+    if (( wait_status == 1 )); then
+      _check_stop || true
+      stopped=1
+      break
     fi
-  done
+
+    timed_out=1
+    timed_out_loop=$loop_nr
+    _record_loop_timeout "$loop_nr" "report-missing" "$duration"
+    _render_loop_phase "$loop_nr" "timeout" "$duration_fmt  no report within ${report_timeout_s}s"
+    break
+  fi
 
   # ── Report landed ────────────────────────────────────────────────
   loop_end=$(date +%s)
@@ -479,6 +552,18 @@ if ((converged)); then
   [[ -n "$trajectory" ]] && printf '  %s\n' "$trajectory"
   printf '  ████████████████████████████████████████████████\n'
   ((loops_saved > 0)) && printf '\n  loops saved: %s (converged early)\n' "$loops_saved"
+elif ((timed_out)); then
+  _update_status "failed"
+  completed_loops=$((timed_out_loop - 1))
+  printf '\n %b⚒  Failed · report timeout at L%s/%s · %s%b\n' "$_bold$_red" "$timed_out_loop" "$total_count" "$total_fmt" "$_reset"
+  printf '%b──────────────────────────────────%b\n' "$_steel" "$_reset"
+  printf '  %s\n' "$(_render_chain "$completed_loops" "$total_count")"
+  printf '  missing report after %ss; loop not consumed\n' "$report_timeout_s"
+elif ((stopped)); then
+  _update_status "stopped"
+  printf '\n %b⚒  Stopped · %s%b\n' "$_bold$_yellow" "$total_fmt" "$_reset"
+  printf '%b──────────────────────────────────%b\n' "$_steel" "$_reset"
+  printf '  %s\n' "$(_render_chain "$((loop_nr-1))" "$total_count")"
 else
   _update_status "completed"
   printf '\n %b⚒  Complete · %s loops · %s%b\n' "$_bold$_copper" "$total_count" "$total_fmt" "$_reset"

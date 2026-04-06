@@ -30,6 +30,13 @@ plan_slug="$(spawn_slug_from_path "$original_plan")"
 # ── State directory (watcher writes session_id here) ─────────────────
 state_dir="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/marbles/$run_id"
 state_file="$state_dir/state.json"
+report_sync_timeout_s="${VIBECRAFTED_MARBLES_REPORT_TIMEOUT_S:-900}"
+case "$report_sync_timeout_s" in
+  ''|*[!0-9]*)
+    report_sync_timeout_s=900
+    ;;
+esac
+report_poll_s=5
 
 # ── Read session_id for a loop from state.json ───────────────────────
 _read_session_id() {
@@ -45,6 +52,108 @@ for loop in d.get('loops', []):
 print('')
 " 2>/dev/null || true
   fi
+}
+
+_read_loop_state() {
+  local loop_nr="$1"
+  if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
+    python3 - "$state_file" "$loop_nr" <<'PY'
+import json, sys
+with open(sys.argv[1]) as f:
+    d = json.load(f)
+target = None
+for loop in d.get("loops", []):
+    if loop.get("loop") == int(sys.argv[2]):
+        target = loop
+if target is None:
+    print("\t")
+else:
+    print(f"{target.get('status', '')}\t{target.get('report', '')}")
+PY
+  else
+    printf '\t\n'
+  fi
+}
+
+_find_loop_report() {
+  local loop_nr="$1"
+  find "$store/reports" -name "*_marbles-${plan_slug}_L${loop_nr}_${agent}.md" \
+    ! -name '*_verified.md' \
+    ! -name '*.meta.json' ! -name '*.transcript.log' 2>/dev/null \
+    | sort | tail -1 || true
+}
+
+_wait_for_loop_report() {
+  local loop_nr="$1"
+  local timeout_s="${2:-0}"
+  local elapsed=0
+  local report_path=""
+
+  while true; do
+    report_path="$(_find_loop_report "$loop_nr")"
+    if [[ -n "$report_path" && -s "$report_path" ]]; then
+      printf '%s\n' "$report_path"
+      return 0
+    fi
+
+    if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
+      local loop_state=""
+      local loop_status=""
+      local state_report=""
+      loop_state="$(_read_loop_state "$loop_nr")"
+      loop_status="${loop_state%%$'\t'*}"
+      state_report="${loop_state#*$'\t'}"
+
+      if [[ "$loop_status" == "done" && -n "$state_report" && -s "$state_report" ]]; then
+        printf '%s\n' "$state_report"
+        return 0
+      fi
+
+      if [[ "$loop_status" == "timed_out" || "$loop_status" == "failed" || "$loop_status" == "stopped" ]]; then
+        return 2
+      fi
+    fi
+
+    if (( timeout_s > 0 && elapsed >= timeout_s )); then
+      return 1
+    fi
+
+    sleep "$report_poll_s"
+    (( elapsed += report_poll_s ))
+  done
+}
+
+_write_missing_report_failure() {
+  local loop_nr="$1"
+  local reason="$2"
+  local convergence="$store/reports/$(spawn_timestamp)_marbles-${plan_slug}_CONVERGENCE.md"
+
+  cat > "$convergence" <<CONV
+---
+run_id: $run_id
+agent: $agent
+status: FAILED
+failed_at_loop: $loop_nr
+total_loops: $total_count
+reason: missing_report
+---
+
+# Marbles Convergence — FAILED
+
+Loop $loop_nr of $total_count did not produce an observed report.
+
+- Reason: $reason
+- Sync timeout: ${report_sync_timeout_s}s
+- Effect: no further loops were spawned, so the loop budget was not consumed
+
+Reports in: $store/reports/
+Filter: marbles-${plan_slug}_L*
+CONV
+
+  _update_lock status failed
+  printf '\n\033[31m ✗  Marbles blocked at loop %s/%s\033[0m\n' "$loop_nr" "$total_count"
+  printf '    Missing report guard: %s\n' "$reason"
+  printf '    Convergence: %s\n' "$convergence"
 }
 
 # ── Collect report paths for loops L(1)..L(n) ───────────────────────
@@ -179,6 +288,23 @@ CONV
   exit 0
 fi
 
+# Guard the loop budget: a hook firing is not enough. We only advance once the
+# current loop has produced an observable report.
+if _wait_for_loop_report "$current" "$report_sync_timeout_s" >/dev/null; then
+  :
+else
+  wait_status=$?
+  case "$wait_status" in
+    2)
+      _write_missing_report_failure "$current" "watcher marked loop as failed or timed out"
+      ;;
+    *)
+      _write_missing_report_failure "$current" "report not observed within ${report_sync_timeout_s}s"
+      ;;
+  esac
+  exit 0
+fi
+
 # ── All loops done: write convergence summary ─────────────────────────
 if [[ $next -gt $total_count ]]; then
   convergence="$store/reports/$(spawn_timestamp)_marbles-${plan_slug}_CONVERGENCE.md"
@@ -257,4 +383,4 @@ spawn_args=(
   --failure-hook "$failure_hook"
 )
 
-VIBECRAFTED_STORE_DIR="$store" bash "$scripts_dir/${agent}_spawn.sh" "${spawn_args[@]}" "$ln_plan"
+VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" bash "$scripts_dir/${agent}_spawn.sh" "${spawn_args[@]}" "$ln_plan"

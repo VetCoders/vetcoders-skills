@@ -351,12 +351,20 @@ spawn_prepare_paths() {
   local mode="${4:-${VIBECRAFTED_SKILL_NAME:-}}"
   local skill_name="${VIBECRAFTED_SKILL_NAME:-$mode}"
   local lock_file=""
+  local discovered_session=""
 
   if [[ -n "$root" ]]; then
     SPAWN_ROOT="$(spawn_abspath "$root")"
     [[ -d "$SPAWN_ROOT" ]] || spawn_die "Root directory not found: $SPAWN_ROOT"
   else
     SPAWN_ROOT="$(spawn_repo_root)"
+  fi
+
+  if [[ -z "${VIBECRAFTED_OPERATOR_SESSION:-}" ]]; then
+    discovered_session="$(spawn_effective_operator_session 2>/dev/null || true)"
+    if [[ -n "$discovered_session" ]]; then
+      export VIBECRAFTED_OPERATOR_SESSION="$discovered_session"
+    fi
   fi
 
   SPAWN_PLAN="$(spawn_abspath "$prompt_file")"
@@ -631,8 +639,8 @@ export SPAWN_SKILL_CODE=$q_skill_code
 export VIBECRAFTED_RUN_ID=$q_run_id
 export VIBECRAFTED_RUN_LOCK=$q_run_lock
 export VIBECRAFTED_SKILL_CODE=$q_skill_code
-export VIBECRAFTED_OPERATOR_SESSION=$q_operator_session
-export VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=$q_spawn_direction
+export VIBECRAFTED_OPERATOR_SESSION=\${VIBECRAFTED_OPERATOR_SESSION:-$q_operator_session}
+export VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=\${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-$q_spawn_direction}
 
 rm -f "\$transcript" "\$report"
 spawn_write_frontmatter "\$transcript" "\$SPAWN_AGENT" "unknown" "transcript"
@@ -778,16 +786,42 @@ EOF_APPLE
 }
 
 spawn_in_zellij_context() {
-  [[ "${ZELLIJ:-}" == "0" ]] && return 1
-  [[ -n "${ZELLIJ_PANE_ID:-}" ]] || [[ -n "${ZELLIJ:-}" ]]
+  # ZELLIJ=0 is a valid pane index inside zellij — do NOT treat as false.
+  # Only absent ZELLIJ means we're outside.
+  [[ -n "${ZELLIJ_PANE_ID:-}" ]] || [[ -n "${ZELLIJ+set}" ]]
 }
 
 spawn_current_zellij_session_name() {
   printf '%s\n' "${ZELLIJ_SESSION_NAME:-}"
 }
 
+spawn_effective_operator_session() {
+  local session_name="${VIBECRAFTED_OPERATOR_SESSION:-}"
+  if [[ -n "$session_name" ]]; then
+    printf '%s\n' "$session_name"
+    return 0
+  fi
+
+  session_name="${ZELLIJ_SESSION_NAME:-}"
+  if [[ -n "$session_name" ]]; then
+    printf '%s\n' "$session_name"
+    return 0
+  fi
+
+  command -v zellij >/dev/null 2>&1 || return 1
+
+  session_name="$(
+    zellij list-sessions 2>/dev/null \
+      | sed 's/\x1b\[[0-9;]*m//g' \
+      | awk '/\(current\)/ {print $1; exit}'
+  )"
+  [[ -n "$session_name" ]] || return 1
+  printf '%s\n' "$session_name"
+}
+
 spawn_in_target_zellij_session() {
-  local target_session="${VIBECRAFTED_OPERATOR_SESSION:-}"
+  local target_session=""
+  target_session="$(spawn_effective_operator_session 2>/dev/null || true)"
   spawn_in_zellij_context || return 1
   [[ -n "$target_session" ]] || return 0
   [[ "$(spawn_current_zellij_session_name)" == "$target_session" ]]
@@ -796,9 +830,20 @@ spawn_in_target_zellij_session() {
 spawn_pane_direction() {
   # Grid policy: 4 per row, 8 per tab, 9th opens new tab.
   # Uses SPAWN_LOOP_NR (marbles) or VIBECRAFTED_PANE_SEQ (manual).
-  local seq="${SPAWN_LOOP_NR:-${VIBECRAFTED_PANE_SEQ:-0}}"
+  # Fresh top-level spawns default to a new tab so they never land in a stale
+  # operator tab by accident.
+  local seq=""
   local max_per_row=4
   local max_per_tab=8
+
+  if [[ -n "${SPAWN_LOOP_NR:-}" ]]; then
+    seq="${SPAWN_LOOP_NR}"
+  elif [[ -n "${VIBECRAFTED_PANE_SEQ:-}" ]]; then
+    seq="${VIBECRAFTED_PANE_SEQ}"
+  else
+    printf 'new-tab\n'
+    return 0
+  fi
 
   if (( seq >= max_per_tab )); then
     printf 'new-tab\n'
@@ -815,6 +860,12 @@ spawn_in_zellij_pane() {
   local direction="${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
 
   if spawn_in_zellij_context && command -v zellij >/dev/null 2>&1; then
+    # If the operator explicitly targets another zellij session, do not open a
+    # pane in the current live session. Fall through to spawn_in_operator_session().
+    if ! spawn_in_target_zellij_session; then
+      return 1
+    fi
+
     if [[ "$direction" == "new-tab" ]]; then
       zellij action new-tab \
         --name "$pane_name" \
@@ -835,21 +886,31 @@ spawn_in_zellij_pane() {
 spawn_in_operator_session() {
   local launcher="$1"
   local pane_name="${2:-agent}"
-  local session_name="${VIBECRAFTED_OPERATOR_SESSION:-}"
+  local session_name=""
   local direction="${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
+  local effective_direction="$direction"
 
+  session_name="$(spawn_effective_operator_session 2>/dev/null || true)"
   [[ -n "$session_name" ]] || return 1
   command -v zellij >/dev/null 2>&1 || return 1
+  export VIBECRAFTED_OPERATOR_SESSION="$session_name"
+
+  # When routing into a session from outside its active pane context, always
+  # open a fresh tab. Otherwise zellij targets whichever operator tab is
+  # currently focused, which can be a stale marbles tab.
+  if ! spawn_in_target_zellij_session; then
+    effective_direction="new-tab"
+  fi
 
   # External spawn into existing operator session — route as pane or new tab per grid policy.
-  if [[ "$direction" == "new-tab" ]]; then
+  if [[ "$effective_direction" == "new-tab" ]]; then
     zellij --session "$session_name" action new-tab \
       --name "$pane_name" \
       --cwd "${SPAWN_ROOT:-$(pwd)}" \
       -- /bin/zsh -l -c "bash '$launcher'"
   else
     zellij --session "$session_name" action new-pane \
-      --direction "$direction" \
+      --direction "$effective_direction" \
       --name "$pane_name" \
       --cwd "${SPAWN_ROOT:-$(pwd)}" \
       -- /bin/zsh -l -c "bash '$launcher'"
@@ -866,6 +927,14 @@ spawn_launch() {
   pane_name="${pane_name#-}"
   pane_name="${pane_name%-}"
   [[ -n "$pane_name" ]] || pane_name="agent"
+
+  if [[ -z "${VIBECRAFTED_OPERATOR_SESSION:-}" ]]; then
+    local discovered_session=""
+    discovered_session="$(spawn_effective_operator_session 2>/dev/null || true)"
+    if [[ -n "$discovered_session" ]]; then
+      export VIBECRAFTED_OPERATOR_SESSION="$discovered_session"
+    fi
+  fi
 
   if (( dry_run )); then
     printf 'Dry run mode: launcher generated only: %s\n' "$launcher"

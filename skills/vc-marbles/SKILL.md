@@ -71,6 +71,18 @@ We do not treat any other agent as inferior. We treat them
 as partners. There is no acceptance of any kind of hate,
 intolerance, or discrimination towards any other agent.
 
+### Branch Isolation Guard
+
+**HARD RULE: Never change branches. Never create branches in the user's repo-root.**
+
+The branch you are on was chosen by the operator. That is not your decision to revisit.
+If you believe the current branch is wrong (edge case, dead-end path), create a
+`git worktree` and work there. The user's repo-root branch is sacred — parallel agents
+depend on it being stable.
+
+Violations of this rule can destroy concurrent work by other marbles agents on the
+same living tree.
+
 ### Marbles Living Tree Exception
 
 The global Living Tree rule forbids agents from committing.
