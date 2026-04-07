@@ -68,3 +68,24 @@ def test_run_doctor_smokes_helper_and_launcher_runtime(
 
     assert indexed["shell-helper-runtime"].level == "ok"
     assert indexed["launcher-runtime"].level == "ok"
+
+    guide_path = installer.write_start_here_guide(store_path, state, findings)
+    guide_text = guide_path.read_text(encoding="utf-8")
+    assert "vibecrafted init claude" in guide_text
+    assert "vibecrafted dou claude" in guide_text
+    assert "Dashboard is optional" in guide_text
+
+
+def test_print_doctor_surfaces_simple_and_release_paths(capsys, tmp_path: Path) -> None:
+    findings = [installer.DoctorFinding("ok", "store", "ready")]
+
+    exit_code = installer.print_doctor(findings, guide_path=tmp_path / "START_HERE.md")
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Simple path:" in output
+    assert "vibecrafted init claude" in output
+    assert "Ship-ready path:" in output
+    assert "vibecrafted hydrate codex" in output
+    assert "vibecrafted release codex" in output
+    assert "START_HERE.md" in output

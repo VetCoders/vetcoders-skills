@@ -254,6 +254,18 @@ FOUNDATIONS: List[Foundation] = [
         required=False,
     ),
     Foundation(
+        name="semgrep",
+        description="Static analysis and security scanning — quality gate in agent workflows",
+        channels=["brew", "pip", "github"],
+        packages={
+            "brew": "semgrep",
+            "pip": "semgrep",
+            "github": "https://github.com/semgrep/semgrep/releases",
+        },
+        verify_cmd="semgrep --version",
+        required=False,
+    ),
+    Foundation(
         name="mise",
         description="Repo-owned toolchain, environment, and task substrate",
         channels=["brew", "github"],
@@ -341,6 +353,7 @@ SYMLINK_TARGET_CHOICES = [*SYMLINK_TARGETS, "gemini"]
 # ---------------------------------------------------------------------------
 
 STATE_FILE = ".vc-install.json"
+START_HERE_FILE = "START_HERE.md"
 
 
 @dataclass
@@ -378,6 +391,154 @@ class InstallState:
         state_file = store_path / STATE_FILE
         state_file.parent.mkdir(parents=True, exist_ok=True)
         state_file.write_text(json.dumps(asdict(self), indent=2) + "\n")
+
+
+def start_here_path() -> Path:
+    return vibecrafted_home() / START_HERE_FILE
+
+
+def _doctor_totals(findings: Sequence["DoctorFinding"]) -> Tuple[int, int, int]:
+    oks = sum(1 for finding in findings if finding.level == "ok")
+    warns = sum(1 for finding in findings if finding.level == "warn")
+    fails = sum(1 for finding in findings if finding.level == "fail")
+    return oks, warns, fails
+
+
+def _doctor_action_items(findings: Sequence["DoctorFinding"]) -> List[str]:
+    issues = [finding for finding in findings if finding.level != "ok"]
+    if not issues:
+        return [
+            "Nothing is blocking the framework right now. Start with `vibecrafted init claude` and re-run `vibecrafted doctor` after major install changes."
+        ]
+
+    actions: List[str] = []
+    if any(
+        finding.level == "fail" and finding.component.startswith("foundation:")
+        for finding in issues
+    ):
+        actions.append(
+            "Required foundations are missing. Run `make foundations` or install them manually, then run `vibecrafted doctor` again."
+        )
+    if any(
+        finding.component.startswith(("runtime:", "symlink:", "stale-copy:"))
+        for finding in issues
+    ):
+        actions.append(
+            "Runtime links need repair. Re-run `make install` to rebuild the shared skill views and remove stale copies."
+        )
+    if any(
+        finding.component in ("launcher-wrappers", "launcher-runtime")
+        for finding in issues
+    ):
+        actions.append(
+            "Launcher commands need repair. Re-run `make install` so `vibecrafted`, `vc-help`, and the wrappers land back on PATH."
+        )
+    if any(
+        finding.component.startswith("shell-helper")
+        or finding.component == "shell-helpers"
+        for finding in issues
+    ):
+        actions.append(
+            "Shell helper shortcuts need cleanup. Core `vibecrafted ...` commands still work; re-run install when you want the `vc-*` shortcuts back."
+        )
+    if any(finding.component == "manifest" for finding in issues):
+        actions.append(
+            "No install manifest was found. Run the Smart Installer once to enable cleaner tracking, restore, and uninstall."
+        )
+    if any(finding.component.startswith("orphan:") for finding in issues):
+        actions.append(
+            "Older bundle leftovers are still present. Re-run the installer before release so the product surface stays clean."
+        )
+    if not actions:
+        actions.append(
+            "The install is usable but has warnings. Review the report, clean the highlighted items, then re-run `vibecrafted doctor`."
+        )
+    return actions
+
+
+def write_start_here_guide(
+    store_path: Path, state: InstallState, findings: Sequence["DoctorFinding"]
+) -> Path:
+    guide_path = start_here_path()
+    guide_path.parent.mkdir(parents=True, exist_ok=True)
+
+    ok_count, warn_count, fail_count = _doctor_totals(findings)
+    if fail_count:
+        health_line = f"Needs attention ({ok_count} ok, {warn_count} warnings, {fail_count} failures)"
+    elif warn_count:
+        health_line = f"Ready with warnings ({ok_count} ok, {warn_count} warnings, {fail_count} failures)"
+    else:
+        health_line = f"Ready to work ({ok_count} ok, {warn_count} warnings, {fail_count} failures)"
+
+    runtime_views = ", ".join(state.runtimes) if state.runtimes else "none detected"
+    helper_file = _helper_target_path()
+    helper_line = (
+        f"installed at {helper_file}"
+        if helper_file.exists()
+        else "not installed; `vibecrafted ...` still works, `vc-*` shortcuts stay optional"
+    )
+    present_foundations = [
+        foundation.name for foundation in FOUNDATIONS if foundation.is_installed()
+    ]
+    missing_required = [
+        foundation.name
+        for foundation in FOUNDATIONS
+        if foundation.required and not foundation.is_installed()
+    ]
+    action_items = _doctor_action_items(findings)
+    framework_version = state.framework_version or "unknown"
+    store_display = str(store_path)
+
+    lines = [
+        "# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Start Here",
+        "",
+        f"Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
+        f"Framework version: {framework_version}",
+        f"Health: {health_line}",
+        "",
+        "## Current state",
+        f"- Store: {store_display}",
+        f"- Skills in shared store: {len(state.skills)}",
+        f"- Runtime views: {runtime_views}",
+        f"- Shell helpers: {helper_line}",
+        "- Foundations present: "
+        + (", ".join(present_foundations) if present_foundations else "none detected"),
+        "- Foundations still missing: "
+        + (", ".join(missing_required) if missing_required else "none required"),
+        "",
+        "## Simplest path",
+        "1. `vibecrafted init claude`",
+        '2. `vibecrafted workflow claude --prompt "Plan and implement <task>"`',
+        '3. `vibecrafted justdo codex --prompt "Ship <task>"`',
+        "",
+        "## Ship-ready path",
+        '1. `vibecrafted dou claude --prompt "Audit launch readiness"`',
+        '2. `vibecrafted hydrate codex --prompt "Package the product"`',
+        '3. `vibecrafted release codex --prompt "Prepare release steps"`',
+        "",
+        "## Optional operator surface",
+        "- `vibecrafted dashboard`",
+        "- Dashboard is optional. You can ignore it and stay in plain terminal commands.",
+        "",
+        "## What to fix next",
+    ]
+
+    for action in action_items:
+        lines.append(f"- {action}")
+
+    lines.extend(
+        [
+            "",
+            "## Safety valves",
+            "- `vibecrafted doctor`",
+            "- `vibecrafted help`",
+            "- `vibecrafted uninstall`",
+            "",
+        ]
+    )
+
+    guide_path.write_text("\n".join(lines), encoding="utf-8")
+    return guide_path
 
 
 # ---------------------------------------------------------------------------
@@ -1773,7 +1934,9 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
     return findings
 
 
-def print_doctor(findings: List[DoctorFinding]) -> int:
+def print_doctor(
+    findings: List[DoctorFinding], guide_path: Optional[Path] = None
+) -> int:
     """Print doctor findings. Returns exit code (0 if no failures)."""
     _doctor_title = (
         "\U0001d54d\U0001d55a\U0001d553\U0001d556\U0001d554\U0001d563\U0001d552\U0001d557\U0001d565 Doctor"
@@ -1806,14 +1969,39 @@ def print_doctor(findings: List[DoctorFinding]) -> int:
         print(
             f"  {red('Installation has issues.')} Run {bold('vetcoders install')} to fix.\n"
         )
-        return 1
+        exit_code = 1
     elif warns:
         print(f"  {yellow('Installation healthy with minor warnings.')}\n")
-        return 0
+        exit_code = 0
     else:
         _healthy = "\u2713 Installation healthy."
         print(f"  {green(_healthy)}\n")
-        return 0
+        exit_code = 0
+
+    print(f"  {bold('Simple path:')}")
+    print(f"    {cyan('vibecrafted init claude')}")
+    print(
+        f"    {cyan('vibecrafted workflow claude --prompt "Plan and implement <task>"')}"
+    )
+    print(f"    {cyan('vibecrafted justdo codex --prompt "Ship <task>"')}")
+    print()
+    print(f"  {bold('Ship-ready path:')}")
+    print(f"    {cyan('vibecrafted dou claude --prompt "Audit launch readiness"')}")
+    print(f"    {cyan('vibecrafted hydrate codex --prompt "Package the product"')}")
+    print(f"    {cyan('vibecrafted release codex --prompt "Prepare release steps"')}")
+    print()
+
+    actions = _doctor_action_items(findings)
+    if actions:
+        print(f"  {bold('Next steps:')}")
+        for action in actions:
+            print(f"    - {action}")
+        print()
+
+    if guide_path is not None:
+        print(f"  {bold('Guide:')} {guide_path}\n")
+
+    return exit_code
 
 
 # ---------------------------------------------------------------------------
@@ -2272,6 +2460,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
         print(f"  {SKIP} Skipped in dry-run mode")
     else:
         findings = run_doctor(store_path, state)
+        guide_path = write_start_here_guide(store_path, state, findings)
         # Print only failures and warnings
         issues = [f for f in findings if f.level != "ok"]
         if issues:
@@ -2280,6 +2469,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
                 print(f"  {icon} {f.component}: {f.message}")
         else:
             print(f"  {OK} All checks passed")
+        print(f"  {OK} Start-here guide saved to {guide_path}")
     print()
 
     # --- Done: compact one-screen summary ---
@@ -2365,6 +2555,7 @@ def _print_unicode_summary(
         f"\u2713 Helpers      {shell_str}",
         f"\u2713 Foundations   {fnd_str}",
         f"\u2713 Store        {store_display}",
+        f"\u2713 Guide        {start_here_path()}",
         "",
         sep,
         "  Start        vibecrafted help",
@@ -2607,6 +2798,7 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
         if not dry_run:
             print("Verification:")
             findings = run_doctor(store_path, state)
+            guide_path = write_start_here_guide(store_path, state, findings)
             issues = [f for f in findings if f.level != "ok"]
             if issues:
                 for f in issues:
@@ -2617,6 +2809,7 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
                     out.write(f"\n  {red('Issues found')} — check {log_path}\n")
             else:
                 print("  All checks passed")
+            print(f"  Start-here guide: {guide_path}")
         print()
 
     # --- Compact footer: header + commands (no repeated status lines) ---
@@ -2635,6 +2828,7 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
     print("    Start        vibecrafted help")
     print("    Verify       vibecrafted doctor")
     print("    Reverse      vibecrafted uninstall")
+    print(f"    Guide        {start_here_path()}")
     print(f"    Log          {log_display}")
     if missing_fnd:
         print()
@@ -2780,7 +2974,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
                         )
                     )
 
-    return print_doctor(findings)
+    guide_path = write_start_here_guide(store_path, state, findings)
+    return print_doctor(findings, guide_path=guide_path)
 
 
 # ---------------------------------------------------------------------------

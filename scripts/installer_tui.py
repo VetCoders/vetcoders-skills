@@ -102,6 +102,10 @@ def install_log_path() -> Path:
     return vibecrafted_home() / "install.log"
 
 
+def start_here_path() -> Path:
+    return vibecrafted_home() / "START_HERE.md"
+
+
 def runtime_skill_views() -> dict[str, Path]:
     home = Path.home()
     return {
@@ -889,8 +893,8 @@ def _render_installation(console: Any, state: InstallerState, width: int) -> Non
             console,
             width,
             [
-                "The installer finished. The manifest, backup state, and doctor output are already on disk.",
-                "Use vibecrafted help for the command deck, vibecrafted doctor to verify again, and vibecrafted uninstall to reverse the install.",
+                "The installer finished. The manifest, backup state, doctor output, and START_HERE guide are already on disk.",
+                f"Open {_trim_home(str(start_here_path()))} for the plain-language path. Use vibecrafted help for the command deck, vibecrafted doctor to verify again, and vibecrafted uninstall to reverse the install.",
             ],
         )
 

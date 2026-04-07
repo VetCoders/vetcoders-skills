@@ -53,6 +53,70 @@ spawn_org_repo() {
   fi
 }
 
+spawn_session_base_name() {
+  local root base
+  root="$(spawn_repo_root)"
+  base="$(basename "$root" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/^-*//; s/-*$//')"
+  [[ -n "$base" ]] || base="vibecrafted"
+  printf '%s\n' "$base"
+}
+
+spawn_operator_session_name_for_run_id() {
+  local run_id="${1:-}"
+  local base
+  base="$(spawn_session_base_name)"
+  if [[ -n "$run_id" ]]; then
+    printf '%s-%s\n' "$base" "$run_id"
+  else
+    printf '%s\n' "$base"
+  fi
+}
+
+spawn_expected_run_lock_path() {
+  local run_id="${1:-}"
+  local root="${2:-$(spawn_repo_root)}"
+  [[ -n "$run_id" ]] || return 1
+  printf '%s/locks/%s/%s.lock\n' \
+    "$VIBECRAFTED_HOME" \
+    "$(spawn_org_repo "$root")" \
+    "$run_id"
+}
+
+spawn_normalize_ambient_context() {
+  local run_id lock expected_lock operator_session expected_session
+
+  run_id="${VIBECRAFTED_RUN_ID:-}"
+  lock="${VIBECRAFTED_RUN_LOCK:-}"
+  operator_session="${VIBECRAFTED_OPERATOR_SESSION:-}"
+
+  [[ -n "$run_id" ]] || {
+    unset VIBECRAFTED_RUN_LOCK VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME
+    return 0
+  }
+
+  [[ -n "$lock" ]] || return 0
+
+  expected_lock="$(spawn_expected_run_lock_path "$run_id" 2>/dev/null || true)"
+  if [[ -n "$expected_lock" && "$lock" == "$expected_lock" && -f "$lock" ]]; then
+    return 0
+  fi
+
+  expected_session="$(spawn_operator_session_name_for_run_id "$run_id")"
+  unset VIBECRAFTED_RUN_LOCK VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME
+
+  if [[ "$(basename "$lock")" != "${run_id}.lock" ]]; then
+    if [[ -n "$operator_session" && "$operator_session" != "$expected_session" ]]; then
+      unset VIBECRAFTED_OPERATOR_SESSION
+    fi
+    return 0
+  fi
+
+  unset VIBECRAFTED_RUN_ID
+  if [[ -n "$operator_session" ]]; then
+    unset VIBECRAFTED_OPERATOR_SESSION
+  fi
+}
+
 spawn_skill_prefix() {
   local name="${1:-}"
   case "$name" in
@@ -100,18 +164,21 @@ spawn_has_ambient_run_context() {
 }
 
 spawn_effective_run_id() {
+  spawn_normalize_ambient_context
   spawn_has_ambient_run_context && return 1
   [[ -n "${VIBECRAFTED_RUN_ID:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_RUN_ID}"
 }
 
 spawn_effective_run_lock() {
+  spawn_normalize_ambient_context
   spawn_has_ambient_run_context && return 1
   [[ -n "${VIBECRAFTED_RUN_LOCK:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_RUN_LOCK}"
 }
 
 spawn_effective_skill_code() {
+  spawn_normalize_ambient_context
   spawn_has_ambient_run_context && return 1
   [[ -n "${VIBECRAFTED_SKILL_CODE:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_SKILL_CODE}"
@@ -121,6 +188,8 @@ spawn_effective_skill_code() {
 # Override with VIBECRAFTED_HOME env var for custom location
 # Falls back to <repo>/.vibecrafted/ if git remote unavailable
 VIBECRAFTED_HOME="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
+
+spawn_normalize_ambient_context
 
 spawn_store_dir() {
   local root="${1:-$(spawn_repo_root)}"
@@ -807,6 +876,7 @@ spawn_current_zellij_session_name() {
 }
 
 spawn_effective_operator_session() {
+  spawn_normalize_ambient_context
   local session_name="${VIBECRAFTED_OPERATOR_SESSION:-}"
   if [[ -n "$session_name" ]]; then
     printf '%s\n' "$session_name"
@@ -900,6 +970,10 @@ spawn_in_operator_session() {
   local session_name=""
   local direction="${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-$(spawn_pane_direction)}"
   local effective_direction="$direction"
+  local had_explicit_session=0
+
+  spawn_normalize_ambient_context
+  [[ -n "${VIBECRAFTED_OPERATOR_SESSION:-}" ]] && had_explicit_session=1
 
   session_name="$(spawn_effective_operator_session 2>/dev/null || true)"
   [[ -n "$session_name" ]] || return 1
@@ -910,7 +984,11 @@ spawn_in_operator_session() {
   # open a fresh tab. Otherwise zellij targets whichever operator tab is
   # currently focused, which can be a stale marbles tab.
   if ! spawn_in_target_zellij_session; then
-    effective_direction="new-tab"
+    if (( had_explicit_session )) && [[ -z "${VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION:-}" || "$direction" == "right" ]]; then
+      effective_direction="right"
+    else
+      effective_direction="new-tab"
+    fi
   fi
 
   # External spawn into existing operator session — route as pane or new tab per grid policy.

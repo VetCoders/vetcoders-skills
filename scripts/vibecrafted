@@ -225,6 +225,12 @@ _print_skill_specific_flags() {
   esac
 }
 
+_print_ship_path() {
+  printf '  %bvibecrafted dou claude --prompt "Audit launch readiness"%b\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted hydrate codex --prompt "Package the product"%b\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted release codex --prompt "Prepare release steps"%b\n' "$_cyan" "$_reset"
+}
+
 cmd_skill_help() {
   local skill="$1"
   local agent="${2:-<claude|codex|gemini>}"
@@ -407,6 +413,15 @@ cmd_help() {
   printf '  %bvibecrafted doctor%b                    Verify installation health\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted uninstall%b                 Reverse the install\n' "$_cyan" "$_reset"
   printf '\n'
+  printf '%bStart here:%b\n' "$_bold" "$_reset"
+  printf '  If you want the simplest path, skip the dashboard and use plain commands:\n'
+  printf '  %bvibecrafted init claude%b\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted workflow claude --prompt "Plan and implement <task>"%b\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted justdo codex --prompt "Ship <task>"%b\n' "$_cyan" "$_reset"
+  printf '  When you are ready to ship, run the full path:\n'
+  _print_ship_path
+  printf '  Dashboard is optional. Your plain-language guide lives at %b%s/START_HERE.md%b.\n' "$_cyan" "$crafted_home" "$_reset"
+  printf '\n'
   printf '%bExamples:%b\n' "$_bold" "$_reset"
   printf '  vibecrafted init claude\n'
   printf '  vibecrafted dashboard vc-marbles\n'
@@ -450,6 +465,14 @@ cmd_help_full() {
   printf '  %bdecorate%b   → Visual finishing and UX coherence\n' "$_copper" "$_reset"
   printf '  %bhydrate%b    → Packaging and go-to-market\n' "$_copper" "$_reset"
   printf '  %brelease%b    → Ship to production\n' "$_copper" "$_reset"
+  printf '\n'
+  printf '%b=== FIRST 5 MINUTES ===%b\n' "$_bold" "$_reset"
+  printf '\n'
+  printf '  %bvibecrafted init claude%b\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted workflow claude --prompt "Plan and implement <task>"%b\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted justdo codex --prompt "Ship <task>"%b\n' "$_cyan" "$_reset"
+  _print_ship_path
+  printf '  Dashboard is optional. The plain-language guide lives at %b%s/START_HERE.md%b.\n' "$_cyan" "$crafted_home" "$_reset"
   printf '\n'
   printf '%b=== MODES (per agent) ===%b\n' "$_bold" "$_reset"
   printf '\n'

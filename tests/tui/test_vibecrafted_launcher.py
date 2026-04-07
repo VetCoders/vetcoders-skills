@@ -136,6 +136,9 @@ def test_vc_help_wrapper_symlink_renders_main_help(tmp_path: Path) -> None:
     assert "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍." in result.stdout
     assert "Front door:" in result.stdout
     assert "vibecrafted dashboard" in result.stdout
+    assert "Start here:" in result.stdout
+    assert 'vibecrafted hydrate codex --prompt "Package the product"' in result.stdout
+    assert "Dashboard is optional" in result.stdout
 
 
 def test_repo_launcher_is_directly_executable() -> None:
@@ -151,6 +154,8 @@ def test_repo_launcher_is_directly_executable() -> None:
     assert "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍." in result.stdout
     assert expected_version in result.stdout
     assert "vibecrafted dashboard" in result.stdout
+    assert 'vibecrafted hydrate codex --prompt "Package the product"' in result.stdout
+    assert "START_HERE.md" in result.stdout
 
 
 def test_skill_subcommand_help_is_human_readable_without_agent() -> None:

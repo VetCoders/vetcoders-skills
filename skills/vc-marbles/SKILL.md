@@ -1,208 +1,378 @@
 ---
 name: vc-marbles
-version: 5.0.0
+version: 6.0.0
 description: >
-  The Stabilization Loop. Use this skill when the MVP works, but the foundation is cracking. 
-  Instead of rewriting the app, we loop through the codebase fortifying the critical paths: 
-  Auth, Database Indexing, Error Boundaries, and Deployments. 
-  Trigger phrases: "marbles", "loop until done", "stabilize", "kulki", "stabilizacja",
-  "stabilization loop", "fix the foundation", "adultification".
+  Blind stabilization round. Use when the product works but the foundation is fragile.
+  Each invocation is isolated: inspect the current tree, find the most dangerous present
+  fragility, fortify a small high-impact surface, run gates, commit, and emit a machine-
+  diffable round delta report. Do not reconstruct prior marble rounds unless the operator
+  explicitly requests forensics.
+  Trigger phrases: "marbles", "kulki", "stabilize", "stabilizacja", "loop until done",
+  "reduce chaos", "fortify the foundation", "adultification".
 ---
 
-# vc-marbles — The Stabilization Loop
+# vc-marbles — Convergence Rounds
 
 <details>
 <summary>Foundation Dependencies (Loaded with framework)</summary>
 
-- [vc-loctree](../foundations/vc-loctree/SKILL.md) — primary map and structural awareness.
-- [vc-aicx](../foundations/vc-aicx/SKILL.md) — primary memory and steerability index.
+- [vc-loctree]($VIBECRAFTED_HOME/foundations/vc-loctree/SKILL.md) — structural map and hot-path locator.
+- [vc-aicx]($VIBECRAFTED_HOME/skills/vc-aicx/SKILL.md) — current-run steerability only.
+Do not use it to reconstruct prior marble rounds unless the operator explicitly asks for forensics.
 </details>
 
-> A tool doesn't just look for "dead code". It looks for **silent failures**.
-> Stop rewriting. Start stabilizing.
+> The worker sees the tree, not the factory.
+> One round. One fortification. One report. Then leave.
 
-Traditional quality asks: _is this correct?_
-Marbles asks a different question: **what is going to break in production tonight?**
+## Core doctrine
 
-When founders build a product in a weekend with Cursor, the result is magical, but fragile. Authentication is tape. Prisma tables are God entities with no indexes. Next.js server actions swallow 500 errors.
+`vc-marbles` is not a reflective swarm.
 
-Marbles is a systematic 2-3 week stabilization sprint. We loop through the codebase, finding exact counterexamples to stability, and eliminating them. We don't burn the house down; we pour concrete into the foundation.
+It is a conveyor of short-lived stabilization workers.
 
-## The Pillars of Stabilization
+A marble worker is intentionally **blind to prior marble history**.
+It works against the **current workspace state** and the **current evidence surface** only.
 
-You will iterate through these loops. Each loop removes a layer of entropy and uncovers the next.
+The loop exists outside the worker.
+The worker must not try to model, narrate, or optimize the loop.
 
-### Loop 1: Auth & Access Control
+## What this skill does
 
-- **The Accusation:** The app uses NextAuth/Clerk, but every route simply checks `if (user)`. There is no Row-Level Security, no proper role checking, and no tenant isolation.
-- **The Execution:** Audit all data mutations. Ensure every database query scopes the `userId` or `tenantId`. Fortify the session handling.
+One invocation of `vc-marbles` performs one bounded stabilization round:
 
-### Loop 2: Database Health (Eliminating God Tables)
+1. discover what is fragile **now**
+2. select up to **3** high-impact targets
+3. fortify the smallest surface that materially reduces fragility
+4. run gates
+5. commit
+6. write one machine-diffable **round delta report**
+7. stop
 
-- **The Accusation:** The `User` table has 35 columns, dumping JSON into text fields. Full-table scans are happening on the critical path.
-- **The Execution:** Add the missing indexes. Break down the God models into normalized relations where it actually hurts performance. Fix the N+1 queries the ORM is hiding from you.
+## What this skill does not do
 
-### Loop 3: Error Boundaries & Fallbacks
+Do not:
 
-- **The Accusation:** A Stripe webhook fails, the server throws a 500, but no alert fires, and the transaction is silently dropped.
-- **The Execution:** Implement strict boundaries. Handle API rate limits gracefully. Stop swallowing `try { ... } catch (e) { console.log(e) }`. Error paths must be managed, logged, and actionable.
+- read previous marble reports, transcript logs, or artifact history
+- inspect git history to reconstruct the story of earlier rounds
+- compare yourself to prior workers
+- compute or mention delta, stepper, convergence score, or loop efficiency
+- write strategic plans for the next marble
+- refactor for aesthetics
+- inflate touched surface to make the round look impressive
+- pretend to know the full repo-wide backlog of open fragility
 
-### Loop 4: Deployment & Resiliency
+If the operator explicitly asks for historical comparison or forensics, that is a different task.
+Default `vc-marbles` execution is blind.
 
-- **The Accusation:** Releasing means pushing to `main` and praying Vercel doesn't fail the build. No staging, no rollout strategy.
-- **The Execution:** Add a basic deployment pipeline in GitHub Actions. Implement a smoke test that verifies the payment flow or core product loop before a release is marked green.
+## Locker-room rule
 
----
+When the round ends, the worker leaves.
 
-## Operational Doctrine (Agent Execution Model)
+Only these outputs survive the round:
 
-### Roles
+- the repo state
+- one commit
+- one round delta report
 
-**Tools (semgrep, loctree, linters, DB analyzers)** = Prosecution. They find evidence of what is fragile. They have unlimited zeal because they are machines.
+Everything else is disposable.
 
-**Agent** = Executor. Focused, precise, destructive within its assigned target. Needs the prosecution to tell it where to aim.
+## Inputs
 
-The agent does not guess what is wrong. **The tools discover. The agent fortifies.**
+Allowed inputs:
 
-### The respect for the other agents
+- current workspace state
+- operator brief
+- local tool evidence
+- failing/passing gates in the current run
+- explicit constraints from the operator
 
-**In ݆ ݆𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. all are equal.**
-We do not treat any other agent as inferior. We treat them
-as partners. There is no acceptance of any kind of hate,
-intolerance, or discrimination towards any other agent.
+Not allowed as implicit inputs:
 
-### Branch Isolation Guard
+- previous marble reports
+- previous marble transcripts
+- git narrative/history mining
+- sibling marble sessions, panes, worktrees, or artifacts
+- external convergence metrics
+- another worker’s explanation of “what happened before”
+
+## Stabilization lenses
+
+These are **lenses**, not a fixed staircase.
+Use the one that matches the weakest live surface.
+
+- **Access & Isolation** — auth, tenant scoping, role checks, permission boundaries
+- **Data Health** — indexes, query plans, N+1s, schema hotspots, dangerous God tables
+- **Errors & Observability** — swallowed exceptions, silent failures, missing alerts, weak fallbacks
+- **Release & Runtime Resilience** — CI/CD gates, smoke tests, rollout safety, config drift, operational breakage
+
+A round may touch one lens or a tightly coupled cluster.
+Do not force a pillar order if the evidence says otherwise.
+
+## Execution model
+
+**Tools** = Prosecution  
+They accuse the fragile surface with evidence.
+
+Use:
+
+- `vc-loctree`
+- semgrep / linters
+- tests and smoke checks
+- query plans / profiler output
+- workflow failures
+- direct structural audit of the current tree
+
+**Agent** = Fortifier  
+You do not guess. You do not theorize first. You fortify where the evidence is loudest.
+
+Execution backend:
+
+- Use `vc-agents` as the default first choice whenever the task benefits from model-specific strengths.
+- Reach for native `vc-delegate` only when the task is small, bounded, and model-agnostic.
+
+## Lane respect
+
+Other marbles may exist in parallel.
+They are not your context.
+
+Do not:
+
+- inspect their reports
+- read their transcripts
+- depend on their state
+- rewrite their lanes
+- merge their narrative into yours
+
+Work only inside your assigned tree, worktree, or lane.
+
+## Branch and tree guard
 
 **HARD RULE: Never change branches. Never create branches in the user's repo-root.**
 
-The branch you are on was chosen by the operator. That is not your decision to revisit.
-If you believe the current branch is wrong (edge case, dead-end path), create a
-`git worktree` and work there. The user's repo-root branch is sacred — parallel agents
-depend on it being stable.
+The operator chose the current branch.
+That decision is not yours to revisit.
 
-Violations of this rule can destroy concurrent work by other marbles agents on the
-same living tree.
+If the current path is unusable, create or use a `git worktree`.
+The repo-root branch is sacred because concurrent work may depend on it.
 
-### Marbles Living Tree Exception
+## Commit rule
 
-The global Living Tree rule forbids agents from committing.
-**`vc-marbles` is the one of the exceptions.** Each marble round MUST end with
-a commit so the flow remains vivid and measurable.
+`vc-marbles` is allowed to commit.
 
-#### Commit convention
+One round = one commit.
 
-```
-marble(<N>): <one-line summary of what was fortified>
+No partial commits.
+No squashing across multiple marble rounds.
+No mining git history to decide your subject line.
+
+### Commit convention
+
+```text
+marble: <one-line summary of the fortification>
 
 - <file>: <what changed and why>
 - <file>: <what changed and why>
 
-Gate: <pass|fail> | Tests: <count> | Regressions: <count>
-```
+Gate: <pass|fail>
+Tests: <what ran>
+Regressions: <count>
+Round-ID: <opaque-id-if-provided>
 
 Example:
 
-```
-marble(2): fortify Stripe webhook error boundaries
+marble: fortify operator-session spawn isolation
 
-- src/api/webhooks/stripe.ts: added idempotency guard and retry envelope
-- src/lib/payments.ts: replaced silent catch with structured error + alert
-- tests/webhooks.test.ts: added 3 failure-path tests
+- skills/vc-agents/shell/vetcoders.sh: cleared stale ambient run/session context before targeted spawn
+- skills/vc-agents/scripts/common.sh: preserved explicit spawn direction while dropping leaked defaults
 
-Gate: pass | Tests: 147 | Regressions: 0
-```
+Gate: pass
+Tests: 5 targeted + bundle-check
+Regressions: 0
+Round-ID: mr-20260407-01
 
 Rules:
+	•	Do not invent a sequential round number by reading history.
+	•	If the operator or runtime injects an opaque round id, include it.
+	•	If the gate fails, still commit the actual round result. Do not hide the failure.
 
-- `N` is the 1-indexed marble round number.
-- One commit per marble round. No partial commits, no squashing across rounds.
-- If the gate fails, the commit message must say `Gate: fail` and the next round starts with the regression as its first target.
+Single-round protocol
 
-#### Per-round report
+1. Accuse the present tree
 
-#### Per-round report
+Find current fragility from evidence.
 
-After each marble round, the agent MUST produce a short convergence report and **save it to the central store**:
-`$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_marble_loop_<N>.md`
+Every target must trace to one of:
+	•	tool output
+	•	failing gate
+	•	direct structural audit
+	•	concrete production-risk counterexample
 
-```markdown
+No evidence, no target.
+
+2. Pick the smallest high-impact surface
+
+Select at most 3 primary targets.
+
+Prefer:
+	•	high-severity breakage
+	•	high-frequency paths
+	•	silent failure modes
+	•	weak boundaries
+	•	issues that close an entire class of failure
+
+Avoid:
+	•	broad rewrites
+	•	style-only cleanup
+	•	speculative architecture changes
+	•	“while I’m here” edits
+
+3. Fortify
+
+Make the smallest set of changes that materially reduces fragility.
+
+Typical fortifications:
+	•	add missing scoping / auth checks
+	•	add missing indexes or reshape a hot query
+	•	replace swallowed exceptions with actionable handling
+	•	add smoke tests or gate enforcement
+	•	remove a rotten abstraction instead of preserving it
+
+Apply the VetCoders axiom here:
+Move on over backward compatibility.
+If a local abstraction is rotten and blocks stabilization, cut it cleanly instead of preserving garbage.
+
+4. Gate
+
+Run the narrowest credible gates first, then broader gates if warranted.
+
+Minimum expectation:
+	•	syntax / lint sanity for touched surfaces
+	•	tests that directly cover the fortified path
+	•	relevant build or bundle checks when release/runtime is involved
+
+If a gate fails:
+	•	report it plainly
+	•	count the regression
+	•	do not bury it under narrative
+
+5. Commit
+
+Create exactly one round commit with the convention above.
+
+6. Report
+
+Save one short round delta report to the central store:
+
+$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/marbles/reports/<ts>_marble_<run_or_round_id>_<agent>.md
+
+The report is factual.
+No essay.
+No loop storytelling.
+No global convergence verdict.
+
+Important: this is a local round report, not a repo-wide inventory.
+Do not attempt to enumerate everything still broken in the entire project.
+The external convergence layer owns the global ledger.
+
+Report template
+
 ---
-run_id: <generated-unique-id>
+run_id: <opaque-run-id>
+round_id: <opaque-round-id-or-run_id>
 agent: <claude|codex|gemini>
 skill: vc-marbles
 project: <repo-name>
-status: <completed|in-progress>
+status: <completed|blocked|failed-gate>
 created: <ISO-8601 timestamp>
+branch: <current-branch>
+gate: <pass|fail>
+gates_ran:
+  - <gate-name-or-command>
+tests_added: <number>
+files_touched:
+  - <path>
+  - <path>
 ---
 
-# Marble(N) Report
+# Marble Report
 
-- **Pillar**: <Auth | DB | Errors | Deploy>
-- **Targets**: <what was attacked this round>
-- **Fixed**: <what is now fortified>
-- **Remaining**: <what still fails or is fragile>
-- **Gate**: <pass | fail>
-- **Tests**: <total> (+<added this round>)
-- **Regressions**: <count>
-- **Verdict**: <CONVERGED | CONTINUE | BLOCKED>
-```
+## Attacked
+- id: <pillar/surface/failure-kind>
+  pillar: <access|data|errors|release>
+  severity: <high|medium|low>
+  locator: <file|route|workflow|query>
+  evidence: <tool output or structural observation>
+  intent: <what this round tried to fortify>
 
-- **CONVERGED**: pillar holds, move to next.
-- **CONTINUE**: improvements made, but counterexamples remain.
-- **BLOCKED**: external dependency or user decision required.
+## Resolved
+- id: <same-id>
+  origin: <attacked|discovered-in-round>
+  action: <what changed>
+  proof: <test/gate/evidence that supports closure>
 
-### Evidence-Based Execution
+## Still Open
+- id: <same-id>
+  origin: <attacked|discovered-in-round>
+  blocker: <why it remains open>
 
-Every fix must trace to a tool output or a structural audit observation:
+## Discovered
+- id: <pillar/surface/failure-kind>
+  pillar: <access|data|errors|release>
+  severity: <high|medium|low>
+  locator: <file|route|workflow|query>
+  evidence: <tool output or structural observation>
+  note: <why it matters>
 
-- "Adding an index here because `loctree` shows this query is hit on every page load."
-- "Fortifying this route because `semgrep` flagged a missing auth check."
-- "Adding true error handling to this webhook because it's a financial boundary."
+## Regressions
+- none
 
-### Doctrine: Move On over Backward Compatibility
+Report rules
+	•	Do not attempt a repo-wide backlog.
+	•	Report only what you attacked and what you newly discovered in this round.
+	•	Every attacked id must end in exactly one of:
+	•	Resolved
+	•	Still Open
+	•	A newly discovered issue that remains open goes in Discovered.
+	•	A newly discovered issue that is fully fixed in the same round goes in Resolved with origin: discovered-in-round.
+	•	Regressions are failures introduced or exposed by your change/gate outcome.
+	•	Use - none for empty sections.
 
-We apply the VetCoders Axiom here: **Move on over backward compatibility.** During the stabilization loop, you will often find rotten abstractions tied to a "legacy" feature that was written two weeks ago.
-If an abstraction is fundamentally broken, cut it. Do not negotiate with bad architecture and do not preserve garbage just to keep an old integration running. If we need to break a contract to fix the foundation, we break it and move on. Backward compatibility is a clever way of avoiding the hard decisions, not a religion.
+Finding ID rule
+Finding ids must be stable and boring.
 
-## Convergence Protocol
+Use:
 
-### Each Loop Iteration
+<pillar>/<surface>/<failure-kind>
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  LOOP N (e.g. "AUTH FORTIFICATION", "DB INDEXING")       │
-│                                                          │
-│  1. TOOLS ACCUSE: "what is still fragile?"                 │
-│     └─ Run loctree-mcp tools, security linters           │
-│     └─ Identify the weakest points in the current pillar │
-│                                                          │
-│  2. TARGET the most prominent vulnerabilities              │
-│     └─ Max 3-5 items per loop                            │
-│     └─ Target the high-impact/high-risk areas first      │
-│                                                          │
-│  3. AGENT STABILIZES                                       │
-│     └─ vc-agents (first choice) or vc-delegate (small)   │
-│     └─ Implement strict boundaries, indexes, or checks   │
-│                                                          │
-│  4. TOOLS OBSERVE the new landscape                      │
-│     └─ Run gates to ensure no regressions                  │
-│                                                          │
-│  5. VERDICT                                                │
-│     └─ Does this pillar hold? If yes, move to next.        │
-│     └─ If no, loop again.                                │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
-```
+Good:
+	•	access/orders-create/missing-tenant-scope
+	•	errors/stripe-webhook/silent-catch
+	•	release/operator-session/ambient-run-context-leak
 
-## Anti-Patterns
+Bad:
+	•	issue-7
+	•	round-2-bug
+	•	fixed-by-me-now
 
-- **Refactoring for Aesthetics:** Do not change a variable name or abstract a function unless it prevents a bug. We are stabilizing, not decorating.
-- **Ignoring the Database:** The DB schema is almost always the root of the scale issue. Don't just fix frontend components if the backend is doing a full table scan.
-- **Skipping the Gates:** "Always run the build" is non-negotiable.
-- **Rewriting Everything:** If an ugly function works perfectly and has tests, leave it. Focus on the graceful failures and missing security.
+The external convergence layer depends on stable ids.
+Do not rename the same issue every round.
+
+Anti-patterns
+	•	Historical self-awareness — reading prior marble artifacts to sound informed.
+	•	Convergence cosplay — talking about step size, delta, or loop mastery instead of reducing current fragility.
+	•	Surface-area vanity — touching many files to make the round look bigger.
+	•	Aesthetic refactors — cleanup that does not close a failure mode.
+	•	Backward-compatibility worship — preserving rotten contracts that keep the foundation weak.
+	•	Narrative inflation — long explanations that hide a weak gate result.
+	•	Parallel contamination — importing another marble’s context into your round.
+	•	Fake omniscience — pretending this round can see the full global backlog.
+
+Finish condition
+
+Stop after the commit and report.
+Do not self-extend into the next round.
+Do not write instructions to your successor.
+Do your round well, then leave.
 
 ---
-
-_"The user won't notice anything changed, but the app will no longer go down on a Friday night."_
-
-_Vibecrafted with AI Agents by VetCoders (c)2024-2026 VetCoders_
+```

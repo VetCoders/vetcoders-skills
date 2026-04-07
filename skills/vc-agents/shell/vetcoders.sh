@@ -58,6 +58,70 @@ _vetcoders_org_repo() {
   fi
 }
 
+_vetcoders_session_base_name() {
+  local root base
+  root="$(_vetcoders_repo_root)"
+  base="$(basename "$root" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/^-*//; s/-*$//')"
+  [[ -n "$base" ]] || base="vibecrafted"
+  printf '%s\n' "$base"
+}
+
+_vetcoders_operator_session_name_for_run_id() {
+  local run_id="${1:-}"
+  local base
+  base="$(_vetcoders_session_base_name)"
+  if [[ -n "$run_id" ]]; then
+    printf '%s-%s\n' "$base" "$run_id"
+  else
+    printf '%s\n' "$base"
+  fi
+}
+
+_vetcoders_expected_run_lock_path() {
+  local run_id="${1:-}"
+  local root="${2:-$(_vetcoders_repo_root)}"
+  [[ -n "$run_id" ]] || return 1
+  printf '%s/locks/%s/%s.lock\n' \
+    "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}" \
+    "$(_vetcoders_org_repo "$root")" \
+    "$run_id"
+}
+
+_vetcoders_normalize_ambient_context() {
+  local run_id lock expected_lock operator_session expected_session
+
+  run_id="${VIBECRAFTED_RUN_ID:-}"
+  lock="${VIBECRAFTED_RUN_LOCK:-}"
+  operator_session="${VIBECRAFTED_OPERATOR_SESSION:-}"
+
+  [[ -n "$run_id" ]] || {
+    unset VIBECRAFTED_RUN_LOCK VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME
+    return 0
+  }
+
+  [[ -n "$lock" ]] || return 0
+
+  expected_lock="$(_vetcoders_expected_run_lock_path "$run_id" 2>/dev/null || true)"
+  if [[ -n "$expected_lock" && "$lock" == "$expected_lock" && -f "$lock" ]]; then
+    return 0
+  fi
+
+  expected_session="$(_vetcoders_operator_session_name_for_run_id "$run_id")"
+  unset VIBECRAFTED_RUN_LOCK VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME
+
+  if [[ "$(basename "$lock")" != "${run_id}.lock" ]]; then
+    if [[ -n "$operator_session" && "$operator_session" != "$expected_session" ]]; then
+      unset VIBECRAFTED_OPERATOR_SESSION
+    fi
+    return 0
+  fi
+
+  unset VIBECRAFTED_RUN_ID
+  if [[ -n "$operator_session" ]]; then
+    unset VIBECRAFTED_OPERATOR_SESSION
+  fi
+}
+
 _vetcoders_skill_prefix() {
   local name="${1:-}"
   case "$name" in
@@ -105,24 +169,28 @@ _vetcoders_has_ambient_spawn_context() {
 }
 
 _vetcoders_effective_run_id() {
+  _vetcoders_normalize_ambient_context
   _vetcoders_has_ambient_spawn_context && return 1
   [[ -n "${VIBECRAFTED_RUN_ID:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_RUN_ID}"
 }
 
 _vetcoders_effective_run_lock() {
+  _vetcoders_normalize_ambient_context
   _vetcoders_has_ambient_spawn_context && return 1
   [[ -n "${VIBECRAFTED_RUN_LOCK:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_RUN_LOCK}"
 }
 
 _vetcoders_effective_skill_name() {
+  _vetcoders_normalize_ambient_context
   _vetcoders_has_ambient_spawn_context && return 1
   [[ -n "${VIBECRAFTED_SKILL_NAME:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_SKILL_NAME}"
 }
 
 _vetcoders_effective_skill_code() {
+  _vetcoders_normalize_ambient_context
   _vetcoders_has_ambient_spawn_context && return 1
   [[ -n "${VIBECRAFTED_SKILL_CODE:-}" ]] || return 1
   printf '%s\n' "${VIBECRAFTED_SKILL_CODE}"
@@ -348,16 +416,10 @@ _vetcoders_operator_layout_file() {
 }
 
 _vetcoders_operator_session_name() {
-  local root base run_id
-  root="$(_vetcoders_repo_root)"
-  base="$(basename "$root" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/^-*//; s/-*$//')"
-  [[ -n "$base" ]] || base="vibecrafted"
+  local run_id
+  _vetcoders_normalize_ambient_context
   run_id="$(_vetcoders_effective_run_id 2>/dev/null || true)"
-  if [[ -n "$run_id" ]]; then
-    printf '%s-%s\n' "$base" "$run_id"
-  else
-    printf '%s\n' "$base"
-  fi
+  _vetcoders_operator_session_name_for_run_id "$run_id"
 }
 
 
@@ -407,6 +469,7 @@ _vetcoders_ensure_zellij_session() {
 _vetcoders_prepare_operator_runtime() {
   local runtime="${1:-$(_vetcoders_default_runtime)}"
   local session_name layout_file state command_text
+  _vetcoders_normalize_ambient_context
 
   case "$runtime" in
     terminal|visible) ;;
@@ -467,8 +530,8 @@ _vetcoders_spawn_into_operator_session() {
   local cmd_script
 
   command -v zellij >/dev/null 2>&1 || return 1
-  # zellij rejects inline command args once they carry shell-quoted multibyte
-  # prompt content. Hand it an ASCII-safe temp script path instead.
+  # zellij rejects inline command args carrying shell-quoted multibyte
+  # prompt content (printf '%q' + Polish UTF-8). Temp script keeps path ASCII-safe.
   cmd_script="$(mktemp "${TMPDIR:-/tmp}/vc-spawn-cmd.XXXXXX")"
   _vetcoders_write_command_script "$cmd_script" "$command_text" || return 1
   zellij --session "$session_name" action new-tab \
@@ -572,6 +635,8 @@ _vetcoders_load_frontier_sidecars() {
 }
 
 _vetcoders_load_frontier_sidecars
+
+_vetcoders_normalize_ambient_context
 
 _VETCODERS_ATUIN_BIN="$(_vetcoders_atuin_bin 2>/dev/null || true)"
 
@@ -715,6 +780,7 @@ _vetcoders_dashboard_layout_file() {
 
 _vetcoders_dashboard_session_name() {
   local layout_name slug base_session run_id
+  _vetcoders_normalize_ambient_context
   layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")"
   base_session="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
   run_id="$(_vetcoders_effective_run_id 2>/dev/null || true)"
@@ -732,6 +798,7 @@ _vetcoders_dashboard_session_name() {
 
 _vetcoders_launch_dashboard() {
   local layout_name layout_file session_name repo_source repo_zellij_dir
+  _vetcoders_normalize_ambient_context
   layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")"
   shift || true
 
@@ -770,6 +837,7 @@ _vetcoders_launch_dashboard() {
 
 _vetcoders_resume_operator_session() {
   local session_name layout_file
+  _vetcoders_normalize_ambient_context
   session_name="$(_vetcoders_operator_session_name)"
   layout_file="$(_vetcoders_operator_layout_file 2>/dev/null || true)"
 
@@ -824,6 +892,8 @@ _vetcoders_parse_contract() {
       -p|--prompt)
         shift
         [[ $# -gt 0 ]] || { echo "Missing value for --prompt" >&2; return 1; }
+        # Greedy: everything after --prompt is the prompt text.
+        # Flags must come BEFORE --prompt.
         _vetcoders_contract_prompt="$*"
         break
         ;;
@@ -1211,8 +1281,8 @@ _vetcoders_marbles() {
     operator_session="$(_vetcoders_operator_session_name)"
   fi
 
-  # Inside zellij: hand marbles off via a temp script so zellij only sees an
-  # ASCII-safe path instead of a long command payload with user prompt bytes.
+  # Inside zellij: marbles gets its own tab — operator's workspace stays clean.
+  # Temp script keeps zellij args ASCII-safe (no inline UTF-8 prompt bytes).
   if _vetcoders_in_zellij && command -v zellij >/dev/null 2>&1; then
     local cmd_script
     export VIBECRAFTED_OPERATOR_SESSION="$(_vetcoders_current_zellij_session_name)"

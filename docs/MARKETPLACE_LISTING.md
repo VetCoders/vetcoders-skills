@@ -57,10 +57,10 @@ convergence, packaging, and release.
 
 - description: Convergence framework for AI-assisted software development. Agents fix code until nothing is wrong.
 - keywords: ai-agent-engineering, convergence, developer-tools, codex, claude, gemini, workflow, multi-agent
-- homepage: https://vetcoders.github.io/vibecrafted/
+- homepage: https://vibecrafted.io/
 - repository: https://github.com/VetCoders/vibecrafted
-- documentation: https://vetcoders.github.io/vibecrafted/presence/quickstart.html
-- faq: https://vetcoders.github.io/vibecrafted/presence/faq.html
+- documentation: https://vibecrafted.io/presence/quickstart.html
+- faq: https://vibecrafted.io/presence/faq.html
 - license: Business Source License 1.1 with Additional Use Grant for non-competitive small-team production use
 
 ---

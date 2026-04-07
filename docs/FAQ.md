@@ -2,7 +2,7 @@
 
 Public-facing answers for the questions people ask before they trust the framework.
 
-For the GitHub Pages version, see https://vetcoders.github.io/vibecrafted/presence/faq.html.
+For the public HTML version, see https://vibecrafted.io/presence/faq.html.
 For the long-form answer bank, see [FAQ-ANSWERED.md](FAQ-ANSWERED.md).
 
 ## Installation
@@ -72,4 +72,4 @@ For the long-form answer bank, see [FAQ-ANSWERED.md](FAQ-ANSWERED.md).
 
 ---
 
-𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. by VetCoders | https://vetcoders.github.io/vibecrafted/
+𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. by VetCoders | https://vibecrafted.io/

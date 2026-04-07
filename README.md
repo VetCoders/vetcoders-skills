@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://vetcoders.github.io/vibecrafted/">Website</a> ·
+  <a href="https://vibecrafted.io/">Website</a> ·
   <a href="docs/QUICK_START.md">Quick Start</a> ·
   <a href="docs/VIBECRAFTED.md">Manifesto</a> ·
   <a href="docs/FAQ.md">FAQ</a>
