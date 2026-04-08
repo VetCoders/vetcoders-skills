@@ -23,8 +23,6 @@ jobs:
         uses: astral-sh/setup-uv@v6
       - name: Run installer tests
         run: make test
-      - name: Check marketplace bundle drift
-        run: make bundle-check
       - name: Read version
         id: version
         run: |

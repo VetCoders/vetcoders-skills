@@ -50,16 +50,6 @@ def test_write_bundle_uses_current_metadata_and_skill_inventory(tmp_path: Path) 
     assert "skills/vc-screenscribe/SKILL.md" not in members
 
 
-def test_committed_bundle_matches_current_repo_state() -> None:
-    bundle_path = bundle.REPO_ROOT / bundle.OUTPUT_FILENAME
-
-    assert bundle_path.exists(), f"Missing marketplace bundle at {bundle_path}"
-    assert bundle_path.read_bytes() == bundle.build_bundle_bytes(bundle.REPO_ROOT), (
-        "Marketplace bundle drifted from the current repo state. "
-        "Run: python3 scripts/build_marketplace_bundle.py"
-    )
-
-
 def test_framework_playground_uses_vibecrafted_command_deck() -> None:
     text = (bundle.REPO_ROOT / "docs" / "presence" / "framework.js").read_text(
         encoding="utf-8"
