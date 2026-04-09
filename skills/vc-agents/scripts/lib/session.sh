@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 spawn_session_base_name() {
   local root base
   root="$(spawn_repo_root)"
@@ -17,6 +16,41 @@ spawn_operator_session_name_for_run_id() {
     printf '%s-%s\n' "$base" "$run_id"
   else
     printf '%s\n' "$base"
+  fi
+}
+
+spawn_normalize_ambient_context() {
+  local run_id lock expected_lock operator_session expected_session
+
+  run_id="${VIBECRAFTED_RUN_ID:-}"
+  lock="${VIBECRAFTED_RUN_LOCK:-}"
+  operator_session="${VIBECRAFTED_OPERATOR_SESSION:-}"
+
+  [[ -n "$run_id" ]] || {
+    unset VIBECRAFTED_RUN_LOCK VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME
+    return 0
+  }
+
+  [[ -n "$lock" ]] || return 0
+
+  expected_lock="$(spawn_expected_run_lock_path "$run_id" 2>/dev/null || true)"
+  if [[ -n "$expected_lock" && "$lock" == "$expected_lock" && -f "$lock" ]]; then
+    return 0
+  fi
+
+  expected_session="$(spawn_operator_session_name_for_run_id "$run_id")"
+  unset VIBECRAFTED_RUN_LOCK VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME
+
+  if [[ "$(basename "$lock")" != "${run_id}.lock" ]]; then
+    if [[ -n "$operator_session" && "$operator_session" != "$expected_session" ]]; then
+      unset VIBECRAFTED_OPERATOR_SESSION
+    fi
+    return 0
+  fi
+
+  unset VIBECRAFTED_RUN_ID
+  if [[ -n "$operator_session" ]]; then
+    unset VIBECRAFTED_OPERATOR_SESSION
   fi
 }
 
@@ -56,6 +90,30 @@ spawn_generate_run_id() {
   printf '%s-%s\n' "$prefix" "$(date +%H%M%S)"
 }
 
+spawn_has_ambient_run_context() {
+  [[ -n "${SPAWN_AGENT:-}" ]] || return 1
+  [[ -n "${SPAWN_RUN_ID:-}" ]] || return 1
+  [[ -n "${VIBECRAFTED_RUN_ID:-}" ]] || return 1
+  [[ "${SPAWN_RUN_ID}" == "${VIBECRAFTED_RUN_ID}" ]] || return 1
+  [[ -z "${VIBECRAFTED_OPERATOR_SESSION:-}" ]] || return 1
+  spawn_in_zellij_context && return 1
+  return 0
+}
+
+spawn_effective_run_id() {
+  spawn_normalize_ambient_context
+  spawn_has_ambient_run_context && return 1
+  [[ -n "${VIBECRAFTED_RUN_ID:-}" ]] || return 1
+  printf '%s\n' "${VIBECRAFTED_RUN_ID}"
+}
+
+spawn_effective_skill_code() {
+  spawn_normalize_ambient_context
+  spawn_has_ambient_run_context && return 1
+  [[ -n "${VIBECRAFTED_SKILL_CODE:-}" ]] || return 1
+  printf '%s\n' "${VIBECRAFTED_SKILL_CODE}"
+}
+
 spawn_marbles_state_dir() {
   local run_id="$1"
   printf '%s/marbles/%s\n' "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}" "$run_id"
@@ -79,17 +137,6 @@ spawn_marbles_write_child_plan() {
   cat >> "$child_plan" <<'ROUND_CONTRACT'
 
 ---
-## Worker Contract
-
-### Hard Rule
-- The worker must remain on the operator-assigned substrate.
-- The worker is expected to maneuver intelligently within the assigned surface, inside the living tree, and around concurrent edits by others. That maneuverability is part of the craft.
-- But `vc-marbles` does not permit escaping the assigned substrate.
-- Do not switch branches.
-- Do not create or move to a worktree.
-- Do not relocate execution to another lane or clone.
-- If the substrate is too poisoned to operate on, return control to the operator/runtime layer. Do not solve substrate invalidity by moving sideways.
-
 ## Exit Contract
 - **COMMIT**: mandatory. One commit when done.
 - **REPORT**: mandatory. Write to the report path given at the end of this prompt.
@@ -105,7 +152,6 @@ spawn_prepare_paths() {
   local skill_name="${VIBECRAFTED_SKILL_NAME:-$mode}"
   local lock_file=""
   local discovered_session=""
-  local ambient_store_root="${VIBECRAFTED_STORE_ROOT:-${SPAWN_ROOT:-}}"
 
   if [[ -n "$root" ]]; then
     SPAWN_ROOT="$(spawn_abspath "$root")"
@@ -154,7 +200,7 @@ spawn_prepare_paths() {
 
   # Central store path (falls back to per-repo if no git remote)
   local store_base
-  store_base="$(spawn_effective_store_dir "$SPAWN_ROOT" "$ambient_store_root")"
+  store_base="$(spawn_effective_store_dir "$SPAWN_ROOT")"
 
   SPAWN_PLAN_DIR="$store_base/plans"
   SPAWN_REPORT_DIR="$store_base/reports"
@@ -172,12 +218,8 @@ spawn_prepare_paths() {
 
 spawn_scan_active() {
   local reports_dir="$1"
-  local tmp_root="${TMPDIR:-/tmp}"
-  local marker=""
+  local marker="${TMPDIR:-/tmp}/.vibecrafted-scan-marker"
   local recent_active=""
-
-  tmp_root="${tmp_root%/}"
-  marker="${tmp_root}/.vibecrafted-scan-marker"
 
   [[ -d "$reports_dir" ]] || {
     touch "$marker"
@@ -219,5 +261,3 @@ PY
 
   printf '\033[2mRecent active 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. runs:\n%s\033[0m\n' "$recent_active"
 }
-
-spawn_normalize_ambient_context
