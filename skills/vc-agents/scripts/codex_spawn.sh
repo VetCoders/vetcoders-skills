@@ -90,7 +90,7 @@ qtranscript="$(spawn_shell_quote "$SPAWN_TRANSCRIPT")"
 
 # Codex --json emits JSONL events. jq filter extracts readable text + tool tags + session ID.
 qfilter="$(spawn_shell_quote "$SCRIPT_DIR/codex_stream_filter.jq")"
-launch_cmd="set -o pipefail && cd $qroot && codex exec -C $qroot --json --dangerously-bypass-approvals-and-sandbox --output-last-message $qreport - < $qruntime 2>&1 | grep --line-buffered '^{' | jq --unbuffered -rj -f $qfilter | tee -a $qtranscript ; echo ; { grep -o 'session: [a-f0-9-]*' $qtranscript 2>/dev/null | tail -1 | awk '{print \$2}' | xargs -I{} printf '\\n\\033[33m━━━ session: {} ━━━\\033[0m\\n'; } || true"
+launch_cmd="set -o pipefail && cd $qroot && { codex exec -C $qroot --json --dangerously-bypass-approvals-and-sandbox --output-last-message $qreport - < $qruntime 2>&1 | grep --line-buffered '^{' | jq --unbuffered -rj -f $qfilter | tee -a $qtranscript; pipeline_status=\$?; echo; { grep -o 'session: [a-f0-9-]*' $qtranscript 2>/dev/null | tail -1 | awk '{print \$2}' | xargs -I{} printf '\\n\\033[33m━━━ session: {} ━━━\\033[0m\\n'; } || true; exit \$pipeline_status; }"
 
 # shellcheck disable=SC2016
 codex_success_hook='

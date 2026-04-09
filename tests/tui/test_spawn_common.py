@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import json
+import os
 import re
 import subprocess
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 COMMON_SH = REPO_ROOT / "skills" / "vc-agents" / "scripts" / "common.sh"
+CODEX_SPAWN_SH = REPO_ROOT / "skills" / "vc-agents" / "scripts" / "codex_spawn.sh"
+CODEX_STREAM_FILTER = (
+    REPO_ROOT / "skills" / "vc-agents" / "scripts" / "codex_stream_filter.jq"
+)
 
 
 def _bash(script: str) -> subprocess.CompletedProcess[str]:
@@ -168,6 +175,130 @@ def test_spawn_watch_startup_reports_still_launching_when_quiet(
 
     assert "Startup check: still launching after 1s." in result.stdout
     assert "vibecrafted dashboard" in result.stdout
+
+
+def test_codex_stream_filter_handles_structured_turn_failed_payload() -> None:
+    payload = (
+        '{"type":"turn.failed","error":{"message":"stream exploded","code":"EPIPE"}}\n'
+    )
+
+    result = subprocess.run(
+        ["jq", "-rj", "-f", str(CODEX_STREAM_FILTER)],
+        check=True,
+        cwd=REPO_ROOT,
+        input=payload,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "stream exploded" in result.stdout
+    assert "cannot be added" not in result.stderr
+
+
+def test_codex_spawn_marks_meta_failed_when_stream_filter_crashes(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    crafted_home = home / ".vibecrafted"
+    fake_bin = tmp_path / "bin"
+    plan = tmp_path / "plan.md"
+
+    home.mkdir()
+    fake_bin.mkdir()
+    plan.write_text("# Plan\n", encoding="utf-8")
+
+    fake_codex = fake_bin / "codex"
+    fake_codex.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'report=""',
+                "while [[ $# -gt 0 ]]; do",
+                '  case "$1" in',
+                '    --output-last-message) shift; report="$1" ;;',
+                "  esac",
+                "  shift || true",
+                "done",
+                "cat >/dev/null || true",
+                'printf \'{"type":"thread.started","thread_id":"fake-session-001"}\\n\'',
+                'if [[ -n "$report" ]]; then',
+                '  : > "$report"',
+                "fi",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_codex.chmod(0o755)
+
+    fake_jq = fake_bin / "jq"
+    fake_jq.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "cat >/dev/null || true",
+                "echo 'jq: error (at <stdin>:1): string and object cannot be added' >&2",
+                "exit 5",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_jq.chmod(0o755)
+
+    env = {
+        **os.environ,
+        "HOME": str(home),
+        "VIBECRAFTED_HOME": str(crafted_home),
+        "PATH": f"{fake_bin}:{os.environ.get('PATH', '')}",
+        "VIBECRAFTED_INLINE_STARTUP_WATCH": "0",
+    }
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(CODEX_SPAWN_SH),
+            "--runtime",
+            "headless",
+            "--root",
+            str(REPO_ROOT),
+            str(plan),
+        ],
+        check=True,
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "Agent launched. Report will land at:" in result.stdout
+
+    meta_files: list[Path] = []
+    deadline = time.time() + 5
+    artifacts_root = crafted_home / "artifacts"
+    while time.time() < deadline:
+        meta_files = list(artifacts_root.rglob("*_plan_codex.meta.json"))
+        if meta_files:
+            payload = json.loads(meta_files[0].read_text(encoding="utf-8"))
+            if payload.get("status") in {"completed", "failed"}:
+                break
+        time.sleep(0.1)
+
+    assert meta_files, "codex spawn did not write meta.json"
+    meta_payload = json.loads(meta_files[0].read_text(encoding="utf-8"))
+    assert meta_payload["status"] == "failed"
+    assert meta_payload["exit_code"] == 5
+
+    report_file = meta_files[0].with_name(
+        meta_files[0].name.replace(".meta.json", ".md")
+    )
+    assert report_file.exists()
+    assert (
+        "Codex failed before writing a standalone report file."
+        in report_file.read_text(encoding="utf-8")
+    )
 
 
 def test_generated_launcher_includes_startup_watch(tmp_path: Path) -> None:
