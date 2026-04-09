@@ -13,7 +13,7 @@ description: >
   spoken screen recording turned into structured engineering findings.
 ---
 
-# VibeCraft ScreenScribe
+# Vibecrafted. ScreenScribe
 
 Use this skill for two related jobs:
 

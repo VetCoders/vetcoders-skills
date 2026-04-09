@@ -392,7 +392,7 @@ Auto-detected from repo contents. Override: `--profile <PROFILE>`.
 
 ---
 
-## VibeCraft Pipeline Integration
+## Vibecrafted. Pipeline Integration
 
 ### As input to vc-followup
 

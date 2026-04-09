@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Marbles chain trigger — called by success_hook inside agent launcher.
-# Spawns next loop iteration or writes CONVERGENCE.md when done.
+# Spawns the next loop iteration or writes CONVERGENCE.md when done.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
@@ -13,23 +13,21 @@ if [[ "${1:-}" == "--failed" ]]; then
   shift
 fi
 
-agent="$1"
-original_plan="$2"
-total_count="$3"
-current="$4"
-run_id="$5"
-root_dir="$6"
-runtime="$7"
-scripts_dir="$8"
-session_lock="$9"
-store="${10:-$(spawn_marbles_store_dir "$root_dir")}"
+state_dir="$1"
+total_count="$2"
+current="$3"
+run_id="$4"
+root_dir="$5"
+runtime="$6"
+scripts_dir="$7"
+session_lock="$8"
+store="${9:-$(spawn_marbles_store_dir "$root_dir")}"
 
-next=$((current + 1))
-plan_slug="$(spawn_slug_from_path "$original_plan")"
-
-# ── State directory (watcher writes session_id here) ─────────────────
-state_dir="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/marbles/$run_id"
 state_file="$state_dir/state.json"
+god_plan="$state_dir/god.md"
+ancestor_plan="$state_dir/ancestor.md"
+ancestor_slug="$(spawn_slug_from_path "$ancestor_plan")"
+next=$((current + 1))
 report_sync_timeout_s="${VIBECRAFTED_MARBLES_REPORT_TIMEOUT_S:-5400}"
 case "$report_sync_timeout_s" in
   ''|*[!0-9]*)
@@ -38,33 +36,32 @@ case "$report_sync_timeout_s" in
 esac
 report_poll_s=5
 
-# ── Read session_id for a loop from state.json ───────────────────────
-_read_session_id() {
+_loop_child_plan() {
   local loop_nr="$1"
-  if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
-    python3 -c "
-import json, sys
-with open('$state_file') as f: d = json.load(f)
-for loop in d.get('loops', []):
-    if loop.get('loop') == $loop_nr:
-        print(loop.get('session_id', ''))
-        sys.exit(0)
-print('')
-" 2>/dev/null || true
-  fi
+  spawn_marbles_child_plan_path "$store" "$ancestor_plan" "$loop_nr"
+}
+
+_find_meta_for_loop() {
+  local loop_nr="$1"
+  local expected_run_id="${run_id}-$(printf '%03d' "$loop_nr")"
+  spawn_find_meta_for_run_id "$store/reports" "$expected_run_id"
 }
 
 _read_loop_state() {
   local loop_nr="$1"
   if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
     python3 - "$state_file" "$loop_nr" <<'PY'
-import json, sys
-with open(sys.argv[1]) as f:
-    d = json.load(f)
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+
 target = None
-for loop in d.get("loops", []):
+for loop in payload.get("loops", []):
     if loop.get("loop") == int(sys.argv[2]):
         target = loop
+
 if target is None:
     print("\t")
 else:
@@ -75,56 +72,73 @@ PY
   fi
 }
 
-_find_meta_for_loop() {
+_read_session_id() {
   local loop_nr="$1"
-  local expected_run_id="${run_id}-$(printf '%03d' "$loop_nr")"
-  python3 - "$store/reports" "$expected_run_id" <<'PY'
-import json, os, sys
-reports_dir, target_run_id = sys.argv[1:3]
-if not os.path.isdir(reports_dir):
-    sys.exit(0)
-for fname in sorted(os.listdir(reports_dir), reverse=True):
-    if not fname.endswith(".meta.json"):
-        continue
-    fpath = os.path.join(reports_dir, fname)
-    try:
-        with open(fpath) as f:
-            meta = json.load(f)
-        if meta.get("run_id") == target_run_id:
-            print(fpath)
-            sys.exit(0)
-    except (OSError, json.JSONDecodeError):
-        continue
-PY
-}
-
-_read_meta_field() {
-  local meta_path="$1" field="$2"
-  python3 -c "
-import json,sys
-with open(sys.argv[1]) as f: m=json.load(f)
-print(m.get(sys.argv[2],''))
-" "$meta_path" "$field" 2>/dev/null || true
-}
-
-_find_loop_report() {
-  local loop_nr="$1"
-  # Fix A: Try meta.json first (authoritative paths from spawn)
-  local meta_path
+  local meta_path=""
   meta_path="$(_find_meta_for_loop "$loop_nr")"
   if [[ -n "$meta_path" ]]; then
-    local report
-    report="$(_read_meta_field "$meta_path" "report")"
-    if [[ -n "$report" && -s "$report" ]]; then
-      printf '%s\n' "$report"
-      return 0
+    spawn_read_meta_field "$meta_path" "session_id"
+    return 0
+  fi
+
+  if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
+    python3 - "$state_file" "$loop_nr" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+
+for loop in payload.get("loops", []):
+    if loop.get("loop") == int(sys.argv[2]):
+        print(loop.get("session_id", ""), end="")
+        raise SystemExit(0)
+PY
+  fi
+}
+
+_read_loop_agent() {
+  local loop_nr="$1"
+  local meta_path=""
+  local agent_name=""
+
+  meta_path="$(_find_meta_for_loop "$loop_nr")"
+  if [[ -n "$meta_path" ]]; then
+    agent_name="$(spawn_read_meta_field "$meta_path" "agent")"
+  fi
+
+  if [[ -z "$agent_name" ]]; then
+    local child_plan=""
+    child_plan="$(_loop_child_plan "$loop_nr")"
+    if [[ -f "$child_plan" ]]; then
+      agent_name="$(spawn_frontmatter_field "$child_plan" "agent")"
     fi
   fi
-  # Legacy pattern fallback
-  find "$store/reports" -name "*_marbles-${plan_slug}_L${loop_nr}_${agent}.md" \
-    ! -name '*_verified.md' \
-    ! -name '*.meta.json' ! -name '*.transcript.log' 2>/dev/null \
-    | sort | tail -1 || true
+
+  if [[ -z "$agent_name" && -f "$ancestor_plan" ]]; then
+    agent_name="$(spawn_frontmatter_field "$ancestor_plan" "agent")"
+  fi
+
+  printf '%s' "$agent_name"
+}
+
+_loop_report_path() {
+  local loop_nr="$1"
+  local meta_path=""
+  local report_path=""
+
+  meta_path="$(_find_meta_for_loop "$loop_nr")"
+  if [[ -n "$meta_path" ]]; then
+    report_path="$(spawn_read_meta_field "$meta_path" "report")"
+  fi
+
+  if [[ -z "$report_path" && -f "$state_file" ]]; then
+    local loop_state=""
+    loop_state="$(_read_loop_state "$loop_nr")"
+    report_path="${loop_state#*$'\t'}"
+  fi
+
+  printf '%s' "$report_path"
 }
 
 _wait_for_loop_report() {
@@ -134,26 +148,28 @@ _wait_for_loop_report() {
   local report_path=""
 
   while true; do
-    report_path="$(_find_loop_report "$loop_nr")"
+    report_path="$(_loop_report_path "$loop_nr")"
     if [[ -n "$report_path" && -s "$report_path" ]]; then
       printf '%s\n' "$report_path"
       return 0
     fi
 
-    if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
+    if [[ -f "$state_file" ]]; then
       local loop_state=""
       local loop_status=""
-      local state_report=""
       loop_state="$(_read_loop_state "$loop_nr")"
       loop_status="${loop_state%%$'\t'*}"
-      state_report="${loop_state#*$'\t'}"
-
-      if [[ "$loop_status" == "done" && -n "$state_report" && -s "$state_report" ]]; then
-        printf '%s\n' "$state_report"
-        return 0
-      fi
-
       if [[ "$loop_status" == "timed_out" || "$loop_status" == "failed" || "$loop_status" == "stopped" ]]; then
+        return 2
+      fi
+    fi
+
+    local meta_path=""
+    meta_path="$(_find_meta_for_loop "$loop_nr")"
+    if [[ -n "$meta_path" ]]; then
+      local meta_status=""
+      meta_status="$(spawn_read_meta_field "$meta_path" "status")"
+      if [[ "$meta_status" == "failed" ]]; then
         return 2
       fi
     fi
@@ -167,15 +183,27 @@ _wait_for_loop_report() {
   done
 }
 
+_update_lock() {
+  local key="$1"
+  local val="$2"
+  [[ -f "$session_lock" ]] || return 0
+  if sed --version >/dev/null 2>&1; then
+    sed -i "s/^${key}=.*/${key}=${val}/" "$session_lock"
+  else
+    sed -i '' "s/^${key}=.*/${key}=${val}/" "$session_lock"
+  fi
+}
+
 _write_missing_report_failure() {
   local loop_nr="$1"
   local reason="$2"
-  local convergence="$store/reports/$(spawn_timestamp)_marbles-${plan_slug}_CONVERGENCE.md"
+  local loop_agent="$3"
+  local convergence="$store/reports/$(spawn_timestamp)_marbles-${ancestor_slug}_CONVERGENCE.md"
 
   cat > "$convergence" <<CONV
 ---
 run_id: $run_id
-agent: $agent
+agent: $loop_agent
 status: FAILED
 failed_at_loop: $loop_nr
 total_loops: $total_count
@@ -189,9 +217,8 @@ Loop $loop_nr of $total_count did not produce an observed report.
 - Reason: $reason
 - Sync timeout: ${report_sync_timeout_s}s
 - Effect: no further loops were spawned, so the loop budget was not consumed
-
-Reports in: $store/reports/
-Filter: marbles-${plan_slug}_L*
+- GOD: $god_plan
+- ANCESTOR: $ancestor_plan
 CONV
 
   _update_lock status failed
@@ -200,34 +227,72 @@ CONV
   printf '    Convergence: %s\n' "$convergence"
 }
 
-# ── Collect report paths for loops L(1)..L(n) ───────────────────────
-_collect_reports() {
-  local up_to="$1"
-  find "$store/reports" -name "*_marbles-${plan_slug}_L*.md" \
-    ! -name '*_verified.md' \
-    ! -name '*.meta.json' ! -name '*.transcript.log' 2>/dev/null \
-    | sort | while IFS= read -r rpt; do
-      # Extract loop number from filename
-      local lnum
-      lnum=$(printf '%s' "$(basename "$rpt")" | grep -oE '_L[0-9]+_' | tr -dc '0-9')
-      if [[ -n "$lnum" ]] && (( lnum <= up_to )); then
-        printf '%s\n' "$rpt"
-      fi
-    done
+_write_invalid_ancestor_failure() {
+  local loop_nr="$1"
+  local invalid_agent="$2"
+  local convergence="$store/reports/$(spawn_timestamp)_marbles-${ancestor_slug}_CONVERGENCE.md"
+
+  cat > "$convergence" <<CONV
+---
+run_id: $run_id
+agent: $invalid_agent
+status: FAILED
+failed_at_loop: $loop_nr
+total_loops: $total_count
+reason: invalid_ancestor_agent
+---
+
+# Marbles Convergence — FAILED
+
+'ancestor.md' requested an invalid agent for loop $loop_nr.
+
+- Invalid agent: ${invalid_agent:-<empty>}
+- Expected: claude, codex, or gemini
+- GOD: $god_plan
+- ANCESTOR: $ancestor_plan
+CONV
+
+  _update_lock status failed
+  printf '\n\033[31m ✗  Marbles blocked before loop %s/%s\033[0m\n' "$loop_nr" "$total_count"
+  printf '    Invalid ancestor agent: %s\n' "${invalid_agent:-<empty>}"
+  printf '    Convergence: %s\n' "$convergence"
 }
 
-# ── Fire-and-forget verification resume ──────────────────────────────
-_launch_verification() {
-  local loop_nr="$1" is_final="${2:-0}"
+_collect_reports() {
+  local up_to="$1"
+  local loop_nr=""
+  local report_path=""
 
-  local sid
+  for ((loop_nr = 1; loop_nr <= up_to; loop_nr++)); do
+    report_path="$(_loop_report_path "$loop_nr")"
+    if [[ -n "$report_path" && -f "$report_path" ]]; then
+      printf '%s\n' "$report_path"
+    fi
+  done
+}
+
+_launch_verification() {
+  local loop_nr="$1"
+  local is_final="${2:-0}"
+  local sid=""
+  local loop_agent=""
+  local report_path=""
+
   sid="$(_read_session_id "$loop_nr")"
   if [[ -z "$sid" ]]; then
     printf '    ⚠ No session_id for L%s — skipping verification\n' "$loop_nr"
     return 0
   fi
 
-  # Collect all reports up to this loop
+  report_path="$(_loop_report_path "$loop_nr")"
+  if [[ -z "$report_path" ]]; then
+    printf '    ⚠ No report path for L%s — skipping verification\n' "$loop_nr"
+    return 0
+  fi
+
+  loop_agent="$(_read_loop_agent "$loop_nr")"
+  [[ -n "$loop_agent" ]] || loop_agent="codex"
+
   local reports_list=""
   while IFS= read -r rpt; do
     [[ -n "$rpt" ]] || continue
@@ -235,13 +300,7 @@ _launch_verification() {
 - ${rpt}"
   done < <(_collect_reports "$loop_nr")
 
-  # Expected verified report path
-  local verified_report
-  verified_report=$(find "$store/reports" -name "*_marbles-${plan_slug}_L${loop_nr}_${agent}.md" \
-    ! -name '*_verified*' 2>/dev/null | sort | tail -1 || true)
-  local verified_path="${verified_report%.md}_verified.md"
-
-  # Build verification prompt
+  local verified_path="${report_path%.md}_verified.md"
   local prompt="You are resuming to self-audit your own report from marbles loop L${loop_nr}.
 
 ## Instructions
@@ -271,51 +330,46 @@ This is the final loop. Your verified report MUST include:
 - Be honest about uncertainty — flag anything you cannot verify
 - Keep the verified report concise and actionable"
 
-  # Record verification start in state.json
   if [[ -f "$state_file" ]] && command -v python3 >/dev/null 2>&1; then
     python3 - "$state_file" "$loop_nr" <<'PY'
-import json, sys, datetime
-with open(sys.argv[1]) as f: d = json.load(f)
-d["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
-loops = d.get("loops") or []
-if not isinstance(loops, list):
-    loops = []
-for loop in loops:
-    if isinstance(loop, dict) and loop.get("loop") == int(sys.argv[2]):
+import datetime
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+
+payload["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+for loop in payload.get("loops", []):
+    if loop.get("loop") == int(sys.argv[2]):
         loop["verification_status"] = "pending"
-d["loops"] = loops
-with open(sys.argv[1] + ".tmp", "w") as f: json.dump(d, f, indent=2)
+
+with open(sys.argv[1] + ".tmp", "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2)
+    handle.write("\n")
 PY
     mv "$state_file.tmp" "$state_file" 2>/dev/null || true
   fi
 
-  # Fire-and-forget: resume the agent with verification prompt
   printf '    🔍 Verification L%s → session %s\n' "$loop_nr" "${sid:0:13}…"
-  case "$agent" in
+  case "$loop_agent" in
     claude) nohup claude --resume "$sid" "$prompt" >/dev/null 2>&1 & ;;
     codex)  nohup codex resume "$sid" "$prompt" >/dev/null 2>&1 & ;;
     gemini) nohup gemini --resume "$sid" "$prompt" >/dev/null 2>&1 & ;;
+    *) printf '    ⚠ Unknown loop agent %s — skipping verification\n' "$loop_agent" ;;
   esac
 }
 
-# ── Update lock ───────────────────────────────────────────────────────
-_update_lock() {
-  local key="$1" val="$2"
-  [[ -f "$session_lock" ]] || return 0
-  if sed --version >/dev/null 2>&1; then
-    sed -i "s/^${key}=.*/${key}=${val}/" "$session_lock"
-  else
-    sed -i '' "s/^${key}=.*/${key}=${val}/" "$session_lock"
-  fi
-}
+current_agent="$(_read_loop_agent "$current")"
+[[ -n "$current_agent" ]] || current_agent="$(spawn_frontmatter_field "$ancestor_plan" "agent")"
+[[ -n "$current_agent" ]] || current_agent="unknown"
 
-# ── Failed: write partial convergence ─────────────────────────────────
 if (( failed )); then
-  convergence="$store/reports/$(spawn_timestamp)_marbles-${plan_slug}_CONVERGENCE.md"
+  convergence="$store/reports/$(spawn_timestamp)_marbles-${ancestor_slug}_CONVERGENCE.md"
   cat > "$convergence" <<CONV
 ---
 run_id: $run_id
-agent: $agent
+agent: $current_agent
 status: FAILED
 failed_at_loop: $current
 total_loops: $total_count
@@ -326,8 +380,8 @@ total_loops: $total_count
 Loop $current of $total_count failed.
 Check individual loop reports for details.
 
-Reports in: $store/reports/
-Filter: marbles-${plan_slug}_L*
+- GOD: $god_plan
+- ANCESTOR: $ancestor_plan
 CONV
 
   _update_lock status failed
@@ -336,98 +390,89 @@ CONV
   exit 0
 fi
 
-# Guard the loop budget: a hook firing is not enough. We only advance once the
-# current loop has produced an observable report.
 if _wait_for_loop_report "$current" "$report_sync_timeout_s" >/dev/null; then
   :
 else
   wait_status=$?
   case "$wait_status" in
     2)
-      _write_missing_report_failure "$current" "watcher marked loop as failed or timed out"
+      _write_missing_report_failure "$current" "watcher or launcher marked loop as failed" "$current_agent"
       ;;
     *)
-      _write_missing_report_failure "$current" "report not observed within ${report_sync_timeout_s}s"
+      _write_missing_report_failure "$current" "report not observed within ${report_sync_timeout_s}s" "$current_agent"
       ;;
   esac
   exit 0
 fi
 
-# ── All loops done: write convergence summary ─────────────────────────
 if [[ $next -gt $total_count ]]; then
-  convergence="$store/reports/$(spawn_timestamp)_marbles-${plan_slug}_CONVERGENCE.md"
+  convergence="$store/reports/$(spawn_timestamp)_marbles-${ancestor_slug}_CONVERGENCE.md"
 
   {
     cat <<HEADER
 ---
 run_id: $run_id
-agent: $agent
+agent: $current_agent
 status: completed
 loops_completed: $total_count
+god_plan: $god_plan
+ancestor_plan: $ancestor_plan
 ---
 
 # Marbles Convergence — Complete
 
 $total_count loops completed successfully.
 
+## Steering Surfaces
+- GOD: $god_plan
+- ANCESTOR: $ancestor_plan
+
 ## Loop Reports
 HEADER
 
-    find "$store/reports" -name "*_marbles-${plan_slug}_L*.md" \
-      ! -name '*_verified.md' \
-      ! -name '*.meta.json' ! -name '*.transcript.log' 2>/dev/null \
-      | sort | while IFS= read -r rpt; do
-        [[ -n "$rpt" ]] || continue
-        printf '\n### %s\n\n' "$(basename "$rpt")"
-        head -20 "$rpt" 2>/dev/null || printf '(report not readable)\n'
-        printf '\n...\n'
-      done
+    while IFS= read -r rpt; do
+      [[ -n "$rpt" ]] || continue
+      printf '\n### %s\n\n' "$(basename "$rpt")"
+      head -20 "$rpt" 2>/dev/null || printf '(report not readable)\n'
+      printf '\n...\n'
+    done < <(_collect_reports "$total_count")
 
     printf '\n---\n𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. with AI Agents (c)2024-2026 VetCoders\n'
   } > "$convergence"
 
-  # Launch final-loop verification (is_final=1 → includes convergence assessment)
   _launch_verification "$current" 1
-
   _update_lock status completed
   printf '\n\033[32m ✓  Marbles complete: %s loops · %s\033[0m\n' "$total_count" "$run_id"
   printf '    Convergence: %s\n' "$convergence"
   exit 0
 fi
 
-# ── Verification for current loop (fire-and-forget, runs concurrently with L(n+1))
 _launch_verification "$current" 0
 
-# ── More loops: spawn next iteration ──────────────────────────────────
+next_agent="$(spawn_frontmatter_field "$ancestor_plan" "agent")"
+[[ -n "$next_agent" ]] || next_agent="$current_agent"
+if [[ ! "$next_agent" =~ ^(claude|codex|gemini)$ ]]; then
+  _write_invalid_ancestor_failure "$next" "$next_agent"
+  exit 0
+fi
+next_model="$(spawn_frontmatter_field "$ancestor_plan" "model")"
+
 _update_lock current "$next"
 printf '\n\033[38;5;173m ⚒  Marbles loop %s/%s starting...\033[0m\n' "$next" "$total_count"
 
-# Same plan content + round contract, loop-numbered filename
-ln_plan="$store/plans/marbles-${plan_slug}_L${next}.md"
-cp "$original_plan" "$ln_plan"
-cat >> "$ln_plan" <<ROUND_CONTRACT
+next_plan="$(_loop_child_plan "$next")"
+spawn_marbles_write_child_plan "$ancestor_plan" "$next_plan"
 
----
-## Exit Contract
-- **COMMIT**: mandatory. One commit when done.
-- **REPORT**: mandatory. Write to the report path given at the end of this prompt.
-- **SCOPE**: do your work, commit, report, stop.
-ROUND_CONTRACT
-
-# Build hooks for next iteration (recursive chain)
-q_agent="$(spawn_shell_quote "$agent")"
-q_plan="$(spawn_shell_quote "$original_plan")"
+q_state="$(spawn_shell_quote "$state_dir")"
 q_root="$(spawn_shell_quote "$root_dir")"
 q_runtime="$(spawn_shell_quote "$runtime")"
 q_scripts="$(spawn_shell_quote "$scripts_dir")"
 q_lock="$(spawn_shell_quote "$session_lock")"
 q_store="$(spawn_shell_quote "$store")"
 
-success_hook="bash $q_scripts/marbles_next.sh $q_agent $q_plan $total_count $next $run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
-failure_hook="bash $q_scripts/marbles_next.sh --failed $q_agent $q_plan $total_count $next $run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
+success_hook="bash $q_scripts/marbles_next.sh $q_state $total_count $next $run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
+failure_hook="bash $q_scripts/marbles_next.sh --failed $q_state $total_count $next $run_id $q_root $q_runtime $q_scripts $q_lock $q_store"
 
-# Set env for next iteration — LOOP_NR for orchestrator/hooks only.
-# SKILL_CODE deliberately omitted — agent sees "implement", not "marb".
 export VIBECRAFTED_LOOP_NR=$next
 export VIBECRAFTED_RUN_ID="${run_id}-$(printf '%03d' "$next")"
 
@@ -438,5 +483,8 @@ spawn_args=(
   --success-hook "$success_hook"
   --failure-hook "$failure_hook"
 )
+if [[ -n "$next_model" && "$next_agent" != "codex" ]]; then
+  spawn_args+=(--model "$next_model")
+fi
 
-VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" bash "$scripts_dir/${agent}_spawn.sh" "${spawn_args[@]}" "$ln_plan"
+VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" bash "$scripts_dir/${next_agent}_spawn.sh" "${spawn_args[@]}" "$next_plan"

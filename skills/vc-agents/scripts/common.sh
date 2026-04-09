@@ -52,7 +52,7 @@ spawn_write_command_script() {
 
   shell_bin="$(spawn_preferred_shell)"
   # shellcheck disable=SC2016
-  printf '#!/usr/bin/env bash\nset -euo pipefail\ntrap '\''rm -f "$0"'\'' EXIT\n%s -lc %s\n' \
+  printf '#!/usr/bin/env bash\nset -euo pipefail\n%s -lc %s\n' \
     "$(spawn_shell_quote "$shell_bin")" \
     "$(spawn_shell_quote "$command_text")" \
     > "$script_path"
@@ -330,6 +330,144 @@ spawn_link_repo_artifacts() {
   mkdir -p "$repo_vibecrafted"
   ln -sfn "$store_base/plans" "$repo_vibecrafted/plans" 2>/dev/null || true
   ln -sfn "$store_base/reports" "$repo_vibecrafted/reports" 2>/dev/null || true
+}
+
+spawn_frontmatter_field() {
+  local source_file="$1"
+  local field_name="$2"
+
+  python3 - "$source_file" "$field_name" <<'PY'
+import pathlib
+import sys
+
+source_file, field_name = sys.argv[1:3]
+try:
+    text = pathlib.Path(source_file).read_text(encoding="utf-8")
+except OSError:
+    raise SystemExit(0)
+
+lines = text.splitlines()
+if not lines or lines[0].strip() != "---":
+    raise SystemExit(0)
+
+for line in lines[1:]:
+    if line.strip() == "---":
+        break
+    if ":" not in line:
+        continue
+    key, value = line.split(":", 1)
+    if key.strip() != field_name:
+        continue
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        value = value[1:-1]
+    print(value, end="")
+    raise SystemExit(0)
+PY
+}
+
+spawn_strip_frontmatter_to_file() {
+  local source_file="$1"
+  local target_file="$2"
+
+  python3 - "$source_file" "$target_file" <<'PY'
+import pathlib
+import sys
+
+source_file, target_file = sys.argv[1:3]
+text = pathlib.Path(source_file).read_text(encoding="utf-8")
+lines = text.splitlines(keepends=True)
+
+if lines and lines[0].strip() == "---":
+    body_start = None
+    for idx, line in enumerate(lines[1:], start=1):
+        if line.strip() == "---":
+            body_start = idx + 1
+            break
+    if body_start is not None:
+        text = "".join(lines[body_start:]).lstrip("\n")
+
+pathlib.Path(target_file).write_text(text, encoding="utf-8")
+PY
+}
+
+spawn_find_meta_for_run_id() {
+  local reports_dir="$1"
+  local target_run_id="$2"
+
+  python3 - "$reports_dir" "$target_run_id" <<'PY'
+import json
+import os
+import sys
+
+reports_dir, target_run_id = sys.argv[1:3]
+if not os.path.isdir(reports_dir):
+    raise SystemExit(0)
+
+for fname in sorted(os.listdir(reports_dir), reverse=True):
+    if not fname.endswith(".meta.json"):
+        continue
+    fpath = os.path.join(reports_dir, fname)
+    try:
+        with open(fpath, encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        continue
+    if payload.get("run_id") == target_run_id:
+        print(fpath)
+        raise SystemExit(0)
+PY
+}
+
+spawn_read_meta_field() {
+  local meta_path="$1"
+  local field_name="$2"
+
+  python3 - "$meta_path" "$field_name" <<'PY'
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as handle:
+        payload = json.load(handle)
+except (OSError, json.JSONDecodeError):
+    raise SystemExit(0)
+
+value = payload.get(sys.argv[2], "")
+if value is None:
+    value = ""
+print(value, end="")
+PY
+}
+
+spawn_marbles_state_dir() {
+  local run_id="$1"
+  printf '%s/marbles/%s\n' "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}" "$run_id"
+}
+
+spawn_marbles_child_plan_path() {
+  local store_dir="$1"
+  local ancestor_plan="$2"
+  local loop_nr="$3"
+  local ancestor_slug
+  ancestor_slug="$(spawn_slug_from_path "$ancestor_plan")"
+  printf '%s/plans/marbles-%s_L%s.md\n' "$store_dir" "$ancestor_slug" "$loop_nr"
+}
+
+spawn_marbles_write_child_plan() {
+  local ancestor_plan="$1"
+  local child_plan="$2"
+
+  mkdir -p "$(dirname "$child_plan")"
+  cp "$ancestor_plan" "$child_plan"
+  cat >> "$child_plan" <<'ROUND_CONTRACT'
+
+---
+## Exit Contract
+- **COMMIT**: mandatory. One commit when done.
+- **REPORT**: mandatory. Write to the report path given at the end of this prompt.
+- **SCOPE**: do your work, commit, report, stop.
+ROUND_CONTRACT
 }
 
 spawn_write_meta() {
@@ -636,7 +774,7 @@ spawn_open_startup_monitor_pane() {
 
   common_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
   monitor_script="$(mktemp "${TMPDIR:-/tmp}/vc-startup-monitor.XXXXXX")"
-  cmd_script="$(mktemp "${TMPDIR:-/tmp}/vc-spawn-cmd.XXXXXX")"
+  cmd_script="$(mkdir -p "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tmp" && mktemp "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tmp/vc-spawn-cmd.XXXXXX")"
 
   spawn_write_startup_monitor_script \
     "$monitor_script" \
@@ -1189,9 +1327,9 @@ spawn_pane_direction() {
   local max_per_row=4
   local max_per_tab=8
 
-  if [[ -n "${SPAWN_LOOP_NR:-}" ]]; then
+  if [[ -n "${SPAWN_LOOP_NR:-}" && "${SPAWN_LOOP_NR:-0}" -gt 0 ]]; then
     seq="${SPAWN_LOOP_NR}"
-  elif [[ -n "${VIBECRAFTED_PANE_SEQ:-}" ]]; then
+  elif [[ -n "${VIBECRAFTED_PANE_SEQ:-}" && "${VIBECRAFTED_PANE_SEQ:-0}" -gt 0 ]]; then
     seq="${VIBECRAFTED_PANE_SEQ}"
   else
     printf 'new-tab\n'
@@ -1231,7 +1369,7 @@ spawn_in_zellij_pane() {
       fi
     fi
 
-    cmd_script="$(mktemp "${TMPDIR:-/tmp}/vc-spawn-cmd.XXXXXX")"
+    cmd_script="$(mkdir -p "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tmp" && mktemp "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tmp/vc-spawn-cmd.XXXXXX")"
     spawn_write_command_script "$cmd_script" "$launch_cmd"
 
     if [[ "$direction" == "new-tab" ]]; then
@@ -1282,7 +1420,7 @@ spawn_in_operator_session() {
     fi
   fi
 
-  cmd_script="$(mktemp "${TMPDIR:-/tmp}/vc-spawn-cmd.XXXXXX")"
+  cmd_script="$(mkdir -p "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tmp" && mktemp "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/tmp/vc-spawn-cmd.XXXXXX")"
   spawn_write_command_script "$cmd_script" "$launch_cmd"
 
   # External spawn into existing operator session — route as pane or new tab per grid policy.
