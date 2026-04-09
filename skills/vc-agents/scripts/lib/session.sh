@@ -261,3 +261,4 @@ PY
 
   printf '\033[2mRecent active 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. runs:\n%s\033[0m\n' "$recent_active"
 }
+spawn_normalize_ambient_context
