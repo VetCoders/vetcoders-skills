@@ -521,7 +521,9 @@ _vetcoders_ensure_zellij_session() {
   }
 
   local inside_zellij=0
-  [[ -n "${ZELLIJ:-}" ]] && inside_zellij=1
+  # Align with spawn_in_zellij_context: ZELLIJ_PANE_ID or ZELLIJ being set
+  # (even ZELLIJ=0 is a valid pane index inside Zellij).
+  [[ -n "${ZELLIJ_PANE_ID:-}" || -n "${ZELLIJ+set}" ]] && inside_zellij=1
 
   local current_session="${ZELLIJ_SESSION_NAME:-}"
 
@@ -548,8 +550,10 @@ _vetcoders_ensure_zellij_session() {
     *)
       if [[ -n "$layout_file" ]]; then
         if (( inside_zellij )); then
-          # Create the session in the background, then switch to it.
-          zellij --session "$session_name" --new-session-with-layout "$layout_file" &
+          # Create the session in the background with Zellij env stripped to
+          # prevent nested-client panic, then switch to it.
+          env -u ZELLIJ -u ZELLIJ_PANE_ID -u ZELLIJ_SESSION_NAME \
+            zellij --session "$session_name" --new-session-with-layout "$layout_file" &
           local bg_pid=$!
           # Wait briefly for session to appear.
           local wait_i=0
@@ -558,6 +562,9 @@ _vetcoders_ensure_zellij_session() {
             sleep 0.25
             ((wait_i+=1))
           done
+          # Kill the background client now that the session server is alive.
+          kill "$bg_pid" 2>/dev/null || true
+          wait "$bg_pid" 2>/dev/null || true
           zellij action switch-session "$session_name"
         else
           zellij "$@" --session "$session_name" --new-session-with-layout "$layout_file"

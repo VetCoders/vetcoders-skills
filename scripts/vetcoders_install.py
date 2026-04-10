@@ -1267,6 +1267,8 @@ SKILL_WRAPPER_NAMES = [
 LAUNCHER_WRAPPERS = [
     "vc-help",
     "vc-init",
+    "vc-start",
+    "vc-dashboard",
     "vc-resume",
     "vc-agents",
     *[f"vc-{name}" for name in SKILL_WRAPPER_NAMES],
