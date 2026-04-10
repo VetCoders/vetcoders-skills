@@ -60,6 +60,21 @@ def _write_fake_marbles_spawn(script_path: Path) -> None:
     script_path.chmod(0o755)
 
 
+def _write_fake_helper(script_path: Path, spawn_script: Path) -> None:
+    script_path.parent.mkdir(parents=True, exist_ok=True)
+    script_path.write_text(
+        "\n".join(
+            [
+                "_vetcoders_spawn_script() {",
+                f'  printf "%s\\n" "{spawn_script}"',
+                "}",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_stateful_zellij(
     bin_dir: Path, capture_file: Path, session_state_file: Path
 ) -> None:
@@ -279,6 +294,7 @@ def test_telemetry_wrapper_smokes_headless_marbles_runtime(tmp_path: Path) -> No
     home.mkdir()
     wrapper.symlink_to(LAUNCHER)
     (isolated_root / "skills" / "vc-agents").mkdir(parents=True)
+    (isolated_root / "skills" / "vc-agents" / "scripts").mkdir(parents=True)
     (isolated_root / "scripts").mkdir(parents=True)
     (isolated_root / "VERSION").write_text("0.0.0-test\n", encoding="utf-8")
     (isolated_root / "scripts" / "vibecrafted").write_text(
@@ -321,6 +337,164 @@ def test_telemetry_wrapper_smokes_headless_marbles_runtime(tmp_path: Path) -> No
     assert "SMOKE_OK.md" in plan_body
     assert "Do not run `telemetry smoke`" in plan_body
     assert "--prompt" not in payload
+
+
+def test_telemetry_wrapper_clears_ambient_marbles_context(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    wrapper = tmp_path / "telemetry"
+    capture_file = tmp_path / "marbles-env.txt"
+    isolated_root = tmp_path / "isolated-root"
+    spawn_script = (
+        isolated_root / "skills" / "vc-agents" / "scripts" / "marbles_spawn.sh"
+    )
+
+    home.mkdir()
+    wrapper.symlink_to(LAUNCHER)
+    (isolated_root / "skills" / "vc-agents").mkdir(parents=True)
+    (isolated_root / "skills" / "vc-agents" / "scripts").mkdir(parents=True)
+    (isolated_root / "scripts").mkdir(parents=True)
+    (isolated_root / "VERSION").write_text("0.0.0-test\n", encoding="utf-8")
+    (isolated_root / "scripts" / "vibecrafted").write_text(
+        "#!/usr/bin/env bash\nexit 0\n",
+        encoding="utf-8",
+    )
+    spawn_script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "{",
+                '  printf "MARBLES_RUN_ID=%s\\n" "${VIBECRAFTED_MARBLES_RUN_ID:-}"',
+                '  printf "RUN_ID=%s\\n" "${VIBECRAFTED_RUN_ID:-}"',
+                '  printf "RUN_LOCK=%s\\n" "${VIBECRAFTED_RUN_LOCK:-}"',
+                '  printf "SKILL_CODE=%s\\n" "${VIBECRAFTED_SKILL_CODE:-}"',
+                '  printf "SKILL_NAME=%s\\n" "${VIBECRAFTED_SKILL_NAME:-}"',
+                '  printf "OPERATOR_SESSION=%s\\n" "${VIBECRAFTED_OPERATOR_SESSION:-}"',
+                '  printf "SPAWN_RUN_ID=%s\\n" "${SPAWN_RUN_ID:-}"',
+                '  printf "SPAWN_SKILL_CODE=%s\\n" "${SPAWN_SKILL_CODE:-}"',
+                '} > "$CAPTURE_FILE"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    spawn_script.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env["CAPTURE_FILE"] = str(capture_file)
+    env["VIBECRAFTED_ROOT"] = str(isolated_root)
+    env["VETCODERS_SPAWN_RUNTIME"] = "terminal"
+    env["VIBECRAFTED_MARBLES_RUN_ID"] = "marb-parent"
+    env["VIBECRAFTED_RUN_ID"] = "marb-parent-003"
+    env["VIBECRAFTED_RUN_LOCK"] = str(tmp_path / "parent.lock")
+    env["VIBECRAFTED_SKILL_CODE"] = "impl"
+    env["VIBECRAFTED_SKILL_NAME"] = "implement"
+    env["VIBECRAFTED_OPERATOR_SESSION"] = "parent-session"
+    env["SPAWN_RUN_ID"] = "stale-spawn"
+    env["SPAWN_SKILL_CODE"] = "stale"
+
+    subprocess.run(
+        ["bash", str(wrapper), "smoke", "--count", "1", "--no-watch"],
+        check=True,
+        cwd=REPO_ROOT,
+        env=env,
+    )
+
+    payload = dict(
+        line.split("=", 1)
+        for line in capture_file.read_text(encoding="utf-8").splitlines()
+        if "=" in line
+    )
+    assert payload["MARBLES_RUN_ID"] == ""
+    assert payload["RUN_ID"] == ""
+    assert payload["RUN_LOCK"] == ""
+    assert payload["SKILL_CODE"] == ""
+    assert payload["SKILL_NAME"] == ""
+    assert payload["OPERATOR_SESSION"] == ""
+    assert payload["SPAWN_RUN_ID"] == ""
+    assert payload["SPAWN_SKILL_CODE"] == ""
+
+
+def test_installed_launcher_prefers_current_control_plane_helper_over_home_store(
+    tmp_path: Path,
+) -> None:
+    home = tmp_path / "home"
+    installed_root = home / ".vibecrafted"
+    launcher = installed_root / "bin" / "vibecrafted"
+    stale_capture = tmp_path / "stale-args.txt"
+    fresh_capture = tmp_path / "fresh-args.txt"
+    stale_spawn = (
+        installed_root / "skills" / "vc-agents" / "scripts" / "marbles_spawn.sh"
+    )
+    fresh_spawn = (
+        installed_root
+        / "tools"
+        / "vibecrafted-current"
+        / "skills"
+        / "vc-agents"
+        / "scripts"
+        / "marbles_spawn.sh"
+    )
+    stale_helper = installed_root / "skills" / "vc-agents" / "shell" / "vetcoders.sh"
+    fresh_helper = (
+        installed_root
+        / "tools"
+        / "vibecrafted-current"
+        / "skills"
+        / "vc-agents"
+        / "shell"
+        / "vetcoders.sh"
+    )
+
+    home.mkdir(parents=True)
+    launcher.parent.mkdir(parents=True, exist_ok=True)
+    launcher.write_text(LAUNCHER.read_text(encoding="utf-8"), encoding="utf-8")
+    launcher.chmod(0o755)
+    _write_fake_marbles_spawn(stale_spawn)
+    _write_fake_marbles_spawn(fresh_spawn)
+    _write_fake_helper(stale_helper, stale_spawn)
+    _write_fake_helper(fresh_helper, fresh_spawn)
+
+    stale_spawn.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f'printf "%s\\n" "$@" > "{stale_capture}"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    stale_spawn.chmod(0o755)
+    fresh_spawn.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f'printf "%s\\n" "$@" > "{fresh_capture}"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fresh_spawn.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+
+    subprocess.run(
+        ["bash", str(launcher), "telemetry", "smoke", "--count", "1", "--no-watch"],
+        check=True,
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert fresh_capture.exists()
+    assert not stale_capture.exists()
 
 
 def test_repo_launcher_is_directly_executable() -> None:

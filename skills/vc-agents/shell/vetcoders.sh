@@ -10,10 +10,16 @@ _vetcoders_spawn_home() {
   local tool="$1"
   local crafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
   local crafted_store="$crafted_home/skills/vc-agents"
+  local current_store="$crafted_home/tools/vibecrafted-current/skills/vc-agents"
   local repo_root
   repo_root="${VIBECRAFTED_ROOT:-$(_vetcoders_repo_root)}"
   if [[ -d "$repo_root/skills/vc-agents" && -f "$repo_root/VERSION" && -f "$repo_root/scripts/vibecrafted" ]]; then
     printf '%s/skills/vc-agents' "$repo_root"
+    return 0
+  fi
+
+  if [[ -d "$current_store" ]]; then
+    printf '%s' "$current_store"
     return 0
   fi
 

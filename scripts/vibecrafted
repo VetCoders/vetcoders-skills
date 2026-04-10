@@ -125,8 +125,8 @@ _skill_candidates() {
   fi
 
   printf '%s\n' \
-    "$crafted_skills/${skill}/SKILL.md" \
     "$crafted_tools/skills/${skill}/SKILL.md" \
+    "$crafted_skills/${skill}/SKILL.md" \
     "$HOME/.agents/skills/${skill}/SKILL.md"
 }
 
@@ -154,10 +154,12 @@ _helper_candidates() {
   if [[ -n "$repo_source" ]]; then
     printf '%s\n' "$repo_source/skills/vc-agents/shell/vetcoders.sh"
   fi
+  # Prefer the staged control plane over the mutable shared skill store so a
+  # freshly updated launcher cannot be shadowed by older installed helpers.
   printf '%s\n' \
+    "$crafted_tools/skills/vc-agents/shell/vetcoders.sh" \
     "${XDG_CONFIG_HOME:-$HOME/.config}/vetcoders/vc-skills.sh" \
     "$crafted_skills/vc-agents/shell/vetcoders.sh" \
-    "$crafted_tools/skills/vc-agents/shell/vetcoders.sh" \
     "$repo_helper"
 }
 
@@ -532,7 +534,16 @@ cmd_telemetry_smoke() {
   telemetry_args=(--agent "$agent" --runtime "$runtime" --count "$count" --root "$smoke_root")
   [[ "$runtime" == "headless" ]] && telemetry_args+=(--no-watch)
   telemetry_args+=(--file "$smoke_plan")
-  bash "$marbles_script" "${telemetry_args[@]}"
+  (
+    # Smoke runs must start from a fresh marbles context even when they are
+    # launched from inside another agent/session.
+    unset VIBECRAFTED_MARBLES_RUN_ID VIBECRAFTED_RUN_ID VIBECRAFTED_RUN_LOCK
+    unset VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME VIBECRAFTED_LOOP_NR
+    unset VIBECRAFTED_OPERATOR_SESSION
+    unset SPAWN_AGENT SPAWN_ROOT SPAWN_PLAN SPAWN_RUN_ID SPAWN_RUN_LOCK
+    unset SPAWN_LOOP_NR SPAWN_SKILL_CODE SPAWN_SKILL_NAME
+    bash "$marbles_script" "${telemetry_args[@]}"
+  )
 }
 
 cmd_telemetry() {
