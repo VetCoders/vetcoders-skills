@@ -1,5 +1,10 @@
 # UV-Style Installer Transformation
 
+> Status note (2026-04-10): the public shipping front door is now the
+> browser-guided installer at `scripts/installer_gui.py`, not a full-screen TUI.
+> Keep this file as a reference for compact output rhythm and installer trust
+> surfaces, not as the canonical public onboarding contract.
+
 ## Goal
 
 Transform the𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. installer from a 3-screen wall of text into a

@@ -89,7 +89,7 @@ if [[ -n "$task" ]]; then
 elif [[ -n "$prompt" ]]; then
   input_kind="prompt"
 elif [[ -n "$depth" ]]; then
-  seed_source_file="$(VIBECRAFTED_STORE_DIR="$store" bash "$SCRIPT_DIR/marbles_plan.sh" --agent "$agent" --run-id "$marbles_run_id" --depth "$depth" --root "$root_dir")"
+  seed_source_file="$(VIBECRAFTED_STORE_DIR="$store" VIBECRAFTED_STORE_ROOT="$root_dir" bash "$SCRIPT_DIR/marbles_plan.sh" --agent "$agent" --run-id "$marbles_run_id" --depth "$depth" --root "$root_dir")"
   spawn_require_file "$seed_source_file"
   input_kind="depth"
 fi
@@ -237,11 +237,11 @@ if [[ -n "$ancestor_model" && "$agent" != "codex" ]]; then
 fi
 
 if (( use_watcher )); then
-  VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan" &
+  VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" VIBECRAFTED_STORE_ROOT="$root_dir" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan" &
 
   exec bash "$SCRIPT_DIR/marbles_watcher.sh" \
     "$marbles_run_id" "$state_dir" "$count" \
     "$root_dir" "$runtime" "$store" "$session_lock"
 else
-  VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"
+  VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION=right VIBECRAFTED_STORE_DIR="$store" VIBECRAFTED_STORE_ROOT="$root_dir" bash "$SCRIPT_DIR/${agent}_spawn.sh" "${spawn_args[@]}" "$l1_plan"
 fi

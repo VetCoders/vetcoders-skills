@@ -133,4 +133,6 @@ chmod +x "$SPAWN_LAUNCHER"
 spawn_print_launch gemini "$mode" "$runtime"
 [[ -n "$model" ]] && printf '  model:  %s\n' "$model" || printf '  model:  (CLI default)\n'
 spawn_launch "$SPAWN_LAUNCHER" "$runtime" "$dry_run" "gemini-${VIBECRAFTED_SKILL_NAME:-$mode}"
-printf 'Agent launched. Report will land at: %s\n' "$SPAWN_REPORT"
+if [[ "${VIBECRAFTED_SUPPRESS_REPORT_HINT:-0}" != "1" ]]; then
+  printf 'Agent launched. Report will land at: %s\n' "$SPAWN_REPORT"
+fi
