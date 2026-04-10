@@ -461,3 +461,68 @@ def test_resume_wrapper_symlink_forwards_session_and_prompt_to_agent(
 
     payload = capture_file.read_text(encoding="utf-8").splitlines()
     assert payload == ["resume", "resume-session-456", "Continue from wrapper"]
+
+
+def test_vc_dashboard_wrapper_dispatches_to_dashboard(tmp_path: Path) -> None:
+    """vc-dashboard wrapper (symlink) reaches cmd_dashboard, not run_skill."""
+    home = tmp_path / "home"
+    fake_bin = tmp_path / "bin"
+    capture_file = tmp_path / "zellij-args.txt"
+    wrapper = tmp_path / "vc-dashboard"
+
+    home.mkdir()
+    fake_bin.mkdir()
+    wrapper.symlink_to(LAUNCHER)
+    _write_fake_command(fake_bin, "zellij", capture_file)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
+    env["CAPTURE_FILE"] = str(capture_file)
+    env["VETCODERS_SPAWN_RUNTIME"] = "headless"
+    env.pop("ZELLIJ", None)
+    env.pop("ZELLIJ_PANE_ID", None)
+    env.pop("ZELLIJ_SESSION_NAME", None)
+
+    result = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = capture_file.read_text(encoding="utf-8").splitlines()
+    assert "--session" in payload
+    assert "--new-session-with-layout" in payload
+
+
+def test_dashboard_ls_delegates_to_zellij_list_sessions(tmp_path: Path) -> None:
+    """vibecrafted dashboard ls calls zellij list-sessions, not layout load."""
+    home = tmp_path / "home"
+    fake_bin = tmp_path / "bin"
+    capture_file = tmp_path / "zellij-args.txt"
+
+    home.mkdir()
+    fake_bin.mkdir()
+    _write_fake_command(fake_bin, "zellij", capture_file)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env["PATH"] = f"{fake_bin}:{env.get('PATH', '')}"
+    env["CAPTURE_FILE"] = str(capture_file)
+    env["VETCODERS_SPAWN_RUNTIME"] = "headless"
+    env.pop("ZELLIJ", None)
+    env.pop("ZELLIJ_PANE_ID", None)
+    env.pop("ZELLIJ_SESSION_NAME", None)
+
+    result = subprocess.run(
+        ["bash", str(LAUNCHER), "dashboard", "ls"],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = capture_file.read_text(encoding="utf-8").splitlines()
+    assert "list-sessions" in payload

@@ -900,6 +900,10 @@ run_wrapper() {
     cmd_agents "$@"
     return
   fi
+  if [[ "$wrapper" == "vc-dashboard" ]]; then
+    cmd_dashboard "$@"
+    return
+  fi
   local skill="${wrapper#vc-}"
   [[ "$skill" != "implement" ]] || skill="justdo"
   _has_skill "$skill" || {
