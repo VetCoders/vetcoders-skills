@@ -1,12 +1,17 @@
 # Quick Start
 
-You have a repo. You have AI agents. You want them to stop guessing
-and start converging.
+You have an AI-built repo. You want to ship it without the vibe hangover.
 
 ## 1. Install
 
 ```bash
 curl -fsSL https://vibecrafted.io/install.sh | bash
+```
+
+Prefer the guided browser path when the operator should see the plan before they trust the terminal:
+
+```bash
+curl -fsSL https://vibecrafted.io/install.sh | bash -s -- --gui
 ```
 
 Non-destructive. Interactive. Tells you what it does before it does it.

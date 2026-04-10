@@ -1,5 +1,10 @@
 # Architecture Plan:𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Installer TUI
 
+> Status note (2026-04-10): the release-ready front door is now the browser-based
+> guided installer at `scripts/installer_gui.py`, reachable from `install.sh --gui`
+> and `make gui-install`. This document remains useful background for the TUI line,
+> but it is not the shipping installer path today.
+
 ## Problem Statement
 
 `scripts/installer_tui.py` is currently a hand-rolled terminal renderer built on `termios`, `select`, and `print`. It

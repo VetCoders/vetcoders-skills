@@ -3,6 +3,21 @@
 All notable changes to 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+
+- Browser-based guided installer: `scripts/installer_gui.py`
+- `install.sh --gui` bootstrap path for the guided installer
+- `make gui-install` for launching the guided installer from source
+- Marketplace submission pack in `docs/SUBMISSION_FORMS.md`
+
+### Changed
+
+- Product positioning now leads with the release-engine promise instead of generic framework language
+- Public install docs now explicitly show the guided GUI path for founders and non-terminal operators
+- `install.sh` help text now matches the actual bootstrap paths instead of promising a TUI that was not wired in
+
 ## 1.2.1 — 2026-04-01
 
 ### Added
