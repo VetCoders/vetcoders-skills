@@ -541,10 +541,33 @@ _vetcoders_ensure_zellij_session() {
       fi
       ;;
     dead)
-      if (( inside_zellij )); then
-        zellij action switch-session "$session_name"
+      # Dead (EXITED) sessions cannot be switched to — kill and recreate.
+      zellij kill-session "$session_name" 2>/dev/null || true
+      if [[ -n "$layout_file" ]]; then
+        if (( inside_zellij )); then
+          env -u ZELLIJ -u ZELLIJ_PANE_ID -u ZELLIJ_SESSION_NAME \
+            zellij --session "$session_name" --new-session-with-layout "$layout_file" &
+          local bg_pid_dead=$!
+          local wait_dead=0
+          while (( wait_dead < 20 )); do
+            [[ "$(_vetcoders_zellij_session_state "$session_name")" == "live" ]] && break
+            sleep 0.25
+            ((wait_dead+=1))
+          done
+          kill "$bg_pid_dead" 2>/dev/null || true
+          wait "$bg_pid_dead" 2>/dev/null || true
+          zellij action switch-session "$session_name"
+        else
+          zellij "$@" --session "$session_name" --new-session-with-layout "$layout_file"
+        fi
       else
-        zellij "$@" attach --force-run-commands "$session_name"
+        # No layout — try force-run which may resurrect the session.
+        if (( inside_zellij )); then
+          echo "Session '$session_name' is dead and no layout is available to recreate it." >&2
+          return 1
+        else
+          zellij "$@" attach --force-run-commands "$session_name"
+        fi
       fi
       ;;
     *)
@@ -873,6 +896,8 @@ _vetcoders_wrap_atuin() {
 
 _vetcoders_wrap_atuin
 
+_vetcoders_known_dashboard_layouts=(vc-dashboard vc-marbles vc-workflow vc-research vibecrafted)
+
 _vetcoders_dashboard_layout_name() {
   local requested="${1:-vc-dashboard}"
   case "$requested" in
@@ -881,27 +906,28 @@ _vetcoders_dashboard_layout_name() {
     workflow|vc-workflow) printf 'vc-workflow\n' ;;
     research|vc-research) printf 'vc-research\n' ;;
     vibecrafted) printf 'vibecrafted\n' ;;
-    *) printf '%s\n' "$requested" ;;
+    *)
+      echo "Unknown dashboard layout: $requested" >&2
+      echo "Available layouts: ${_vetcoders_known_dashboard_layouts[*]}" >&2
+      return 1
+      ;;
   esac
 }
 
 _vetcoders_dashboard_layout_file() {
   local layout_name
-  layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")"
+  layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")" || return 1
   _vetcoders_frontier_file "zellij/layouts/${layout_name}.kdl"
 }
 
 _vetcoders_dashboard_session_name() {
   local layout_name slug base_session run_id
   _vetcoders_normalize_ambient_context
-  layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")"
+  layout_name="$(_vetcoders_dashboard_layout_name "${1:-}")" || return 1
   base_session="${VIBECRAFTED_OPERATOR_SESSION:-$(_vetcoders_operator_session_name)}"
   run_id="$(_vetcoders_effective_run_id 2>/dev/null || true)"
-  if [[ -n "$run_id" ]]; then
-    printf '%s\n' "$base_session"
-    return 0
-  fi
-  if [[ "$layout_name" == "vibecrafted" ]]; then
+  # Default and vibecrafted layouts use the canonical operator session directly.
+  if [[ -n "$run_id" || "$layout_name" == "vibecrafted" || "$layout_name" == "vc-dashboard" ]]; then
     printf '%s\n' "$base_session"
     return 0
   fi
@@ -953,7 +979,7 @@ _vetcoders_launch_dashboard() {
 
   local layout_name layout_file session_name repo_source repo_zellij_dir
   _vetcoders_normalize_ambient_context
-  layout_name="$(_vetcoders_dashboard_layout_name "${first_arg}")"
+  layout_name="$(_vetcoders_dashboard_layout_name "${first_arg}")" || return 1
   (( $# )) && shift
 
   command -v zellij >/dev/null 2>&1 || {

@@ -645,6 +645,50 @@ cmd_dashboard() {
     cmd_dashboard_help
     return 0
   fi
+
+  # Thin shim subcommands — delegate directly to Zellij without loading
+  # the full helper layer. This keeps ls/switch/attach/kill instant.
+  case "${1:-}" in
+    ls|list|sessions)
+      command -v zellij >/dev/null 2>&1 || {
+        printf '%b[error]%b zellij is required.\n' "$_red" "$_reset" >&2; return 1
+      }
+      zellij list-sessions
+      return
+      ;;
+    switch)
+      shift
+      command -v zellij >/dev/null 2>&1 || {
+        printf '%b[error]%b zellij is required.\n' "$_red" "$_reset" >&2; return 1
+      }
+      [[ -n "${1:-}" ]] || { printf '%b[error]%b Session name required.\n' "$_red" "$_reset" >&2; return 1; }
+      if [[ -n "${ZELLIJ+set}" ]]; then
+        zellij action switch-session "$1"
+      else
+        zellij attach "$1"
+      fi
+      return
+      ;;
+    attach)
+      shift
+      command -v zellij >/dev/null 2>&1 || {
+        printf '%b[error]%b zellij is required.\n' "$_red" "$_reset" >&2; return 1
+      }
+      [[ -n "${1:-}" ]] || { printf '%b[error]%b Session name required.\n' "$_red" "$_reset" >&2; return 1; }
+      zellij attach "$1"
+      return
+      ;;
+    kill)
+      shift
+      command -v zellij >/dev/null 2>&1 || {
+        printf '%b[error]%b zellij is required.\n' "$_red" "$_reset" >&2; return 1
+      }
+      [[ -n "${1:-}" ]] || { printf '%b[error]%b Session name required.\n' "$_red" "$_reset" >&2; return 1; }
+      zellij kill-session "$1"
+      return
+      ;;
+  esac
+
   local previous_repo_zellij_pref="${VIBECRAFTED_PREFER_REPO_ZELLIJ-}"
   local status
   _ensure_helpers_loaded || return 1

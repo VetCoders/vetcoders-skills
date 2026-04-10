@@ -342,7 +342,8 @@ def test_dashboard_subcommand_launches_repo_owned_zellij_layout(tmp_path: Path) 
 
     payload = capture_file.read_text(encoding="utf-8").splitlines()
     assert "--session" in payload
-    assert f"{_expected_operator_session()}-dashboard" in payload
+    # vc-dashboard (default layout) uses the canonical operator session, no suffix.
+    assert _expected_operator_session() in payload
     assert "--new-session-with-layout" in payload
     assert (
         str(REPO_ROOT / "config" / "zellij" / "layouts" / "vc-dashboard.kdl") in payload

@@ -2144,6 +2144,90 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
             )
         )
 
+    # 7f. Zellij session health: detect dead/EXITED sessions that waste operator attention
+    if zellij_bin:
+        try:
+            ls_result = subprocess.run(
+                [zellij_bin, "list-sessions"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if ls_result.returncode == 0:
+                dead_sessions = [
+                    line.split()[0]
+                    for line in ls_result.stdout.splitlines()
+                    if "(EXITED" in line and line.strip()
+                ]
+                if dead_sessions:
+                    names = ", ".join(dead_sessions[:5])
+                    suffix = (
+                        f" (+{len(dead_sessions) - 5} more)"
+                        if len(dead_sessions) > 5
+                        else ""
+                    )
+                    findings.append(
+                        DoctorFinding(
+                            "warn",
+                            "zellij:dead-sessions",
+                            f"{len(dead_sessions)} dead session(s): {names}{suffix}"
+                            " — run 'zellij kill-session <name>' to clean up",
+                        )
+                    )
+                else:
+                    findings.append(
+                        DoctorFinding("ok", "zellij:dead-sessions", "no dead sessions")
+                    )
+        except (OSError, subprocess.TimeoutExpired):
+            pass  # zellij not responsive — skip
+
+    # 7g. Agent CLI stream contract: verify expected flags are recognized
+    _agent_flag_checks = {
+        "claude": ["--version"],
+        "codex": ["--version"],
+        "gemini": ["--version"],
+    }
+    for agent_name, flags in _agent_flag_checks.items():
+        agent_bin = shutil.which(agent_name)
+        if not agent_bin:
+            continue
+        try:
+            flag_result = subprocess.run(
+                [agent_bin] + flags,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if flag_result.returncode == 0:
+                ver_line = (
+                    (flag_result.stdout or "").strip().splitlines()[0]
+                    if flag_result.stdout
+                    else "ok"
+                )
+                findings.append(
+                    DoctorFinding(
+                        "ok",
+                        f"agent-stream:{agent_name}",
+                        ver_line,
+                    )
+                )
+            else:
+                findings.append(
+                    DoctorFinding(
+                        "warn",
+                        f"agent-stream:{agent_name}",
+                        f"'{agent_name} {' '.join(flags)}' exited {flag_result.returncode}",
+                    )
+                )
+        except (OSError, subprocess.TimeoutExpired):
+            findings.append(
+                DoctorFinding(
+                    "warn",
+                    f"agent-stream:{agent_name}",
+                    f"timed out or failed to run '{agent_name} {' '.join(flags)}'",
+                )
+            )
+
     # 8. Shell smoke check: interactive shells should suppress UI noise under TERM=dumb
     zsh_path = shutil.which("zsh")
     if zsh_path:

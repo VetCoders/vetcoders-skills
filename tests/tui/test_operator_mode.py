@@ -331,9 +331,11 @@ def test_vc_start_resume_resurrects_dead_session(tmp_path: Path) -> None:
     )
 
     payload = capture_file.read_text(encoding="utf-8")
-    assert (
-        f"ZELLIJ attach --force-run-commands {_expected_operator_session()}" in payload
-    )
+    # Dead sessions are killed and recreated with the layout file.
+    expected = _expected_operator_session()
+    assert f"kill-session {expected}" in payload
+    assert f"--session {expected}" in payload
+    assert "--new-session-with-layout" in payload
 
 
 def test_vc_dashboard_recreates_dead_run_id_session_without_layout_suffix(
@@ -371,7 +373,10 @@ def test_vc_dashboard_recreates_dead_run_id_session_without_layout_suffix(
 
     payload = capture_file.read_text(encoding="utf-8")
     expected_session = _expected_operator_session(env["VIBECRAFTED_RUN_ID"])
-    assert f"attach --force-run-commands {expected_session}" in payload
+    # Dead sessions are killed and recreated with the layout file.
+    assert f"kill-session {expected_session}" in payload
+    assert f"--session {expected_session}" in payload
+    assert "--new-session-with-layout" in payload
     assert f"{expected_session}-marbles" not in payload
 
 
