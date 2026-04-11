@@ -169,9 +169,9 @@ Every public surface should agree on:
 
 - Submit URL: https://theresanaiforthat.com/launch/
 - Notes from the current page:
-  The current launch page pitches this as a real launch surface, not a passive directory: 4M+ monthly users and 2.5M+ newsletter readers.
-  The featured flow still says the submission fee is one-off ($347), listings are reviewed manually, unpublished tools get a full refund, and launching on TAAFT first can unlock a $300 PPC bonus.
-  The current guidance also says average processing time is 1-2 days, which makes this the best first directory if the portal and install path are already sharp.
+  The current launch page still frames TAAFT as a launch surface rather than a passive directory, and the official launch/get-featured flow still says listings are manually reviewed with an average 1-2 day turnaround.
+  The current paid launch path still presents the listing as a one-time fee with refund on denial, and the get-featured page still says launching on TAAFT first can unlock a $300 PPC bonus.
+  Their current copy also still leans hard on newsletter distribution and first-week launch traffic, which keeps this as the strongest first directory once the portal and install path are sharp.
 - Suggested task/category tags:
   developer tools, coding, workflow automation, ai agents, release engineering
 - Paste-ready emphasis:
@@ -195,7 +195,7 @@ Every public surface should agree on:
 - Submit URL: https://www.futurepedia.io/submit-tool
 - Notes from the current page:
   The submit page currently positions Futurepedia as a work-focused AI-tools surface for 400k+ proactive professionals per month and asks you to choose the listing option that fits your product.
-  Their verified listing surface currently advertises a $497 one-time review tier with refund on denial, which reinforces that this audience expects business-readiness and clear value.
+  Their verified listing surface currently advertises a $497 one-time tier, published within 2 business days, with refund on denial, which reinforces that this audience expects business-readiness and clear value.
   Lead with release readiness and concrete workflow outcomes, not framework mythology.
 - Suggested emphasis:
   move from AI draft to shippable product, structural truth, launch readiness, product surface completion
@@ -261,6 +261,29 @@ Use the canonical packet above, then bias each marketplace form this way:
 
 - Product Hunt
   Lead with the vibe hangover story, show the guided install and command deck, and make the maker comment do the positioning work.
+
+## Paste-ready marketplace blurbs
+
+These are intentionally short so they fit the common "summary" or
+"why should we feature this?" text boxes without further editing.
+
+- There's An AI For That
+  Vibecrafted is the release engine for AI-built software. It takes the repo your agents already produced and pushes it through structural mapping, convergence loops, install truth, and launch-readiness work until a real stranger can install it and trust it.
+
+- Future Tools
+  Cursor, Claude, Codex, and app builders can produce the draft. Vibecrafted is what you run next to turn that draft into something shippable: verified install path, sharper docs, stronger product surface, and fewer hidden launch-day lies.
+
+- Futurepedia
+  Vibecrafted helps founders and software teams move from AI-generated repo to launch-ready product. It hardens the codebase, verifies install truth, cleans up the public surface, and prepares the release path instead of stopping at code generation.
+
+- Toolify
+  AI agents can generate software fast; Vibecrafted makes that output fit for release. It combines structural analysis, convergence loops, guided install, and packaging work so teams can ship AI-built products without the vibe hangover.
+
+- TopAI.tools
+  Vibecrafted is usable now from a real public install path and is built for teams shipping AI-generated repos. It focuses on verification, release engineering, onboarding truth, and the gap between "demo works" and "a customer can actually use this."
+
+- Product Hunt
+  We built Vibecrafted for the vibe hangover: the moment an AI-built repo looks done until install, docs, or launch reality says otherwise. Vibecrafted is the release engine that closes that gap and gets the product ready for real users.
 
 ## Suggested screenshots and assets
 
