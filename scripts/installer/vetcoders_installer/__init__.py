@@ -4,9 +4,9 @@ Reads an ``install.toml`` manifest describing a sequence of install phases,
 and replays each one with:
 
     • a per-phase reason block (trust-building)
-    • an explicit consent prompt
-    • cargo/uv-style sticky bottom progress during execution
-    • optionally: streamed subprocess output above the bar (`--verbose`)
+    • an explicit consent prompt (pauses the Live region)
+    • a sticky-bottom progress bar that stays visible across phases
+    • cargo-style streaming of subprocess output above the bar
     • a curated summary at the end
 
 Universal: works for Python/Rust/any repo because it only orchestrates
@@ -20,7 +20,7 @@ Usage:
     vetcoders-installer install.toml
     vetcoders-installer install.toml --yes
     vetcoders-installer install.toml --dry-run
-    vetcoders-installer install.toml --verbose
+    vetcoders-installer install.toml --quiet
 """
 
 from __future__ import annotations
@@ -258,9 +258,21 @@ def run_phase(
     progress: Any,
     task_id: Any,
     log_handle: Optional[Any],
-    verbose: bool,
+    quiet: bool,
 ) -> int:
-    """Execute one phase; stream stdout to progress 'cur' field + optional history.
+    """Execute one phase; stream subprocess output above the sticky bar.
+
+    Rendering model (cargo-style):
+
+      • the Progress bar is pinned to the bottom of the Live region
+      • each non-empty stdout line is printed *through* the progress.console,
+        so Rich's Live machinery lifts the bar above the new line and keeps
+        it at the bottom of the viewport
+      • markup=False / highlight=False stops subprocess strings like
+        ``[error]`` from being interpreted as Rich markup
+
+    When ``quiet=True`` the stream is suppressed and only the progress bar's
+    ``cur`` field mirrors the last subprocess line.
 
     Returns the subprocess exit code.
     """
@@ -293,9 +305,20 @@ def run_phase(
         if HAS_RICH and progress is not None:
             progress.update(task_id, cur=line[-72:])
 
-        if verbose:
+        if not quiet:
             style = _line_style(line)
-            console.print(f"  [{style}]{line}[/]")
+            if HAS_RICH:
+                # print via the shared console so Live keeps the bar sticky;
+                # markup=False / highlight=False protect against subprocess
+                # strings that accidentally look like Rich markup.
+                console.print(
+                    f"  {line}",
+                    style=style,
+                    markup=False,
+                    highlight=False,
+                )
+            else:
+                console.print(f"  {line}")
 
     proc.wait()
     return proc.returncode
@@ -405,7 +428,7 @@ def run(
     *,
     auto_yes: bool,
     dry_run: bool,
-    verbose: bool,
+    quiet: bool,
     only: list[str],
     skip: list[str],
 ) -> int:
@@ -422,8 +445,25 @@ def run(
         console.print()
         for phase in phases:
             _print_reason_block(console, phase)
-            console.print(f"  [dim]→ {' '.join(phase.cmd)}[/]")
-            console.print(f"  [dim]  cwd: {phase.cwd}[/]")
+            # phase.cmd may contain literal '[warn]' etc. — print without
+            # markup so Rich does not eat those bracket-notation tokens.
+            cmd_str = " ".join(phase.cmd)
+            if HAS_RICH:
+                console.print(
+                    f"  → {cmd_str}",
+                    style="dim",
+                    markup=False,
+                    highlight=False,
+                )
+                console.print(
+                    f"    cwd: {phase.cwd}",
+                    style="dim",
+                    markup=False,
+                    highlight=False,
+                )
+            else:
+                console.print(f"  → {cmd_str}")
+                console.print(f"    cwd: {phase.cwd}")
             console.print()
         return 0
 
@@ -439,13 +479,14 @@ def run(
             progress = Progress(
                 SpinnerColumn(style="yellow"),
                 TextColumn("[bold]{task.description:<18}[/]"),
-                BarColumn(bar_width=24),
+                BarColumn(),
                 MofNCompleteColumn(),
                 TimeElapsedColumn(),
                 TextColumn("[dim]{task.fields[cur]}[/]"),
                 console=console,
                 transient=False,
-                expand=False,
+                expand=True,
+                refresh_per_second=12.5,
             )
             task_id: Any = None
         else:
@@ -453,7 +494,8 @@ def run(
             task_id = None
 
         # Use Progress as its own context — Rich internally drives a Live
-        # display and allows console.print() to scroll above the sticky bar.
+        # display and allows console.print() to scroll above the sticky bar
+        # across the entire multi-phase run.
         progress_ctx = progress if HAS_RICH else _NullContext()
         with progress_ctx:
             if HAS_RICH:
@@ -481,7 +523,7 @@ def run(
                         progress.update(task_id, advance=1, cur="skipped")
                     continue
 
-                rc = run_phase(console, phase, progress, task_id, log_handle, verbose)
+                rc = run_phase(console, phase, progress, task_id, log_handle, quiet)
 
                 if HAS_RICH:
                     progress.update(
@@ -573,10 +615,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Show planned phases and reasons without running any command.",
     )
     parser.add_argument(
-        "--verbose",
-        "-v",
+        "--quiet",
+        "-q",
         action="store_true",
-        help="Stream subprocess output above the sticky bottom bar.",
+        help="Suppress streaming of subprocess output above the bar. "
+        "The bar still shows the latest line via its 'cur' field.",
     )
     parser.add_argument(
         "--only",
@@ -636,7 +679,7 @@ def main() -> int:
             manifest,
             auto_yes=auto_yes,
             dry_run=args.dry_run,
-            verbose=args.verbose,
+            quiet=args.quiet,
             only=args.only,
             skip=args.skip,
         )
