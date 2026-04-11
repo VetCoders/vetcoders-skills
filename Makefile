@@ -3,11 +3,13 @@
 PYTHON   ?= python3
 INSTALLER := scripts/vetcoders_install.py
 GUI_INSTALLER := scripts/installer_gui.py
+MANIFEST := install.toml
+INSTALLER_DIR := scripts/installer
 SHELL_INSTALLER := skills/vc-agents/scripts/install-shell.sh
 SOURCE   := $(CURDIR)
 BRANCH   ?= main
 
-.PHONY: help vibecrafted gui-install check test install skills helpers setup-dev dry-run doctor list update uninstall restore migrate migrate-dry init-hooks bundle bundle-check foundations foundations-check semgrep
+.PHONY: help vibecrafted gui-install wizard check test install skills helpers setup-dev dry-run doctor list update uninstall restore migrate migrate-dry init-hooks bundle bundle-check foundations foundations-check semgrep
 
 help:
 	@printf "\n"
@@ -16,6 +18,7 @@ help:
 	@printf "\n"
 	@printf "  \033[36m▸\033[0m  make vibecrafted   \033[2mLaunch the browser-based guided installer (default human front door)\033[0m\n"
 	@printf "  \033[36m▸\033[0m  make gui-install   \033[2mAlias for the browser-based guided installer\033[0m\n"
+	@printf "  \033[36m▸\033[0m  make wizard        \033[2mInteractive CLI wizard (docs/installer flow, terminal-native)\033[0m\n"
 	@printf "\n"
 	@printf "  \033[33m◆\033[0m  make install       \033[2mDirect non-interactive install for automation / terminal-native paths\033[0m\n"
 	@printf "  \033[33m◇\033[0m  make skills        \033[2mSkills only\033[0m\n"
@@ -48,6 +51,14 @@ vibecrafted: init-hooks
 	@$(PYTHON) $(GUI_INSTALLER) --source "$(SOURCE)"
 
 gui-install: vibecrafted
+
+wizard: init-hooks
+	@if ! command -v uv >/dev/null 2>&1; then \
+		echo "bootstrapping uv..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+		export PATH="$$HOME/.local/bin:$$PATH"; \
+	fi
+	@uv run --project $(INSTALLER_DIR) --quiet vetcoders-installer $(MANIFEST)
 
 install: init-hooks
 	@bash scripts/install-foundations.sh

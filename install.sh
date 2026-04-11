@@ -283,6 +283,42 @@ if [[ "$target" == "vibecrafted" ]] && ! is_interactive_session; then
   exec python3 "$installer" install --source "$current_link" --with-shell --compact --non-interactive
 fi
 
+# Interactive terminal session: default target is the built-in
+# vetcoders-installer sequential runner, executed out of the staged repo's
+# own scripts/installer/ sub-package via `uv run --project`. The browser
+# GUI is opt-in via `--gui` (handled above). Other make targets still fall
+# through to the Makefile.
+if [[ "$target" == "vibecrafted" ]]; then
+  manifest="$current_link/install.toml"
+  installer_dir="$current_link/scripts/installer"
+  [[ -f "$manifest" ]] || die "Install manifest not found: $manifest"
+  [[ -d "$installer_dir" ]] || die "Built-in installer package not found: $installer_dir"
+
+  # Make sure user-local binaries (cargo, .local) are visible to the installer's
+  # subprocesses — otherwise tools installed outside PATH won't be detected.
+  for _p in "${vibecrafted_home}/bin" "${vibecrafted_home}/tools/node/bin" "$HOME/.cargo/bin" "$HOME/.local/bin"; do
+    case ":${PATH}:" in
+      *":${_p}:"*) ;;
+      *) [[ -d "$_p" ]] && export PATH="${_p}:${PATH}" ;;
+    esac
+  done
+
+  if ! command -v uv >/dev/null 2>&1; then
+    info "Bootstrapping uv (one-time setup)..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh \
+      || die "Failed to bootstrap uv"
+    # shellcheck disable=SC1090
+    [[ -f "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+
+  post_install_banner
+  info "Running built-in installer:"
+  info "  uv run --project $installer_dir vetcoders-installer $manifest"
+  printf '\n'
+  exec uv run --project "$installer_dir" --quiet vetcoders-installer "$manifest"
+fi
+
 post_install_banner
 info "Launching local make target:"
 info "  make -C $current_link $target"

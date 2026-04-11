@@ -1,0 +1,64 @@
+# Vibecrafted install manifest — consumed by vetcoders-installer.
+#
+#   uv tool install ~/Libraxis/vetcoders-tools/installer --force
+#   vetcoders-installer ~/Libraxis/vibecrafted/install.toml
+#
+# `make wizard` and `install.sh` (interactive session) both delegate here.
+
+title = "⚒ Vibecrafted"
+version_file = "VERSION"
+log = "~/.vibecrafted/logs/installer/install-{ts}.log"
+
+# Keep the installer tool around: vibecrafted ships `vibecrafted update`
+# which re-runs this manifest, so the tool stays useful post-bootstrap.
+persist = true
+
+
+[[phase]]
+key = "foundations"
+label = "Foundations"
+reason = """
+Installs runtime binaries (loctree-mcp, aicx-mcp, zellij) and agent CLIs
+(claude, codex, gemini) from their upstream channels — crates.io, brew,
+or GitHub releases.
+Writes to ~/.vibecrafted/bin and ~/.cargo/bin. Does not modify PATH.
+"""
+cmd = ["bash", "scripts/install-foundations.sh"]
+
+
+[[phase]]
+key = "skills"
+label = "Skills & Helpers"
+reason = """
+Syncs the 16 vc-* workflow skills to ~/.vibecrafted/skills and creates
+symlinks under ~/.claude/skills and ~/.codex/skills so your AI agents
+discover them automatically.
+Installs the shell helper layer at ~/.config/vetcoders/vc-skills.sh and
+writes the install manifest at ~/.vibecrafted/skills/.vc-install.json.
+"""
+cmd = [
+    "python3",
+    "scripts/vetcoders_install.py",
+    "install",
+    "--source", ".",
+    "--with-shell",
+    "--compact",
+    "--non-interactive",
+]
+
+
+[[phase]]
+key = "doctor"
+label = "Doctor"
+reason = """
+Read-only verification. Runs `vibecrafted doctor` to check every
+installed skill, symlink, foundation binary, agent CLI, shell helper
+shim and launcher wrapper. Makes no filesystem changes — safe to skip
+if you're in a hurry.
+"""
+cmd = [
+    "python3",
+    "scripts/vetcoders_install.py",
+    "doctor",
+]
+optional = true
