@@ -14,6 +14,20 @@ def _write_executable(path: Path, body: str) -> None:
     path.chmod(0o755)
 
 
+def test_install_sh_fallback_prefers_github_source_snapshot_when_channel_missing() -> (
+    None
+):
+    text = INSTALL_SH.read_text(encoding="utf-8")
+
+    assert 'channel_url="https://vibecrafted.io/channel/${ref}.json"' in text
+    assert (
+        'archive_url="https://github.com/VetCoders/vibecrafted/archive/refs/heads/${ref}.tar.gz"'
+        in text
+    )
+    assert "using GitHub source snapshot for ${ref}" in text
+    assert "frozen v1.2.1 URL" not in text
+
+
 def test_install_sh_archive_install_runs_local_make_target(tmp_path: Path) -> None:
     source_dir = tmp_path / "source"
     scripts_dir = source_dir / "scripts"

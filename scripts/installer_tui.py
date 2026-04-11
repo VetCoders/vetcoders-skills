@@ -734,7 +734,7 @@ def _render_listing(console: Any, state: InstallerState, width: int) -> None:
         [
             (
                 "Diagnostics",
-                "Check the framework surface, required foundations, toolchains, agent CLIs, and the prompt/history sidecars that ship with core 1.2.1.",
+                "Check the current framework surface, required foundations, toolchains, agent CLIs, and the prompt/history sidecars that ship with the control plane.",
             ),
             (
                 "Install",
