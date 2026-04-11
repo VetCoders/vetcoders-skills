@@ -16,11 +16,11 @@ help:
 	@printf "  \033[1m\033[38;5;173m⚒  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Framework\033[0m\n"
 	@printf "  ─────────────────────────────────────\n"
 	@printf "\n"
-	@printf "  \033[36m▸\033[0m  make vibecrafted   \033[2mLaunch the browser-based guided installer (default human front door)\033[0m\n"
+	@printf "  \033[36m▸\033[0m  make vibecrafted   \033[2mTerminal-native installer wizard (default shell-first front door)\033[0m\n"
+	@printf "  \033[36m▸\033[0m  make wizard        \033[2mBrowser-based guided installer (optional GUI surface)\033[0m\n"
 	@printf "  \033[36m▸\033[0m  make gui-install   \033[2mAlias for the browser-based guided installer\033[0m\n"
-	@printf "  \033[36m▸\033[0m  make wizard        \033[2mInteractive CLI wizard (docs/installer flow, terminal-native)\033[0m\n"
 	@printf "\n"
-	@printf "  \033[33m◆\033[0m  make install       \033[2mDirect non-interactive install for automation / terminal-native paths\033[0m\n"
+	@printf "  \033[33m◆\033[0m  make install       \033[2mNon-interactive install routed through the same runner with --yes\033[0m\n"
 	@printf "  \033[33m◇\033[0m  make skills        \033[2mSkills only\033[0m\n"
 	@printf "  \033[33m◇\033[0m  make helpers       \033[2mShell helpers only\033[0m\n"
 	@printf "  \033[33m◇\033[0m  make foundations   \033[2mInstall loctree + aicx binaries\033[0m\n"
@@ -48,11 +48,6 @@ help:
 	@printf "\n"
 
 vibecrafted: init-hooks
-	@$(PYTHON) $(GUI_INSTALLER) --source "$(SOURCE)"
-
-gui-install: vibecrafted
-
-wizard: init-hooks
 	@if ! command -v uv >/dev/null 2>&1; then \
 		echo "bootstrapping uv..."; \
 		curl -LsSf https://astral.sh/uv/install.sh | sh; \
@@ -60,10 +55,18 @@ wizard: init-hooks
 	fi
 	@uv run --project $(INSTALLER_DIR) --quiet vetcoders-installer $(MANIFEST)
 
+wizard: init-hooks
+	@$(PYTHON) $(GUI_INSTALLER) --source "$(SOURCE)"
+
+gui-install: wizard
+
 install: init-hooks
-	@bash scripts/install-foundations.sh
-	@bash skills/vc-agents/scripts/install-frontier-config.sh --source "$(SOURCE)" || printf '\033[33m[warn]\033[0m Frontier config install skipped (non-fatal)\n'
-	@$(PYTHON) $(INSTALLER) install --source "$(SOURCE)" --with-shell --non-interactive
+	@if ! command -v uv >/dev/null 2>&1; then \
+		echo "bootstrapping uv..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+		export PATH="$$HOME/.local/bin:$$PATH"; \
+	fi
+	@uv run --project $(INSTALLER_DIR) --quiet vetcoders-installer $(MANIFEST) --yes
 
 skills:
 	@$(PYTHON) $(INSTALLER) install --source "$(SOURCE)" --non-interactive

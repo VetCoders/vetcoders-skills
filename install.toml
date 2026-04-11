@@ -66,22 +66,23 @@ key = "post-install"
 label = "Post-installation setup"
 reason = """
 We will configure:
+  • frontier Claude config (agent prompts + MCP wiring)
   • workspace directories under $VIBECRAFTED_ROOT/.vibecrafted/
   • symlinks for AI coding agents under ~/.agents/
   • the 16 vc-* workflow skills synced into ~/.vibecrafted/skills
   • the shell helper layer at ~/.config/vetcoders/vc-skills.sh
 
 Writes the install manifest at ~/.vibecrafted/skills/.vc-install.json
-so `vibecrafted update` can re-run this flow cleanly.
+so `vibecrafted update` can re-run this flow cleanly. The frontier
+config step is non-fatal — if it fails we keep going.
 """
 cmd = [
-    "python3",
-    "scripts/vetcoders_install.py",
-    "install",
-    "--source", ".",
-    "--with-shell",
-    "--compact",
-    "--non-interactive",
+    "bash",
+    "-c",
+    '''
+bash skills/vc-agents/scripts/install-frontier-config.sh --source "." || printf '[warn] Frontier config skipped (non-fatal)\n'
+python3 scripts/vetcoders_install.py install --source "." --with-shell --compact --non-interactive
+''',
 ]
 
 
