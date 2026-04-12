@@ -85,3 +85,46 @@ cmd = [
     "doctor",
 ]
 optional = true
+
+[branding]
+header = "⚒ V A P O R C R A F T ⚒"
+name = "Vibecrafted."
+tagline = "The framework for making real products with agent CLIs."
+footer_tagline = "You can Vibecraft your first project now!"
+
+[intro]
+screens = [
+    "0_welcome_step.zsh.md",
+    "1_Explain_step.zsh.md",
+    "2_listing.zsh.md"
+]
+textual_screens = [
+    "0_welcome_step.zsh.md",
+    "1_Explain_step.zsh.md",
+    "2_listing.zsh.md",
+    "3_examine.zsh.md",
+    "4_result.zsh.md",
+    "5_installation.zsh.md"
+]
+
+[diagnostics]
+categories = ["frameworks", "foundations", "toolchains", "agents", "additional_tools"]
+
+[diagnostics.labels]
+frameworks = "Frameworks"
+foundations = "Foundations"
+toolchains = "Toolchains"
+agents = "Agents"
+additional_tools = "Additional tools"
+
+[diagnostics.commands]
+foundations = ["loctree-mcp", "aicx-mcp", "prview", "screenscribe"]
+toolchains = ["python3", "node", "git", "rsync"]
+agents = ["claude", "codex", "gemini"]
+additional_tools = ["mise", "starship", "atuin", "zoxide"]
+
+[diagnostics.paths]
+store_dir = "$VIBECRAFTED_ROOT/.vibecrafted/skills"
+helpers = "$XDG_CONFIG_HOME/vetcoders/vc-skills.sh"
+binaries = ["vibecraft", "vibecrafted"]
+symlinks = ["$HOME/.agents", "$HOME/.claude", "$HOME/.codex", "$HOME/.gemini"]

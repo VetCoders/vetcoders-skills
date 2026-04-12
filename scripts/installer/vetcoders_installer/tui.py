@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-import sys
+import os
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -13,21 +14,85 @@ from textual.binding import Binding
 from textual.containers import VerticalScroll, Vertical
 from textual.widgets import Static, Checkbox
 
-# Import backend logic dynamically from source_dir/scripts
-_backend = None
+
+def _trim_home(path: str) -> str:
+    return path.replace(str(Path.home()), "~")
 
 
-def _get_backend(source_dir: Path) -> Any:
-    global _backend
-    if _backend is not None:
-        return _backend
-    scripts_dir = str(source_dir / "scripts")
-    if scripts_dir not in sys.path:
-        sys.path.insert(0, scripts_dir)
-    import installer_tui
+def run_manifest_diagnostics(manifest: Any) -> dict[str, dict[str, dict[str, Any]]]:
+    diags: dict[str, dict[str, dict[str, Any]]] = {}
+    if not manifest or not manifest.diagnostics:
+        return diags
 
-    _backend = installer_tui
-    return _backend
+    # Generic diagnostics from manifest
+    cats = manifest.diagnostics.get("categories", [])
+    cmds = manifest.diagnostics.get("commands", {})
+    paths = manifest.diagnostics.get("paths", {})
+
+    for cat in cats:
+        diags[cat] = {}
+        for cmd in cmds.get(cat, []):
+            cmd_path = shutil.which(cmd)
+            diags[cat][cmd] = {
+                "label": cmd,
+                "found": bool(cmd_path),
+                "detail": cmd_path or f"{cmd} not found on PATH",
+                "kind": "command",
+            }
+        for name, path_str in paths.get(cat, {}).items():
+            if isinstance(path_str, list):
+                # Multiple paths, assume it's symlinks check
+                active = []
+                for p in path_str:
+                    expanded = os.path.expandvars(os.path.expanduser(p))
+                    if Path(expanded).is_dir() and list(Path(expanded).iterdir()):
+                        active.append(expanded)
+                diags[cat][name] = {
+                    "label": name,
+                    "found": bool(active),
+                    "detail": ", ".join(active)
+                    if active
+                    else f"No items found in {name}",
+                    "kind": "path",
+                }
+            else:
+                expanded = os.path.expandvars(os.path.expanduser(path_str))
+                diags[cat][name] = {
+                    "label": name,
+                    "found": Path(expanded).exists(),
+                    "detail": expanded,
+                    "kind": "path",
+                }
+    return diags
+
+
+def summarize_diagnostics(
+    diags: dict[str, dict[str, dict[str, Any]]], manifest: Any
+) -> tuple[list[str], list[str], dict[str, list[str]]]:
+    found_items = []
+    missing_items = []
+    needs_install = {}
+
+    if not manifest or not manifest.diagnostics:
+        return found_items, missing_items, needs_install
+
+    cats = manifest.diagnostics.get("categories", [])
+    labels = manifest.diagnostics.get("labels", {})
+
+    for cat in cats:
+        missing_in_cat = []
+        for name, entry in diags.get(cat, {}).items():
+            label = entry.get("label", name)
+            flat_label = f"{labels.get(cat, cat)}: {label}"
+            if entry.get("found"):
+                found_items.append(flat_label)
+            else:
+                missing_items.append(flat_label)
+                missing_in_cat.append(label)
+        if missing_in_cat:
+            needs_install[cat] = missing_in_cat
+
+    return found_items, missing_items, needs_install
 
 
 class InstallerIntroApp(App):
@@ -82,6 +147,7 @@ class InstallerIntroApp(App):
         version: str,
         source_dir: Path,
         advanced: bool = False,
+        manifest: Any = None,
     ) -> None:
         super().__init__()
         self._screens = screens
@@ -91,7 +157,7 @@ class InstallerIntroApp(App):
         self._current = 0
         self.result: str = "quit"
 
-        self.backend = _get_backend(source_dir)
+        self.manifest = manifest
         self.details_view = False
 
         # State
@@ -127,6 +193,11 @@ class InstallerIntroApp(App):
     async def _render_screen(self) -> None:
         idx = min(self._current, len(self._screens) - 1)
         header, content, footer = self._screens[idx]
+
+        # Override headers/footers using branding if available
+        if self.manifest and getattr(self.manifest, "branding", None):
+            pass  # Currently keeping exactly what the screens provided
+
         self.query_one("#header", Static).update(header)
         self.query_one("#footer", Static).update(footer)
 
@@ -166,13 +237,19 @@ class InstallerIntroApp(App):
         lines.append("  ╚════════════════════════════════════════════════════╝\n")
 
         if self.diagnostics_done:
-            for category in self.backend.CATEGORY_ORDER:
-                lines.append(f"  {self.backend.CATEGORY_LABELS[category]}:")
+            cats = []
+            labels = {}
+            if self.manifest and getattr(self.manifest, "diagnostics", None):
+                cats = self.manifest.diagnostics.get("categories", [])
+                labels = self.manifest.diagnostics.get("labels", {})
+
+            for category in cats:
+                lines.append(f"  {labels.get(category, category)}:")
                 entries = list(self.diagnostics_results.get(category, {}).values())
                 if self.details_view:
                     for entry in entries:
                         label = entry.get("label", "?")
-                        detail = self.backend._trim_home(str(entry.get("detail", "")))
+                        detail = _trim_home(str(entry.get("detail", "")))
                         icon = (
                             "[green]✔[/green]" if entry.get("found") else "[red]𐄂[/red]"
                         )
@@ -184,7 +261,10 @@ class InstallerIntroApp(App):
                             "[green]✔[/green]" if entry.get("found") else "[red]𐄂[/red]"
                         )
                         parts.append(f"{icon} {entry.get('label', '?')}")
-                    lines.append("    " + " · ".join(parts))
+                    if parts:
+                        lines.append("    " + " · ".join(parts))
+                    else:
+                        lines.append("    [dim]None[/dim]")
                 lines.append("")
 
         return "\n".join(lines)
@@ -192,7 +272,7 @@ class InstallerIntroApp(App):
     @work(exclusive=True, thread=True)
     def run_diagnostics(self) -> None:
         self.app.call_from_thread(self._update_diag_msg, "Running diagnostics...")
-        diags = self.backend.run_diagnostics()
+        diags = run_manifest_diagnostics(self.manifest)
         self.app.call_from_thread(self._finish_diagnostics, diags)
 
     def _update_diag_msg(self, msg: str) -> None:
@@ -203,7 +283,7 @@ class InstallerIntroApp(App):
     def _finish_diagnostics(self, diags) -> None:
         self.diagnostics_results = diags
         self.found_items, self.missing_items, self.needs_install = (
-            self.backend.summarize_diagnostics(diags)
+            summarize_diagnostics(diags, self.manifest)
         )
         self.selected_items = set(self.missing_items)  # All selected by default
         self.diagnostics_done = True
@@ -298,25 +378,49 @@ class InstallerIntroApp(App):
     @work(exclusive=True, thread=True)
     def run_install(self) -> None:
         self.install_running = True
-        cmd = self.backend.build_install_command(str(self._source_dir))
 
-        try:
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-            )
-            assert process.stdout is not None
-            for line in process.stdout:
-                clean = line.rstrip("\n")
-                self.app.call_from_thread(self._add_install_log, clean)
+        # Loop through manifest phases
+        if not self.manifest or not self.manifest.phases:
+            self.app.call_from_thread(self._finish_install, 0, None)
+            return
 
-            rc = process.wait()
-            self.app.call_from_thread(self._finish_install, rc, None)
-        except Exception as exc:
-            self.app.call_from_thread(self._finish_install, -1, str(exc))
+        exit_code = 0
+        err = None
+        for phase in self.manifest.phases:
+            # We skip "diagnostics" phase in the install loop, because
+            # this TUI handles diagnostics via step 3 natively
+            if phase.key == "diagnostics":
+                continue
+
+            cmd = phase.cmd
+            cwd = phase.cwd
+            self.app.call_from_thread(self._add_install_log, f"Running: {phase.label}")
+
+            try:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    cwd=str(cwd),
+                )
+                assert process.stdout is not None
+                for line in process.stdout:
+                    clean = line.rstrip("\n")
+                    self.app.call_from_thread(self._add_install_log, clean)
+
+                rc = process.wait()
+                if rc != 0 and not phase.optional:
+                    exit_code = rc
+                    err = f"Phase {phase.label} failed with exit {rc}"
+                    break
+            except Exception as exc:
+                exit_code = -1
+                err = str(exc)
+                break
+
+        self.app.call_from_thread(self._finish_install, exit_code, err)
 
     def _add_install_log(self, line: str) -> None:
         self.install_log.append(line)
@@ -345,10 +449,22 @@ class InstallerIntroApp(App):
                 lines.append(f"  Error: {self.install_error}")
             lines.append("")
 
-        lines.append("  Start:    [bold]vibecrafted help[/bold]")
-        lines.append("  Verify:   [bold]vibecrafted doctor[/bold]")
-        lines.append("  Reverse:  [bold]vibecrafted uninstall[/bold]\n")
-        lines.append("  You can Vibecraft your first project now!\n")
+        next_steps = []
+        if self.manifest and getattr(self.manifest, "branding", None):
+            next_steps = self.manifest.branding.get("next_steps", [])
+            tagline = self.manifest.branding.get("footer_tagline", "")
+        else:
+            tagline = ""
+
+        if next_steps:
+            for step in next_steps:
+                lines.append(
+                    f"  {step.get('label', 'Step')}:    [bold]{step.get('cmd', '')}[/bold]  [dim]({step.get('desc', '')})[/dim]"
+                )
+
+        if tagline:
+            lines.append(f"\n  {tagline}\n")
+
         lines.append("  Press Enter to exit installer...")
         return "\n".join(lines)
 
