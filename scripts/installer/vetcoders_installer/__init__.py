@@ -576,7 +576,9 @@ def _show_mock_screen(console: Any, body: str, *, can_back: bool = False) -> str
         continue
 
 
-def _show_intro_flow(console: Any, manifest: Manifest, auto_yes: bool) -> bool:
+def _show_intro_flow(
+    console: Any, manifest: Manifest, auto_yes: bool, advanced: bool = False
+) -> str:
     """Show welcome / explain / listing screens before the phase loop.
 
     When ``textual`` is available the intro renders as a proper TUI with
@@ -584,50 +586,53 @@ def _show_intro_flow(console: Any, manifest: Manifest, auto_yes: bool) -> bool:
     ANSI loop (``_show_mock_screen``) when textual is missing, and to
     ``input()`` for non-TTY environments.
 
-    Returns False when the user cancels, True on normal completion. When
-    the docs directory is absent (packaged install without repo next to
-    it), the flow skips silently so the installer still runs.
+    Returns "cancelled" when the user cancels, "completed" if Textual ran the full wizard,
+    and "fallback" to proceed with the rich progress loop.
     """
     if auto_yes:
-        return True
+        return "fallback"
     docs_dir = manifest.path.parent / "docs" / "installer"
     if not docs_dir.is_dir():
-        return True
+        return "fallback"
     version = manifest.version or "dev"
     screen_names: list[str] = [
         "0_welcome_step.zsh.md",
         "1_Explain_step.zsh.md",
         "2_listing.zsh.md",
     ]
-
-    # Build (header, content, footer) tuples from mockup files.
-    screens: list[tuple[str, str, str]] = []
-    for name in screen_names:
-        body = _load_mock_screen(docs_dir, name, version=version)
-        if body is None:
-            continue
-        header, content, footer = _parse_mock_layers(body)
-        screens.append((header, content, footer))
-
-    if not screens:
-        return True
+    textual_screen_names = screen_names + [
+        "3_examine.zsh.md",
+        "4_result.zsh.md",
+        "5_installation.zsh.md",
+    ]
 
     # Non-TTY fallback (CI, piped) -- auto-advance.
     if not sys.stdin.isatty():
-        return True
+        return "fallback"
 
     # -- Textual TUI path (preferred) --
     if _HAS_TEXTUAL:
-        try:
-            app = InstallerIntroApp(screens, version)
-            app.run()
-            if app.result != "complete":
-                console.print("\n  [yellow]Cancelled — no changes were made.[/]\n")
-                return False
-            return True
-        except Exception:
-            # Textual crashed -- fall through to legacy path.
-            pass
+        # Build (header, content, footer) tuples for all 6 screens.
+        screens: list[tuple[str, str, str]] = []
+        for name in textual_screen_names:
+            body = _load_mock_screen(docs_dir, name, version=version)
+            if body is not None:
+                header, content, footer = _parse_mock_layers(body)
+                screens.append((header, content, footer))
+
+        if screens:
+            try:
+                app = InstallerIntroApp(
+                    screens, version, manifest.path.parent, advanced
+                )
+                app.run()
+                if app.result == "quit":
+                    console.print("\n  [yellow]Cancelled — no changes were made.[/]\n")
+                    return "cancelled"
+                return "completed"
+            except Exception:
+                # Textual crashed -- fall through to legacy path.
+                pass
 
     # -- Legacy manual ANSI path --
     # Re-assemble bodies from layers for _show_mock_screen.
@@ -637,19 +642,22 @@ def _show_intro_flow(console: Any, manifest: Manifest, auto_yes: bool) -> bool:
         if body is not None:
             bodies.append(body)
 
+    if not bodies:
+        return "fallback"
+
     idx = 0
     while idx < len(bodies):
         can_back = idx > 0
         action = _show_mock_screen(console, bodies[idx], can_back=can_back)
         if action == "quit":
             console.print("\n  [yellow]Cancelled — no changes were made.[/]\n")
-            return False
+            return "cancelled"
         if action == "back" and can_back:
             idx -= 1
             continue
         # "back" on the first screen is a no-op -- fall through to "next".
         idx += 1
-    return True
+    return "fallback"
 
 
 def _print_title(console: Any, manifest: Manifest) -> None:
@@ -832,6 +840,7 @@ def run(
     manifest: Manifest,
     *,
     auto_yes: bool,
+    advanced: bool = False,
     dry_run: bool,
     quiet: bool,
     only: list[str],
@@ -851,7 +860,10 @@ def run(
     # because the intro flow is skipped in those cases.
     intro_will_run = not (auto_yes or dry_run)
     if intro_will_run:
-        if not _show_intro_flow(console, manifest, auto_yes):
+        tui_status = _show_intro_flow(console, manifest, auto_yes, advanced)
+        if tui_status == "cancelled":
+            return 0
+        elif tui_status == "completed":
             return 0
     else:
         _print_title(console, manifest)
@@ -1018,6 +1030,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Path to an install.toml manifest",
     )
     parser.add_argument(
+        "--advanced",
+        action="store_true",
+        help="Advanced interactive mode: allow deselecting items during the checklist step.",
+    )
+    parser.add_argument(
         "--yes",
         "-y",
         action="store_true",
@@ -1092,6 +1109,7 @@ def main() -> int:
         rc = run(
             manifest,
             auto_yes=auto_yes,
+            advanced=args.advanced,
             dry_run=args.dry_run,
             quiet=args.quiet,
             only=args.only,
