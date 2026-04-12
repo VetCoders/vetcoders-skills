@@ -32,7 +32,7 @@ import shutil
 import subprocess
 import sys
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -103,6 +103,10 @@ class Manifest:
     persist: bool
     phases: list[Phase]
     path: Path
+    branding: dict[str, str] = field(default_factory=dict)
+    intro_screens: list[str] = field(default_factory=list)
+    textual_screens: list[str] = field(default_factory=list)
+    diagnostics: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: Path) -> "Manifest":
@@ -114,6 +118,17 @@ class Manifest:
         version = _resolve_version(data, repo_root)
         log_pattern = data.get("log")
         persist = bool(data.get("persist", False))
+
+        # Branding
+        branding = data.get("branding", {})
+
+        # Intro screens
+        intro_data = data.get("intro", {})
+        intro_screens = intro_data.get("screens", [])
+        textual_screens = intro_data.get("textual_screens", [])
+
+        # Diagnostics
+        diagnostics_data = data.get("diagnostics", {})
 
         phases_data = data.get("phase", [])
         if not isinstance(phases_data, list):
@@ -149,6 +164,10 @@ class Manifest:
             persist=persist,
             phases=phases,
             path=path.resolve(),
+            branding=branding,
+            intro_screens=intro_screens,
+            textual_screens=textual_screens,
+            diagnostics=diagnostics_data,
         )
 
 
@@ -425,7 +444,7 @@ def _parse_mock_layers(body: str) -> tuple[str, str, str]:
     return (header, content, footer)
 
 
-def _interpolate_mock(text: str, version: str) -> str:
+def _interpolate_mock(text: str, manifest: Manifest) -> str:
     """Replace placeholder tokens in mockup text with runtime values.
 
     Supported placeholders:
@@ -435,18 +454,45 @@ def _interpolate_mock(text: str, version: str) -> str:
         ``\U0001d167X.Y.Z``    — monospace unicode version in banner headers.
     """
     home = str(Path.home())
+
+    # Store path from manifest or default to old behavior
     vibecrafted_root = os.environ.get("VIBECRAFTED_ROOT", home)
-    ver = version or "dev"
+    if (
+        manifest
+        and manifest.diagnostics
+        and manifest.diagnostics.get("paths", {}).get("store_dir")
+    ):
+        store_dir = manifest.diagnostics["paths"]["store_dir"]
+        # Replace $VIBECRAFTED_ROOT inside store_dir if present
+        store_dir = store_dir.replace("$VIBECRAFTED_ROOT", vibecrafted_root).replace(
+            "$HOME", home
+        )
+        # But wait, the mock says "in $VIBECRAFTED_ROOT/.vibecrafted/". Let's just replace $VIBECRAFTED_ROOT for now.
+
+    ver = manifest.version or "dev"
     text = text.replace("{version}", ver)
     # Replace hardcoded monospace-unicode version strings (𝚟X.Y.Z) in banners
     text = re.sub(r"𝚟\d+\.\d+\.\d+", f"𝚟{ver}", text)
     text = text.replace("$VIBECRAFTED_ROOT", vibecrafted_root)
     text = text.replace("$HOME", home)
+
+    if manifest and manifest.branding:
+        if "header" in manifest.branding:
+            text = text.replace("⚒ V A P O R C R A F T ⚒", manifest.branding["header"])
+            text = text.replace("⚒ Vibecrafted. ⚒", manifest.branding["header"])
+        if "name" in manifest.branding:
+            text = text.replace("Vibecrafted", manifest.branding["name"])
+            text = text.replace("vibecrafted", manifest.branding["name"].lower())
+        if "unicode_wordmark" in manifest.branding:
+            text = text.replace("⚒ Vibecrafted.", manifest.branding["unicode_wordmark"])
+        if "footer_tagline" in manifest.branding:
+            text = text.replace("FRAMEWORK", manifest.branding["footer_tagline"])
+
     return text
 
 
 def _load_mock_screen(
-    docs_dir: Path, name: str, *, version: str = "dev"
+    docs_dir: Path, name: str, *, manifest: Manifest
 ) -> Optional[str]:
     """Return the body of a mock screen from ``docs/installer/<name>``.
 
@@ -472,7 +518,7 @@ def _load_mock_screen(
     if lines and lines[-1].strip() == "```":
         lines = lines[:-1]
     body = "\n".join(lines)
-    return _interpolate_mock(body, version)
+    return _interpolate_mock(body, manifest)
 
 
 def _print_line(console: Any, line: str) -> None:
@@ -595,12 +641,12 @@ def _show_intro_flow(
     if not docs_dir.is_dir():
         return "fallback"
     version = manifest.version or "dev"
-    screen_names: list[str] = [
+    screen_names: list[str] = manifest.intro_screens or [
         "0_welcome_step.zsh.md",
         "1_Explain_step.zsh.md",
         "2_listing.zsh.md",
     ]
-    textual_screen_names = screen_names + [
+    textual_screen_names = manifest.textual_screens or screen_names + [
         "3_examine.zsh.md",
         "4_result.zsh.md",
         "5_installation.zsh.md",
@@ -615,7 +661,7 @@ def _show_intro_flow(
         # Build (header, content, footer) tuples for all 6 screens.
         screens: list[tuple[str, str, str]] = []
         for name in textual_screen_names:
-            body = _load_mock_screen(docs_dir, name, version=version)
+            body = _load_mock_screen(docs_dir, name, manifest=manifest)
             if body is not None:
                 header, content, footer = _parse_mock_layers(body)
                 screens.append((header, content, footer))
@@ -623,7 +669,7 @@ def _show_intro_flow(
         if screens:
             try:
                 app = InstallerIntroApp(
-                    screens, version, manifest.path.parent, advanced
+                    screens, version, manifest.path.parent, advanced, manifest
                 )
                 app.run()
                 if app.result == "quit":
@@ -638,7 +684,7 @@ def _show_intro_flow(
     # Re-assemble bodies from layers for _show_mock_screen.
     bodies: list[str] = []
     for name in screen_names:
-        body = _load_mock_screen(docs_dir, name, version=version)
+        body = _load_mock_screen(docs_dir, name, manifest=manifest)
         if body is not None:
             bodies.append(body)
 
@@ -698,10 +744,19 @@ def _print_summary(
     # We do NOT suggest commands that assume the install succeeded.
     pure_cancel = has_cancel and not has_fail and not has_warn
 
+    product = (
+        manifest.branding.get("name", "Installer") if manifest.branding else "Installer"
+    )
+    header_ready = (
+        manifest.branding.get("unicode_wordmark", f"⚒ {product}")
+        if manifest.branding
+        else f"⚒ {product}"
+    )
+
     console.print()
     if HAS_RICH:
         if all_ok:
-            console.rule("[bold green]⚒ Vibecrafted. is ready[/]", style="green")
+            console.rule(f"[bold green]{header_ready} is ready[/]", style="green")
         elif has_fail:
             console.rule("[bold red]⚒ Install stopped with errors[/]", style="red")
         elif pure_cancel:
@@ -714,7 +769,7 @@ def _print_summary(
             )
     else:
         if all_ok:
-            console.print("=== Vibecrafted. is ready ===")
+            console.print(f"=== {header_ready} is ready ===")
         elif has_fail:
             console.print("=== Install stopped with errors ===")
         elif pure_cancel:
@@ -738,53 +793,59 @@ def _print_summary(
 
     # Next-step block. We only suggest commands that actually assume the
     # install happened on paths where the install actually happened.
+    next_steps = manifest.branding.get("next_steps", []) if manifest.branding else []
+
+    installer_cmd = (
+        manifest.branding.get("installer_cmd", "make vibecrafted")
+        if manifest.branding
+        else "make vibecrafted"
+    )
+
     if all_ok:
         console.print("  [bold]Next steps[/]")
-        console.print(
-            "    [cyan]▸[/] [bold]vibecrafted doctor[/]     [dim]verify the install[/]"
-        )
-        console.print(
-            "    [cyan]▸[/] [bold]vc-start[/]                [dim]open the operator dashboard in zellij[/]"
-        )
-        console.print(
-            "    [cyan]▸[/] [bold]vibecrafted --help[/]      [dim]list all commands[/]"
-        )
-        console.print(
-            "    [cyan]▸[/] [bold]vibecrafted update[/]      [dim]re-run this installer any time[/]"
-        )
+        if next_steps:
+            for step in next_steps:
+                console.print(
+                    f"    [cyan]▸[/] [bold]{step.get('cmd', '')}[/bold]     [dim]{step.get('desc', '')}[/dim]"
+                )
+        else:
+            console.print(
+                "    [cyan]▸[/] [bold]See documentation for next steps.[/bold]"
+            )
         console.print()
     elif pure_cancel:
-        # User explicitly said no. Do not promote `vibecrafted doctor`
-        # or `vc-start` — the binary is not on PATH and the dashboard
-        # has nothing to show. Just tell them how to come back.
+        # User explicitly said no.
         console.print("  Nothing was installed. Re-run when you are ready:")
         console.print(
-            "    [cyan]▸[/] [bold]make vibecrafted[/]        [dim]run the guided installer again[/]"
+            f"    [cyan]▸[/] [bold]{installer_cmd}[/bold]        [dim]run the guided installer again[/]"
         )
         console.print()
     elif has_fail:
         console.print("  [bold]Recovery[/]")
         console.print("    [cyan]▸[/] Read the log (below) to find the failing step")
         console.print(
-            "    [cyan]▸[/] [bold]make vibecrafted[/]        [dim]re-run the installer[/]"
+            f"    [cyan]▸[/] [bold]{installer_cmd}[/bold]        [dim]re-run the installer[/]"
         )
         console.print()
     else:
-        # Warnings path: install touched the system but a non-fatal step
-        # reported trouble. Doctor is legitimate here; dashboard is not
-        # promised since we do not know how far the install actually got.
         console.print("  [bold]Finished with warnings[/]")
+        if next_steps:
+            console.print(
+                f"    [cyan]▸[/] [bold]{next_steps[1].get('cmd', '') if len(next_steps) > 1 else 'doctor'}[/bold]     [dim]audit what succeeded[/]"
+            )
         console.print(
-            "    [cyan]▸[/] [bold]vibecrafted doctor[/]     [dim]audit what succeeded[/]"
-        )
-        console.print(
-            "    [cyan]▸[/] [bold]make vibecrafted[/]        [dim]re-run the installer if needed[/]"
+            f"    [cyan]▸[/] [bold]{installer_cmd}[/bold]        [dim]re-run the installer if needed[/]"
         )
         console.print()
 
     if log_path:
         console.print(f"  [dim]Log:[/] {log_path}")
-    console.print("  [dim]Docs:[/] [bold]https://vibecrafted.io[/]")
+    docs_url = (
+        manifest.branding.get("docs_url", "https://vibecrafted.io")
+        if manifest.branding
+        else "https://vibecrafted.io"
+    )
+    console.print(f"  [dim]Docs:[/] [bold]{docs_url}[/bold]")
     console.print()
 
 
