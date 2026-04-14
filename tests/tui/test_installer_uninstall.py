@@ -116,6 +116,81 @@ def test_cmd_uninstall_removes_launchers_and_legacy_pack_wrappers(
     assert not collect_names(installer.collect_installed_launchers())
 
 
+def test_cmd_uninstall_prefers_manifest_tracked_launchers_and_helpers(
+    tmp_path: Path, monkeypatch
+) -> None:
+    home = tmp_path / "home"
+    crafted_home = home / ".vibecrafted"
+    store_path = crafted_home / "skills"
+    local_bin = home / ".local" / "bin"
+    runtime_skills = home / ".codex" / "skills"
+
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
+    monkeypatch.setenv("VIBECRAFTED_HOME", str(crafted_home))
+    monkeypatch.setattr(installer, "_IS_TTY", False)
+
+    store_path.mkdir(parents=True)
+    runtime_skills.mkdir(parents=True)
+    local_bin.mkdir(parents=True)
+
+    skill_dir = store_path / "vc-init"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("# test\n", encoding="utf-8")
+    (runtime_skills / "vc-init").symlink_to(skill_dir)
+
+    helper_file = installer._helper_target_path()
+    helper_file.parent.mkdir(parents=True, exist_ok=True)
+    helper_file.write_text("# helper shim\n", encoding="utf-8")
+    manual_helper = installer._helper_legacy_path()
+    manual_helper.parent.mkdir(parents=True, exist_ok=True)
+    manual_helper.write_text("# user helper\n", encoding="utf-8")
+
+    for launcher in ("vibecrafted", "vc-help", "vc-workflow", "telemetry"):
+        if launcher == "vibecrafted":
+            _write_executable(
+                local_bin / launcher,
+                "#!/usr/bin/env bash\nprintf 'launcher\\n'\n",
+            )
+        else:
+            (local_bin / launcher).symlink_to("vibecrafted")
+
+    (local_bin / "unrelated-tool").write_text("echo keep\n", encoding="utf-8")
+
+    zshrc = home / ".zshrc"
+    zshrc.write_text(
+        f"# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher\n{installer._launcher_path_line()}\n",
+        encoding="utf-8",
+    )
+
+    manifest_state = installer.InstallState(
+        framework_version="9.9.9",
+        skills=["vc-init"],
+        runtimes=["codex"],
+        launcher_entries=[f"{installer._launcher_dir_key(local_bin)}/vibecrafted"],
+        helper_files=[str(helper_file)],
+        shell_helpers=True,
+    )
+    manifest_state.save(store_path)
+
+    exit_code = installer.cmd_uninstall(Namespace(dry_run=False))
+
+    assert exit_code == 0
+    assert not helper_file.exists()
+    assert manual_helper.exists()
+    assert not (local_bin / "vibecrafted").exists()
+    assert (local_bin / "vc-help").is_symlink()
+    assert (local_bin / "vc-workflow").is_symlink()
+    assert installer._launcher_path_line() not in zshrc.read_text(encoding="utf-8")
+    assert not (runtime_skills / "vc-init").exists()
+    assert (local_bin / "unrelated-tool").exists()
+
+    backup_root = store_path / installer.BACKUP_DIR
+    latest = (backup_root / "latest").read_text(encoding="utf-8").strip()
+    assert (backup_root / latest / "helpers" / "vc-skills.sh").exists()
+    assert not (backup_root / latest / "launchers" / "local-bin" / "vc-help").exists()
+
+
 def test_restore_roundtrip_recovers_launchers_and_runtime_symlinks(
     tmp_path: Path, monkeypatch
 ) -> None:

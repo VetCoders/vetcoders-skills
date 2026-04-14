@@ -370,6 +370,8 @@ class InstallState:
     repo_url: str = ""
     skills: List[str] = field(default_factory=list)
     runtimes: List[str] = field(default_factory=list)
+    launcher_entries: List[str] = field(default_factory=list)
+    helper_files: List[str] = field(default_factory=list)
     foundations: Dict[str, Dict] = field(default_factory=dict)
     shell_helpers: bool = False
     install_path: str = ""
@@ -966,6 +968,8 @@ def create_backup(
     runtimes: List[str],
     bundle_names: List[str],
     orphaned_entries: Optional[List[Tuple[str, Path]]] = None,
+    launcher_entries: Optional[List[str]] = None,
+    helper_entries: Optional[List[str]] = None,
     dry_run: bool = False,
 ) -> Optional[str]:
     """Snapshot existing state before install. Returns backup timestamp or None."""
@@ -1013,9 +1017,19 @@ def create_backup(
             _copy_path_to_backup(entry, dst)
         anything_backed = True
 
-    # Back up helper file
-    helper_file = _helper_target_path()
-    if helper_file.exists():
+    # Back up helper files from either provided manifest or current helper files.
+    if helper_entries is None:
+        helper_paths = [
+            p for p in (_helper_target_path(), _helper_legacy_path()) if p.exists()
+        ]
+    else:
+        helper_paths = []
+        for raw_helper in helper_entries:
+            candidate = Path(raw_helper)
+            if candidate.exists():
+                helper_paths.append(candidate)
+
+    for helper_file in helper_paths:
         dst = backup_dir / "helpers" / helper_file.name
         if dry_run:
             print(f"  {dim('backup')} {helper_file} -> {dst}")
@@ -1024,8 +1038,13 @@ def create_backup(
             shutil.copy2(helper_file, dst)
         anything_backed = True
 
-    # Back up launchers/wrappers from both portable and legacy bin surfaces.
-    for launcher_bin_dir, entry in collect_installed_launchers():
+    # Back up launchers/wrappers from either provided manifest or current surface.
+    if launcher_entries is None:
+        launcher_items = collect_installed_launchers()
+    else:
+        launcher_items = _parse_manifest_launchers(launcher_entries)
+
+    for launcher_bin_dir, entry in launcher_items:
         dst = (
             backup_dir / "launchers" / _launcher_dir_key(launcher_bin_dir) / entry.name
         )
@@ -1247,6 +1266,98 @@ def _strip_rc_entry(
     if content.endswith("\n"):
         rebuilt += "\n"
     return rebuilt, removed
+
+
+def _installer_managed_launcher_names() -> List[str]:
+    return [
+        "vibecrafted",
+        "vibecraft",
+        *LAUNCHER_WRAPPERS,
+        *LEGACY_LAUNCHER_NAMES,
+    ]
+
+
+def _snapshot_helper_file(path: Path) -> bool:
+    if not path.exists():
+        return False
+    if path.is_symlink():
+        return False
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    return HELPER_SHIM_MARKER in text
+
+
+def _snapshot_legacy_helper_link(path: Path) -> bool:
+    if not path.is_symlink():
+        return False
+    try:
+        target = Path(os.readlink(path))
+    except OSError:
+        return False
+    if not target.is_absolute():
+        target = path.parent / target
+    return target == _helper_target_path()
+
+
+def _snapshot_helper_files() -> List[str]:
+    helper_files: List[str] = []
+    helper_file = _helper_target_path()
+    legacy_file = _helper_legacy_path()
+
+    if _snapshot_helper_file(helper_file):
+        helper_files.append(str(helper_file))
+    elif helper_file.exists():
+        helper_files.append(str(helper_file))
+
+    if _snapshot_legacy_helper_link(legacy_file):
+        helper_files.append(str(legacy_file))
+    elif legacy_file.exists() and _snapshot_helper_file(legacy_file):
+        helper_files.append(str(legacy_file))
+
+    return helper_files
+
+
+def _snapshot_launcher_entries() -> List[str]:
+    launcher_entries: List[str] = []
+    seen: set[tuple[str, str]] = set()
+    for launcher_bin_dir in _launcher_bin_dirs():
+        for name in _installer_managed_launcher_names():
+            entry = launcher_bin_dir / name
+            if not (entry.exists() or entry.is_symlink()):
+                continue
+            if _is_framework_managed_launcher(entry):
+                key = _launcher_dir_key(launcher_bin_dir)
+                if (key, name) not in seen:
+                    launcher_entries.append(f"{key}/{name}")
+                    seen.add((key, name))
+    return launcher_entries
+
+
+def _parse_manifest_launchers(
+    raw_entries: Sequence[str],
+) -> List[tuple[Path, Path]]:
+    launcher_entries: list[tuple[Path, Path]] = []
+    seen: set[tuple[str, str]] = set()
+
+    for raw_entry in raw_entries:
+        if "/" not in raw_entry:
+            continue
+        launcher_dir_key, name = raw_entry.split("/", 1)
+        if not name or "/" in name:
+            continue
+        launcher_bin_dir = _launcher_dir_from_key(launcher_dir_key)
+        if launcher_bin_dir is None:
+            continue
+        entry = launcher_bin_dir / name
+        marker = (str(launcher_bin_dir), name)
+        if marker in seen:
+            continue
+        seen.add(marker)
+        launcher_entries.append((launcher_bin_dir, entry))
+
+    return launcher_entries
 
 
 def _rc_has_vibecrafted_bin_path(content: str) -> bool:
@@ -2907,11 +3018,15 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
     orphaned_entries = collect_orphaned_skills(
         store_path, all_runtimes, set(selected_skills)
     )
+    preinstall_launchers = _snapshot_launcher_entries()
+    preinstall_helpers = _snapshot_helper_files() if install_shell else []
     backup_ts = create_backup(
         store_path,
         all_runtimes,
         selected_skills,
         orphaned_entries=orphaned_entries,
+        launcher_entries=preinstall_launchers,
+        helper_entries=preinstall_helpers,
         dry_run=dry_run,
     )
     if backup_ts:
@@ -3007,6 +3122,8 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
         repo_url=get_repo_url(repo_root),
         skills=selected_skills,
         runtimes=all_runtimes,
+        launcher_entries=_snapshot_launcher_entries(),
+        helper_files=_snapshot_helper_files() if install_shell else [],
         foundations=installed_foundations,
         shell_helpers=install_shell,
         install_path=str(store_path),
@@ -3215,11 +3332,15 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
         orphaned_entries = collect_orphaned_skills(
             store_path, all_runtimes, set(selected_skills)
         )
+        preinstall_launchers = _snapshot_launcher_entries()
+        preinstall_helpers = _snapshot_helper_files() if install_shell else []
         backup_ts = create_backup(
             store_path,
             all_runtimes,
             selected_skills,
             orphaned_entries=orphaned_entries,
+            launcher_entries=preinstall_launchers,
+            helper_entries=preinstall_helpers,
             dry_run=dry_run,
         )
         if backup_ts:
@@ -3349,6 +3470,8 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
             repo_url=get_repo_url(repo_root),
             skills=selected_skills,
             runtimes=all_runtimes,
+            launcher_entries=_snapshot_launcher_entries(),
+            helper_files=_snapshot_helper_files() if install_shell else [],
             foundations=installed_foundations,
             shell_helpers=install_shell,
             install_path=str(store_path),
@@ -3592,12 +3715,32 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     shared_home = vibecrafted_home()
     store_path = shared_home / "skills"
     state = InstallState.load(store_path)
+    state_file = store_path / STATE_FILE
     dry_run = args.dry_run
     bundle = set(_known_bundle_names())
     helper_file = _helper_target_path()
     legacy_file = _helper_legacy_path()
-    helper_paths = [hf for hf in (helper_file, legacy_file) if hf.exists()]
-    launchers = collect_installed_launchers()
+    has_state = state_file.exists()
+
+    # Default to manifest-tracked files for restore-safe uninstall;
+    # fall back to discovery heuristics only when we don't have installer state.
+    if state.helper_files:
+        helper_paths = [Path(p) for p in state.helper_files if Path(p).exists()]
+        backup_helper_entries = state.helper_files
+    elif has_state and not (state.skills or state.runtimes or state.launcher_entries):
+        helper_paths = []
+        backup_helper_entries = None
+    else:
+        helper_paths = [hf for hf in (helper_file, legacy_file) if hf.exists()]
+        backup_helper_entries = None
+
+    if state.launcher_entries:
+        launchers = _parse_manifest_launchers(state.launcher_entries)
+        backup_launcher_entries = state.launcher_entries
+    else:
+        launchers = collect_installed_launchers()
+        backup_launcher_entries = None
+
     rc_cleanup_targets = [
         Path.home() / rcname
         for rcname in (".zshrc", ".bashrc")
@@ -3649,7 +3792,14 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
 
     # Backup before removing
     print(bold("Saving current state..."))
-    backup_ts = create_backup(store_path, runtimes, skill_names, dry_run=dry_run)
+    backup_ts = create_backup(
+        store_path,
+        runtimes,
+        skill_names,
+        launcher_entries=backup_launcher_entries,
+        helper_entries=backup_helper_entries,
+        dry_run=dry_run,
+    )
     if backup_ts:
         print(f"  {OK} Backup saved: {_backup_root(store_path) / backup_ts}")
         print(f"  {dim('Use `make restore` to undo this uninstall.')}")
