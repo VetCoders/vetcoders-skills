@@ -228,6 +228,7 @@ _record_loop_done() {
   local p1="${5:-}"
   local p2="${6:-}"
   local score="${7:-}"
+  local meta_path="${8:-}"
   if command -v python3 >/dev/null 2>&1; then
     _state_json_edit "$(cat <<'PY'
 loop_nr = int(args[0])
@@ -237,7 +238,19 @@ p0 = int(args[3]) if args[3] else None
 p1 = int(args[4]) if args[4] else None
 p2 = int(args[5]) if args[5] else None
 score = int(args[6]) if args[6] else None
+meta_path = args[7] if len(args) > 7 else ""
 now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+telemetry = {}
+if meta_path and os.path.isfile(meta_path):
+    try:
+        with open(meta_path, "r", encoding="utf-8") as fh:
+            m = json.load(fh)
+            if "usage" in m: telemetry["usage"] = m["usage"]
+            if "tools" in m: telemetry["tools"] = m["tools"]
+            if "model" in m: telemetry["model"] = m["model"]
+    except Exception:
+        pass
 
 payload["updated_at"] = now
 for loop in payload.get("loops", []):
@@ -247,10 +260,12 @@ for loop in payload.get("loops", []):
         loop["duration_s"] = duration
         loop["completed_at"] = now
         loop["metrics"] = {"p0": p0, "p1": p1, "p2": p2, "score": score}
+        if telemetry:
+            loop["telemetry"] = telemetry
 
 payload.setdefault("trajectory", []).append(score)
 PY
-)" "$loop_nr" "$report" "$duration" "$p0" "$p1" "$p2" "$score" >/dev/null || true
+)" "$loop_nr" "$report" "$duration" "$p0" "$p1" "$p2" "$score" "$meta_path" >/dev/null || true
   fi
 }
 
@@ -284,6 +299,7 @@ _record_loop_failed() {
   local duration="$3"
   local report_path="${4:-}"
   local exit_code="${5:-}"
+  local meta_path="${6:-}"
   if command -v python3 >/dev/null 2>&1; then
     _state_json_edit "$(cat <<'PY'
 loop_nr = int(args[0])
@@ -291,7 +307,19 @@ reason = args[1]
 duration = int(args[2])
 report_path = args[3]
 exit_code = int(args[4]) if args[4] else None
+meta_path = args[5] if len(args) > 5 else ""
 now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+telemetry = {}
+if meta_path and os.path.isfile(meta_path):
+    try:
+        with open(meta_path, "r", encoding="utf-8") as fh:
+            m = json.load(fh)
+            if "usage" in m: telemetry["usage"] = m["usage"]
+            if "tools" in m: telemetry["tools"] = m["tools"]
+            if "model" in m: telemetry["model"] = m["model"]
+    except Exception:
+        pass
 
 payload["status"] = "failed"
 payload["updated_at"] = now
@@ -305,8 +333,10 @@ for loop in payload.get("loops", []):
             loop["report"] = report_path
         if exit_code is not None:
             loop["exit_code"] = exit_code
+        if telemetry:
+            loop["telemetry"] = telemetry
 PY
-)" "$loop_nr" "$reason" "$duration" "$report_path" "$exit_code" >/dev/null || true
+)" "$loop_nr" "$reason" "$duration" "$report_path" "$exit_code" "$meta_path" >/dev/null || true
   fi
 }
 
@@ -685,7 +715,7 @@ PY
     loop_end=$(date +%s)
     duration=$((loop_end - loop_start))
     duration_fmt="$(printf '%dm %02ds' $((duration/60)) $((duration%60)))"
-    _record_loop_failed "$loop_nr" "spawn-failed" "$duration" "$actual_report_hint" "$actual_exit_code"
+    _record_loop_failed "$loop_nr" "spawn-failed" "$duration" "$actual_report_hint" "$actual_exit_code" "$meta_path"
     detail="$duration_fmt  failed before report"
     if [[ -n "$actual_exit_code" ]]; then
       detail="$detail  exit ${actual_exit_code}"
@@ -733,7 +763,7 @@ PY
 
     if (( wait_status == 4 )); then
       exit_code_hint="$(spawn_read_meta_field "$meta_path" "exit_code")"
-      _record_loop_failed "$loop_nr" "spawn-failed" "$duration" "$actual_report_hint" "$exit_code_hint"
+      _record_loop_failed "$loop_nr" "spawn-failed" "$duration" "$actual_report_hint" "$exit_code_hint" "$meta_path"
       detail="$duration_fmt  failed before report"
       if [[ -n "$exit_code_hint" ]]; then
         detail="$detail  exit ${exit_code_hint}"
@@ -780,7 +810,7 @@ PY
   fi
 
   read -r p0 p1 p2 score <<< "$(_extract_metrics "$actual_report")"
-  _record_loop_done "$loop_nr" "$actual_report" "$duration" "$p0" "$p1" "$p2" "$score"
+  _record_loop_done "$loop_nr" "$actual_report" "$duration" "$p0" "$p1" "$p2" "$score" "$meta_path"
 
   detail="$duration_fmt"
   if [[ -n "$p0" || -n "$p1" || -n "$p2" ]]; then
