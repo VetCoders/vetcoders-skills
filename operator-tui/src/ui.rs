@@ -3,7 +3,7 @@ use crate::state::RunKind;
 use ratatui::prelude::*;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
+use ratatui::widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap};
 
 pub fn draw(frame: &mut Frame, app: &App) {
     let root = frame.area();
@@ -33,6 +33,10 @@ pub fn draw(frame: &mut Frame, app: &App) {
     draw_detail(frame, right[0], app);
     draw_events(frame, right[1], app);
     draw_footer(frame, vertical[2], app);
+
+    if app.focus == LaunchFocus::Help {
+        draw_help_overlay(frame, app);
+    }
 }
 
 fn draw_header(frame: &mut Frame, area: Rect, app: &App) {
@@ -58,6 +62,8 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &App) {
         Span::styled("v runtime", Style::default().fg(Color::Yellow)),
         Span::raw("  "),
         Span::styled("d deep controls", Style::default().fg(Color::Blue)),
+        Span::raw("  "),
+        Span::styled("? help", Style::default().fg(Color::LightYellow)),
     ];
 
     let chunks = Layout::default()
@@ -164,59 +170,11 @@ fn draw_footer(frame: &mut Frame, area: Rect, app: &App) {
 }
 
 fn draw_launch(frame: &mut Frame, area: Rect, app: &App) {
-    let prompt_style = if app.focus == LaunchFocus::EditPrompt {
-        Style::default()
-            .fg(Color::Yellow)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::White)
-    };
-
-    let lines = vec![
-        Line::from(vec![
-            Span::styled(
-                "Launch",
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD),
-            ),
-            Span::raw("  "),
-            Span::styled(
-                format!("agent: {}", app.selected_agent()),
-                Style::default().fg(Color::Cyan),
-            ),
-            Span::raw("  "),
-            Span::styled(
-                format!("kind: {}", app.launch_kind.label()),
-                Style::default().fg(Color::Magenta),
-            ),
-            Span::raw("  "),
-            Span::styled(
-                format!("runtime: {}", app.launch_runtime.label()),
-                Style::default().fg(Color::Yellow),
-            ),
-        ]),
-        Line::from(vec![
-            Span::styled("Prompt: ", Style::default().fg(Color::Gray)),
-            Span::styled(app.launch_prompt.clone(), prompt_style),
-        ]),
-        Line::from(vec![
-            Span::styled("Enter launch", Style::default().fg(Color::Green)),
-            Span::raw("  "),
-            Span::styled("a cycle agent", Style::default().fg(Color::Cyan)),
-            Span::raw("  "),
-            Span::styled("v cycle runtime", Style::default().fg(Color::Yellow)),
-            Span::raw("  "),
-            Span::styled("e edit prompt", Style::default().fg(Color::Yellow)),
-        ]),
-        Line::from(vec![
-            Span::styled("Root: ", Style::default().fg(Color::Gray)),
-            Span::styled(
-                app.config.launch_root.to_string_lossy().into_owned(),
-                Style::default().fg(Color::White),
-            ),
-        ]),
-    ];
+    let lines = app
+        .prompt_lines()
+        .into_iter()
+        .map(Line::from)
+        .collect::<Vec<_>>();
 
     let launch = Paragraph::new(lines)
         .block(Block::default().borders(Borders::ALL).title("Launch panel"))
@@ -249,4 +207,43 @@ fn status_style(kind: RunKind) -> Style {
         RunKind::Paused => Style::default().fg(Color::Magenta),
         RunKind::Unknown => Style::default().fg(Color::Gray),
     }
+}
+
+fn draw_help_overlay(frame: &mut Frame, app: &App) {
+    let area = centered_rect(72, 70, frame.area());
+    frame.render_widget(Clear, area);
+    let lines = app
+        .help_lines()
+        .into_iter()
+        .map(Line::from)
+        .collect::<Vec<_>>();
+    let help = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Help")
+                .border_style(Style::default().fg(Color::Yellow)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(help, area);
+}
+
+fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(area);
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(popup_layout[1])[1]
 }

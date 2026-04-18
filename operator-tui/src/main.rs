@@ -73,6 +73,9 @@ fn handle_key(app: &mut App, key: KeyEvent) -> anyhow::Result<bool> {
 
     match app.focus {
         LaunchFocus::EditPrompt => match key.code {
+            KeyCode::Char('?') => {
+                app.focus = LaunchFocus::Help;
+            }
             KeyCode::Esc | KeyCode::Enter => {
                 app.focus = LaunchFocus::Browse;
             }
@@ -86,6 +89,7 @@ fn handle_key(app: &mut App, key: KeyEvent) -> anyhow::Result<bool> {
         },
         LaunchFocus::Browse => match key.code {
             KeyCode::Char('q') | KeyCode::Esc => return Ok(true),
+            KeyCode::Char('?') => app.focus = LaunchFocus::Help,
             KeyCode::Up | KeyCode::Char('k') => app.move_selection(-1),
             KeyCode::Down | KeyCode::Char('j') => app.move_selection(1),
             KeyCode::Char('1') => app.set_launch_kind(LaunchKind::Workflow),
@@ -111,11 +115,18 @@ fn handle_key(app: &mut App, key: KeyEvent) -> anyhow::Result<bool> {
             _ => {}
         },
         LaunchFocus::DeepControls => match key.code {
+            KeyCode::Char('?') => app.focus = LaunchFocus::Help,
             KeyCode::Char('q') | KeyCode::Esc => app.focus = LaunchFocus::Browse,
             KeyCode::Up | KeyCode::Char('k') => app.move_deep_selection(-1),
             KeyCode::Down | KeyCode::Char('j') => app.move_deep_selection(1),
             KeyCode::Char('r') => app.refresh(),
             KeyCode::Enter => run_selected_deep_control(app)?,
+            _ => {}
+        },
+        LaunchFocus::Help => match key.code {
+            KeyCode::Char('?') | KeyCode::Esc | KeyCode::Enter => {
+                app.focus = LaunchFocus::Browse;
+            }
             _ => {}
         },
     }

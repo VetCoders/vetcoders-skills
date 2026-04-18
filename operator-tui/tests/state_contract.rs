@@ -214,3 +214,61 @@ fn deep_controls_expose_attach_resume_and_artifacts() {
         ]
     );
 }
+
+#[test]
+fn empty_state_detail_lines_offer_human_quick_start() {
+    let app = App {
+        config: AppConfig {
+            state_root: "/tmp/state".into(),
+            command_deck: "/usr/bin/vibecrafted".into(),
+            launch_root: "/tmp/repo".into(),
+            launch_runtime: LaunchRuntime::Terminal,
+            tick_rate: Duration::from_millis(250),
+        },
+        state: ControlPlaneState::empty("/tmp/state"),
+        runs: vec![],
+        selected: 0,
+        launch_kind: LaunchKind::Workflow,
+        launch_agent: 0,
+        launch_prompt: "Ship it".to_string(),
+        launch_runtime: LaunchRuntime::Terminal,
+        focus: LaunchFocus::Browse,
+        status_line: String::new(),
+        launch_history: Vec::new(),
+        deep_selected: 0,
+    };
+
+    let lines = app.detail_lines();
+    assert!(lines.iter().any(|line| line.contains("Start here:")));
+    assert!(lines.iter().any(|line| line.contains("Workflow")));
+    assert!(lines.iter().any(|line| line.contains("Press ?")));
+}
+
+#[test]
+fn prompt_lines_include_human_kind_copy_and_command_preview() {
+    let app = App {
+        config: AppConfig {
+            state_root: "/tmp/state".into(),
+            command_deck: "/usr/bin/vibecrafted".into(),
+            launch_root: "/tmp/repo".into(),
+            launch_runtime: LaunchRuntime::Terminal,
+            tick_rate: Duration::from_millis(250),
+        },
+        state: ControlPlaneState::empty("/tmp/state"),
+        runs: vec![],
+        selected: 0,
+        launch_kind: LaunchKind::Research,
+        launch_agent: 1,
+        launch_prompt: "Research the launcher surface.".to_string(),
+        launch_runtime: LaunchRuntime::Visible,
+        focus: LaunchFocus::Browse,
+        status_line: String::new(),
+        launch_history: Vec::new(),
+        deep_selected: 0,
+    };
+
+    let lines = app.prompt_lines();
+    assert!(lines.iter().any(|line| line.contains("Research swarm")));
+    assert!(lines.iter().any(|line| line.contains("command: /usr/bin/vibecrafted research")));
+    assert!(lines.iter().any(|line| line.contains("cycle agent")));
+}

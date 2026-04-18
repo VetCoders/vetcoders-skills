@@ -11,6 +11,7 @@ pub enum LaunchFocus {
     Browse,
     EditPrompt,
     DeepControls,
+    Help,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -171,6 +172,9 @@ impl App {
     }
 
     pub fn status_summary(&self) -> String {
+        if self.runs.is_empty() {
+            return "no runs loaded yet".to_string();
+        }
         let mut counts = BTreeMap::new();
         for run in &self.runs {
             *counts.entry(run.kind.label()).or_insert(0usize) += 1;
@@ -197,8 +201,19 @@ impl App {
     pub fn detail_lines(&self) -> Vec<String> {
         let Some(run) = self.selected_run() else {
             return vec![
-                "No runs found in the control-plane state directory.".to_string(),
+                "No runs found in the control-plane state directory yet.".to_string(),
+                String::new(),
+                "Start here:".to_string(),
+                "1 -> Workflow for the normal path".to_string(),
+                "2 -> Research swarm if the surface is still unclear".to_string(),
+                "3 -> Review if something already exists and needs truth".to_string(),
+                "4 -> Marbles when the system works but still drifts".to_string(),
+                String::new(),
+                "Use a / v / e / Enter in the launch panel below.".to_string(),
+                "Press ? for the in-app operator guide.".to_string(),
+                String::new(),
                 format!("State root: {}", path_display(&self.config.state_root)),
+                format!("Launch root: {}", path_display(&self.config.launch_root)),
             ];
         };
 
@@ -270,18 +285,56 @@ impl App {
     }
 
     pub fn prompt_lines(&self) -> Vec<String> {
+        let command_preview = self.launch_command().command_line();
         let mut lines = vec![
-            format!("kind: {}", self.launch_kind.label()),
-            format!("agent: {}", self.selected_agent()),
-            format!("runtime: {}", self.launch_runtime.label()),
-            format!("root: {}", path_display(&self.config.launch_root)),
+            format!("{}  {}", self.launch_kind.human_title(), self.launch_kind.human_description()),
+            format!(
+                "agent: {}  runtime: {}",
+                self.selected_agent(),
+                self.launch_runtime.label()
+            ),
             format!("prompt: {}", self.launch_prompt),
-            "keys: 1 workflow | 2 research | 3 review | 4 marbles | a agent | v runtime | e edit prompt | Enter launch".to_string(),
+            String::new(),
+            "Keys: 1 workflow  2 research  3 review  4 marbles".to_string(),
+            "      a cycle agent  v cycle runtime  e edit prompt  Enter launch".to_string(),
+            String::new(),
+            format!("root: {}", path_display(&self.config.launch_root)),
+            format!("command: {}", command_preview),
         ];
         if let Some(last) = self.launch_history.last() {
+            lines.push(String::new());
             lines.push(format!("last launch: {last}"));
         }
         lines
+    }
+
+    pub fn help_lines(&self) -> Vec<String> {
+        vec![
+            "Operator guide".to_string(),
+            String::new(),
+            "This console is the human front door into Vibecrafted control-plane state.".to_string(),
+            "Browse runs on the left, inspect truth on the right, and launch new work below.".to_string(),
+            String::new(),
+            "Quick start".to_string(),
+            "1 Workflow  -> normal path for most tasks".to_string(),
+            "2 Research  -> send a research swarm first".to_string(),
+            "3 Review    -> audit an existing surface".to_string(),
+            "4 Marbles   -> convergence loop for fragile systems".to_string(),
+            String::new(),
+            "Keys".to_string(),
+            "↑/↓ or j/k  move through runs".to_string(),
+            "a           cycle launch agent".to_string(),
+            "v           cycle runtime (terminal / visible / headless)".to_string(),
+            "e           edit launch prompt".to_string(),
+            "Enter       launch selected action".to_string(),
+            "d           selected-run deep controls".to_string(),
+            "r           refresh control-plane state".to_string(),
+            "?           close this guide".to_string(),
+            "q / Esc     quit".to_string(),
+            String::new(),
+            "Operator rule".to_string(),
+            "Use this to decide and launch. Let worker agents execute; do not overload the shell as your only dashboard.".to_string(),
+        ]
     }
 
     pub fn active_run_count(&self) -> usize {
@@ -363,6 +416,7 @@ impl App {
             return vec![
                 "Deep controls".to_string(),
                 "No attach/resume/report actions are available for the selected run.".to_string(),
+                "Pick another run or launch a fresh one below.".to_string(),
             ];
         }
         let mut lines = vec![
@@ -384,10 +438,10 @@ impl App {
 
 pub fn default_prompt(kind: LaunchKind) -> String {
     match kind {
-        LaunchKind::Workflow => "Plan and implement the selected task.".to_string(),
-        LaunchKind::Research => "Research the selected task and report findings.".to_string(),
-        LaunchKind::Review => "Review the selected surface and report risks.".to_string(),
-        LaunchKind::Marbles => "Run a convergence loop on the selected task.".to_string(),
+        LaunchKind::Workflow => "Plan and implement the task I am looking at now.".to_string(),
+        LaunchKind::Research => "Research the task I am looking at now and report the ground truth.".to_string(),
+        LaunchKind::Review => "Review the selected surface and call out concrete risks.".to_string(),
+        LaunchKind::Marbles => "Run a convergence loop on the selected surface until the lies are exposed.".to_string(),
     }
 }
 
