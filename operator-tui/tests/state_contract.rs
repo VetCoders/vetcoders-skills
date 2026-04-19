@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::path::Path;
+use std::sync::{Mutex, OnceLock};
 use std::time::Duration;
 
 use tempfile::tempdir;
@@ -15,6 +16,11 @@ use vibecrafted_operator::state::{
 
 #[cfg(unix)]
 use std::os::unix::fs::symlink;
+
+fn env_lock() -> &'static Mutex<()> {
+    static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    ENV_LOCK.get_or_init(|| Mutex::new(()))
+}
 
 #[test]
 fn loads_runs_and_events_from_control_plane_state() {
@@ -119,6 +125,8 @@ fn builds_existing_command_deck_launches() {
 
 #[test]
 fn marbles_launches_keep_runtime_root_and_loop_controls() {
+    // Process env is shared across tests, so pin access while we mutate zellij config.
+    let _guard = env_lock().lock().unwrap();
     let previous = env::var_os("ZELLIJ_CONFIG_DIR");
     unsafe {
         env::remove_var("ZELLIJ_CONFIG_DIR");
@@ -182,6 +190,8 @@ fn marbles_launches_keep_runtime_root_and_loop_controls() {
 
 #[test]
 fn terminal_launches_preserve_explicit_zellij_config_dir() {
+    // Process env is shared across tests, so pin access while we mutate zellij config.
+    let _guard = env_lock().lock().unwrap();
     let deck = Path::new("/usr/bin/vibecrafted");
     let explicit = Path::new("/tmp/custom-zellij");
     let previous = env::var_os("ZELLIJ_CONFIG_DIR");
