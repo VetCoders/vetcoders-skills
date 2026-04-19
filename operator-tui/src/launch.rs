@@ -177,15 +177,15 @@ fn build_terminal_launch_command(deck: &Path, request: &LaunchRequest) -> Launch
     let zellij_config_dir = resolved_zellij_config_dir(request.root.as_deref());
 
     let mut args = Vec::new();
-    
+
     // We are running zellij in-place
     args.push("options".into());
-    
+
     if let Some(config_dir) = zellij_config_dir {
         args.push("--config-dir".into());
         args.push(config_dir.into_os_string());
     }
-    
+
     args.push("--layout-string".into());
     args.push(zellij_layout.into());
 

@@ -373,6 +373,44 @@ mod tests {
     }
 
     #[test]
+    fn handle_key_shortcuts_jump_to_dispatch_controls_and_prime_selection() {
+        let mut app = sample_app();
+
+        handle_key(&mut app, key(KeyCode::Char('a'))).unwrap();
+        assert_eq!(app.active_tab(), AppTab::Dispatch);
+        assert_eq!(app.dispatch_focus(), DispatchFocus::Agent);
+        assert_eq!(app.selected_agent(), "codex");
+
+        handle_key(&mut app, key(KeyCode::Char('v'))).unwrap();
+        assert_eq!(app.active_tab(), AppTab::Dispatch);
+        assert_eq!(app.dispatch_focus(), DispatchFocus::Runtime);
+        assert_eq!(app.launch_runtime, LaunchRuntime::Visible);
+
+        app.set_active_tab(AppTab::Monitor);
+        handle_key(&mut app, key(KeyCode::Char('d'))).unwrap();
+        assert_eq!(app.active_tab(), AppTab::Controls);
+        assert!(app.status_line.contains("Controls ready"));
+    }
+
+    #[test]
+    fn handle_key_controls_can_move_across_run_list_and_prompt_edit_can_tab_out() {
+        let mut app = sample_app();
+        app.set_active_tab(AppTab::Controls);
+
+        handle_key(&mut app, key(KeyCode::Right)).unwrap();
+        assert_eq!(app.selected, 1);
+
+        handle_key(&mut app, key(KeyCode::Left)).unwrap();
+        assert_eq!(app.selected, 0);
+
+        app.set_active_tab(AppTab::Dispatch);
+        app.focus = LaunchFocus::EditPrompt;
+        handle_key(&mut app, key(KeyCode::Tab)).unwrap();
+        assert_eq!(app.active_tab(), AppTab::Controls);
+        assert_eq!(app.focus, LaunchFocus::Browse);
+    }
+
+    #[test]
     fn set_active_tab_resets_focus_to_browse() {
         let mut app = sample_app();
         app.focus = LaunchFocus::EditPrompt;

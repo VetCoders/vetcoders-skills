@@ -403,3 +403,37 @@ fn tab_navigation_wraps_and_dispatch_focus_tracks_selected_field() {
     app.move_dispatch_selection(2);
     assert_eq!(app.dispatch_focus(), DispatchFocus::Prompt);
 }
+
+#[test]
+fn changing_launch_kind_reorients_the_operator_into_dispatch() {
+    let mut app = App {
+        config: AppConfig {
+            state_root: "/tmp/state".into(),
+            command_deck: "/usr/bin/vibecrafted".into(),
+            launch_root: "/tmp/repo".into(),
+            launch_runtime: LaunchRuntime::Terminal,
+            tick_rate: Duration::from_millis(250),
+        },
+        state: ControlPlaneState::empty("/tmp/state"),
+        runs: vec![],
+        selected: 0,
+        active_tab: AppTab::Controls.index(),
+        launch_kind: LaunchKind::Workflow,
+        launch_agent: 2,
+        launch_prompt: "custom prompt".to_string(),
+        launch_runtime: LaunchRuntime::Terminal,
+        dispatch_selected: DispatchFocus::Runtime as usize,
+        focus: LaunchFocus::Help,
+        status_line: String::new(),
+        launch_history: Vec::new(),
+        deep_selected: 0,
+        filter_active_only: false,
+    };
+
+    app.set_launch_kind(LaunchKind::Review);
+
+    assert_eq!(app.active_tab(), AppTab::Dispatch);
+    assert_eq!(app.dispatch_focus(), DispatchFocus::Kind);
+    assert_eq!(app.focus, LaunchFocus::Browse);
+    assert!(app.launch_prompt.contains("Review"));
+}
