@@ -103,6 +103,7 @@ fn handle_key(app: &mut App, key: KeyEvent) -> anyhow::Result<bool> {
             KeyCode::Char('4') => app.set_launch_kind(LaunchKind::Marbles),
             KeyCode::Char('a') => app.cycle_agent(),
             KeyCode::Char('v') => app.cycle_runtime(),
+            KeyCode::Char('f') => app.toggle_filter(),
             KeyCode::Char('r') => app.refresh(),
             KeyCode::Char('e') => app.focus = LaunchFocus::EditPrompt,
             KeyCode::Enter => {

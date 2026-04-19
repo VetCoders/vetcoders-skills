@@ -61,6 +61,8 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &App) {
         Span::raw("  "),
         Span::styled("v runtime", Style::default().fg(Color::Yellow)),
         Span::raw("  "),
+        Span::styled("f filter", Style::default().fg(Color::Yellow)),
+        Span::raw("  "),
         Span::styled("d deep controls", Style::default().fg(Color::Blue)),
         Span::raw("  "),
         Span::styled("? help", Style::default().fg(Color::LightYellow)),
@@ -128,7 +130,12 @@ fn draw_runs(frame: &mut Frame, area: Rect, app: &App) {
             .collect()
     };
 
-    let list = List::new(items).block(Block::default().borders(Borders::ALL).title("Runs"));
+    let title = if app.filter_active_only {
+        "Runs (Active/Stalled/Paused)"
+    } else {
+        "Runs (All)"
+    };
+    let list = List::new(items).block(Block::default().borders(Borders::ALL).title(title));
     frame.render_widget(list, area);
 }
 

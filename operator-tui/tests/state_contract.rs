@@ -273,6 +273,7 @@ fn deep_controls_expose_attach_resume_and_artifacts() {
         status_line: String::new(),
         launch_history: Vec::new(),
         deep_selected: 0,
+        filter_active_only: false,
     };
 
     assert_eq!(
@@ -311,6 +312,7 @@ fn empty_state_detail_lines_offer_human_quick_start() {
         status_line: String::new(),
         launch_history: Vec::new(),
         deep_selected: 0,
+        filter_active_only: false,
     };
 
     let lines = app.detail_lines();
@@ -340,6 +342,7 @@ fn prompt_lines_include_human_kind_copy_and_command_preview() {
         status_line: String::new(),
         launch_history: Vec::new(),
         deep_selected: 0,
+        filter_active_only: false,
     };
 
     let lines = app.prompt_lines();

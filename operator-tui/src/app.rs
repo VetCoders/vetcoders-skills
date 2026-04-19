@@ -57,6 +57,7 @@ pub struct App {
     pub status_line: String,
     pub launch_history: Vec<String>,
     pub deep_selected: usize,
+    pub filter_active_only: bool,
 }
 
 impl App {
@@ -78,6 +79,7 @@ impl App {
             status_line: String::new(),
             launch_history: Vec::new(),
             deep_selected: 0,
+            filter_active_only: false,
         };
         app.sync_selection();
         Ok(app)
@@ -87,8 +89,17 @@ impl App {
         let state = ControlPlaneState::load(&self.config.state_root)
             .unwrap_or_else(|_| ControlPlaneState::empty(&self.config.state_root));
         self.state = state;
-        self.runs = render_runs(&self.state);
+        let mut runs = render_runs(&self.state);
+        if self.filter_active_only {
+            runs.retain(|r| matches!(r.kind, RunKind::Active | RunKind::Stalled | RunKind::Paused));
+        }
+        self.runs = runs;
         self.sync_selection();
+    }
+
+    pub fn toggle_filter(&mut self) {
+        self.filter_active_only = !self.filter_active_only;
+        self.refresh();
     }
 
     pub fn selected_run(&self) -> Option<&RenderedRun> {
