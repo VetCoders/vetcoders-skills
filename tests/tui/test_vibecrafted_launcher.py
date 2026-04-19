@@ -803,6 +803,7 @@ def test_agent_subcommand_help_lists_modes() -> None:
     assert "Plan-based helper modes for codex." in result.stdout
     assert "implement <plan.md>" in result.stdout
     assert "observe   --last" in result.stdout
+    assert "await     --last" in result.stdout
 
 
 def test_dashboard_subcommand_launches_repo_owned_zellij_layout(tmp_path: Path) -> None:

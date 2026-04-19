@@ -26,7 +26,7 @@ _red='\033[31m'
 _reset='\033[0m'
 
 _agents=(claude codex gemini)
-_modes=(implement research review plan prompt observe)
+_modes=(implement research review plan prompt observe await)
 _skills=(decorate delegate dou followup hydrate justdo marbles partner prune release research review scaffold workflow)
 
 _script_repo_root() {
@@ -356,6 +356,7 @@ cmd_skill_help() {
     research)
       printf '  vibecrafted research --prompt "Research the API surface"\n'
       printf '  vc-research --file /path/to/question-set.md\n'
+      printf '  vc-research-await --last\n'
       ;;
     *)
       printf '  vibecrafted %s codex --prompt "Run %s on this repository"\n' "$skill" "$skill"
@@ -376,7 +377,7 @@ cmd_agent_help() {
   printf '  Plan-based helper modes for %s.\n' "$agent"
   printf '\n'
   printf '%bUsage:%b\n' "$_bold" "$_reset"
-  printf '  vibecrafted %s <implement|research|review|plan|prompt|observe> [args]\n' "$agent"
+  printf '  vibecrafted %s <implement|research|review|plan|prompt|observe|await> [args]\n' "$agent"
   printf '\n'
   printf '%bModes:%b\n' "$_bold" "$_reset"
   printf '  implement <plan.md>            Execute a plan file\n'
@@ -385,11 +386,13 @@ cmd_agent_help() {
   printf '  plan      <plan.md>            Generate an implementation plan\n'
   printf '  prompt    <plan.md>            Free-form prompt with plan context\n'
   printf '  observe   --last               Check the last report or transcript\n'
+  printf '  await     --last               Wait for metadata completion + summary\n'
   printf '\n'
   printf '%bExamples:%b\n' "$_bold" "$_reset"
   printf '  vibecrafted %s implement .vibecrafted/plans/my-plan.md\n' "$agent"
   printf '  vibecrafted %s research .vibecrafted/plans/my-plan.md\n' "$agent"
   printf '  vibecrafted %s observe --last\n' "$agent"
+  printf '  vibecrafted %s await --last\n' "$agent"
   printf '\n'
 }
 
@@ -1260,6 +1263,7 @@ run_mode() {
       plan)      printf '  Generate an implementation plan.\n  Usage: vibecrafted %s plan <plan.md>\n' "$agent" ;;
       prompt)    printf '  Free-form prompt with plan context.\n  Usage: vibecrafted %s prompt <plan.md>\n' "$agent" ;;
       observe)   printf '  Check the last agent report or transcript.\n  Usage: vibecrafted %s observe --last\n' "$agent" ;;
+      await)     printf '  Wait for the last agent run to finish via metadata.\n  Usage: vibecrafted %s await --last\n' "$agent" ;;
     esac
     printf '\n'
     return 0
@@ -1285,6 +1289,10 @@ run_skill() {
 
   if [[ "$skill" == "research" ]]; then
     _ensure_helpers_loaded || return 1
+    if [[ "$agent" == "await" ]]; then
+      _run_helper "vc-research-await" "$@"
+      return
+    fi
     _run_helper "vc-research" "${agent:+$agent}" "$@"
     return
   fi

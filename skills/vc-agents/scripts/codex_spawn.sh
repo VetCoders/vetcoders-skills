@@ -141,5 +141,8 @@ chmod +x "$SPAWN_LAUNCHER"
 spawn_print_launch codex "$mode" "$runtime"
 spawn_launch "$SPAWN_LAUNCHER" "$runtime" "$dry_run" "codex-${VIBECRAFTED_SKILL_NAME:-$mode}"
 if [[ "${VIBECRAFTED_SUPPRESS_REPORT_HINT:-0}" != "1" ]]; then
-  printf 'Agent launched. Report will land at: %s\n' "$SPAWN_REPORT"
+  printf 'Agent launched.\n'
+  bash "$SCRIPT_DIR/await.sh" codex --describe "$SPAWN_LAUNCHER" 2>/dev/null || true
+  printf '\nAwait:\n\n'
+  printf 'vibecrafted codex await --run-id %s\n' "$SPAWN_RUN_ID"
 fi

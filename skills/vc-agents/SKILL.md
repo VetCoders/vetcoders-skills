@@ -1,6 +1,6 @@
 ---
 name: vc-agents
-version: 3.0.0
+version: 3.1.0
 description: >
   Spawn external specialized AI agents from the user's fleet (Codex, Claude, Gemini).
   Use this when you need parallel execution, deep isolation, or task-specific cognitive 
@@ -213,17 +213,50 @@ If these tools are unavailable, stop pretending spawn is correctly configured an
 - Transcripts: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.transcript.log`
 - Metadata: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<timestamp>_<slug>_<agent>.meta.json`
 
+Every spawn should surface a launch card immediately after dispatch.
+That card should expose at least:
+
+- `run_id`
+- chosen agent / model family
+- plan path
+- report path
+- transcript path
+- metadata path
+
+If the operator cannot see those paths, observability is incomplete even if the
+agent is technically running.
+
 ## Observation
 
 Observe progress through durable artifacts in `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/`.
 
-If your environment exposes the observer helper, the standard check is:
+The default check is metadata-first, not pane-first.
+Use the dedicated runtime helper to wait on metadata completion and print the
+final summary:
+
+```bash
+vibecrafted codex await --run-id <run_id>
+```
+
+For the most recent run of a given agent:
+
+```bash
+vibecrafted codex await --last
+```
+
+For multiple spawned workers, pass their launcher or metadata paths directly to
+the helper and let it wait on all of them together.
+
+If your environment exposes the observer helper, use it for transcript-level
+inspection or debugging:
 
 ```bash
 vibecrafted codex observe --last
 ```
 
-Use the equivalent agent observer when needed.
+Use the equivalent agent observer when needed, but do not rely on `observe` as
+the only status surface. `vc-agents` should remain operable from durable
+artifacts even when the operator is not staring at the live panes.
 
 ## Quality gate expectations
 

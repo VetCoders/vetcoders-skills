@@ -1398,6 +1398,18 @@ _vetcoders_observe() {
   bash "$script" "$tool" "$@"
 }
 
+_vetcoders_await() {
+  local tool="${1:-}"
+  shift || true
+  local script
+  script="$(_vetcoders_spawn_script "${tool:-codex}" "await.sh")" || return 1
+  if [[ -n "$tool" ]]; then
+    bash "$script" "$tool" "$@"
+  else
+    bash "$script" "$@"
+  fi
+}
+
 codex-review() {
   _vetcoders_spawn_plan codex review "$1" --runtime "$(_vetcoders_default_runtime)"
 }
@@ -1462,12 +1474,24 @@ codex-observe() {
   _vetcoders_observe codex "$@"
 }
 
+codex-await() {
+  _vetcoders_await codex "$@"
+}
+
 claude-observe() {
   _vetcoders_observe claude "$@"
 }
 
+claude-await() {
+  _vetcoders_await claude "$@"
+}
+
 gemini-observe() {
   _vetcoders_observe gemini "$@"
+}
+
+gemini-await() {
+  _vetcoders_await gemini "$@"
 }
 
 _vetcoders_skill() {
@@ -1716,6 +1740,9 @@ _vetcoders_research() {
     export VIBECRAFTED_SKILL_NAME="research"
     zellij --session "$session_name" action new-tab --layout "$layout_file" >/dev/null
     printf 'Research swarm launched in shared tab (run_id=%s).\n' "$run_id"
+    _vetcoders_await "" --describe "$claude_launcher" "$codex_launcher" "$gemini_launcher" || true
+    printf '\nAwait:\n\n'
+    printf 'vc-research-await --run-id %s\n' "$run_id"
     return 0
   fi
 
@@ -1724,6 +1751,8 @@ _vetcoders_research() {
   printf '  claude: %s\n' "$claude_launcher"
   printf '  codex:  %s\n' "$codex_launcher"
   printf '  gemini: %s\n' "$gemini_launcher"
+  printf '\nAwait:\n\n'
+  printf 'vc-research-await --run-id %s\n' "$run_id"
 }
 
 _vetcoders_skill_init() {
@@ -2022,6 +2051,7 @@ codex-skill-research() { _vetcoders_skill_entry codex research "$@"; }
 claude-skill-research() { _vetcoders_skill_entry claude research "$@"; }
 gemini-skill-research() { _vetcoders_skill_entry gemini research "$@"; }
 vc-research() { _vetcoders_research "$@"; }
+vc-research-await() { _vetcoders_await "" --research "$@"; }
 
 codex-skill-review() { _vetcoders_skill_entry codex review "$@"; }
 claude-skill-review() { _vetcoders_skill_entry claude review "$@"; }
@@ -2062,9 +2092,11 @@ Spawn helpers (per agent):
   <agent>-justdo                 Autonomous e2e implementation
   <agent>-partner                Collaborative partner mode
   <agent>-observe --last         Check last report
+  <agent>-await --last           Wait for metadata completion + summary
 
 Swarm launchers:
   vc-research --prompt "text"    Triple-agent research swarm
+  vc-research-await --last       Wait for the latest research swarm
 
 Command deck:
   vibecrafted help               Main command surface

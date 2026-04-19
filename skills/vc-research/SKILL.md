@@ -1,6 +1,6 @@
 ---
 name: vc-research
-version: 1.2.0
+version: 1.3.0
 description: >
   Standalone triple-agent research skill. Co-define the problem with the user,
   write a research plan, then spawn claude + codex + gemini simultaneously on the
@@ -198,6 +198,14 @@ The launcher opens one shared Zellij research tab using `vc-research.kdl`,
 keeps a common `run_id`, and starts claude + codex + gemini against the same
 plan. This is intentional — divergence between reports reveals blind spots.
 
+Research observability is mandatory.
+`vc-research` is not "running" just because three panes appeared.
+Immediately after spawn, the operator should get a launch card with the shared
+`run_id`, plan path, report/meta paths, and the exact await command.
+
+That launch card is the default surface.
+`observe --last` is a drilldown tool, not the primary source of truth.
+
 ### Step 4 — Collect reports
 
 Reports land in:
@@ -208,13 +216,33 @@ $VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_
 $VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/reports/<ts>_research-plan_gemini.md
 ```
 
-Wait for all three. Use the observe scripts:
+Wait for all three through the dedicated runtime helper, not by hand-rolled
+snippets.
+The standard operator move is:
+
+```bash
+vc-research-await --run-id <run_id>
+```
+
+If you just launched the latest research swarm and want the newest one, this is
+also valid:
+
+```bash
+vc-research-await --last
+```
+
+If you need transcript-level inspection while the swarm is still running, use
+the observer helpers:
 
 ```bash
 vibecrafted claude observe --last
 vibecrafted codex observe --last
 vibecrafted gemini observe --last
 ```
+
+Do not treat manual `observe --last` calls as sufficient observability for the
+workflow itself. The workflow should expose its state through launch metadata,
+the await helper, and durable report paths by default.
 
 ### Step 5 — Synthesize
 
