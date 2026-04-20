@@ -8,10 +8,6 @@ zellij-attached operator tab. `Stand-alone` means the operator has a direct
 command-deck entry instead of reaching the surface only through another mode or
 workflow.
 
-`vc-intents` is present in the current working tree, but its `SKILL.md` is
-still local to this branch. The index keeps it visible because the operator
-inventory and launcher surface now treat it as part of the framework.
-
 | Skill          | Purpose                                                                         | Primary entry                                                                   | CI mode | Stand-alone | Docs                                                                              |
 | -------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------- | ----------- | --------------------------------------------------------------------------------- |
 | `vc-agents`    | External execution fleet and agent-mode dispatch contract.                      | `vibecrafted <agent> implement\|research\|review\|plan\|prompt\|observe\|await` | Yes     | No          | [SKILL](../skills/vc-agents/SKILL.md) · [FLOW](../skills/vc-agents/FLOW.md)       |

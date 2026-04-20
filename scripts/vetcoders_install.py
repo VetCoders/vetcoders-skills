@@ -1112,6 +1112,85 @@ def _launcher_path_line() -> str:
     return 'export PATH="$HOME/.local/bin:$PATH"'
 
 
+def _doctor_repair_rc_content(
+    content: str, *, ensure_helper: bool, ensure_path: bool
+) -> str:
+    repaired, _removed = _clean_legacy_rc_entries(content)
+    for line, comment in _uninstall_rc_entries():
+        repaired, _ = _strip_rc_entry(repaired, line, comment)
+    blocks: List[Tuple[str, str]] = []
+    if ensure_helper:
+        blocks.append(("𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helpers", _shell_source_line()))
+    if ensure_path:
+        blocks.append(("𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher", _launcher_path_line()))
+
+    if not blocks:
+        return repaired
+
+    repaired = repaired.rstrip("\n")
+    block_text = "\n\n".join(f"# {comment}\n{line}" for comment, line in blocks)
+    if repaired:
+        repaired = f"{repaired}\n\n{block_text}\n"
+    else:
+        repaired = f"{block_text}\n"
+    return repaired
+
+
+def _doctor_fix_rc_files() -> List[DoctorFinding]:
+    findings: List[DoctorFinding] = []
+    ensure_helper = _helper_target_path().exists() or _helper_legacy_path().exists()
+    ensure_path = _find_launcher_wrapper("vibecrafted") is not None
+
+    for rcname in (".zshrc", ".bashrc"):
+        rcfile = Path.home() / rcname
+        if not rcfile.exists():
+            continue
+        try:
+            content = rcfile.read_text(encoding="utf-8")
+        except OSError as exc:
+            findings.append(
+                DoctorFinding("warn", f"rc-fix:{rcname}", f"could not read: {exc}")
+            )
+            continue
+        if not _is_writable(rcfile):
+            findings.append(
+                DoctorFinding(
+                    "warn",
+                    f"rc-fix:{rcname}",
+                    f"{rcfile} is locked — cannot repair launcher/source hints",
+                )
+            )
+            continue
+
+        repaired = _doctor_repair_rc_content(
+            content, ensure_helper=ensure_helper, ensure_path=ensure_path
+        )
+        if repaired == content:
+            findings.append(
+                DoctorFinding("ok", f"rc-fix:{rcname}", "already canonical")
+            )
+            continue
+
+        rcfile.write_text(repaired, encoding="utf-8")
+        findings.append(
+            DoctorFinding(
+                "ok",
+                f"rc-fix:{rcname}",
+                "repaired legacy rc entries and restored canonical launcher/helper hints",
+            )
+        )
+
+    if not findings:
+        findings.append(
+            DoctorFinding(
+                "ok",
+                "rc-fix",
+                "no existing shell rc files found — nothing to repair",
+            )
+        )
+    return findings
+
+
 def _run_smoke_command(
     command: Sequence[str],
     *,
@@ -3567,6 +3646,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     state = InstallState.load(store_path)
     has_manifest = bool(state.skills)
 
+    if getattr(args, "fix_rc", False):
+        for finding in _doctor_fix_rc_files():
+            icon = OK if finding.level == "ok" else WARN
+            print(f"  {icon} {finding.component}: {finding.message}")
+
     if not state.skills:
         # No manifest — discover from disk, but only OUR skills
         bundle = set(_known_bundle_names())
@@ -4159,7 +4243,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     # doctor
-    sub.add_parser("doctor", help="Verify installation health")
+    p_doctor = sub.add_parser("doctor", help="Verify installation health")
+    p_doctor.add_argument(
+        "--fix-rc",
+        action="store_true",
+        help="Repair legacy shell startup lines and restore canonical helper/PATH hints before verifying",
+    )
 
     # list
     p_list = sub.add_parser(

@@ -307,6 +307,74 @@ def test_run_doctor_spawn_e2e_supplies_full_meta_arguments(
     assert indexed["spawn-e2e"].level == "ok"
 
 
+def test_cmd_doctor_fix_rc_repairs_legacy_shell_lines(
+    tmp_path: Path, monkeypatch
+) -> None:
+    home = tmp_path / "home"
+    config_home = home / ".config"
+    crafted_home = home / ".vibecrafted"
+    store_path = crafted_home / "skills"
+    launcher_bin = home / ".local" / "bin"
+    helper_dir = config_home / "vetcoders"
+    legacy_helper_dir = config_home / "zsh"
+    zshrc = home / ".zshrc"
+
+    store_path.mkdir(parents=True)
+    launcher_bin.mkdir(parents=True)
+    helper_dir.mkdir(parents=True)
+    legacy_helper_dir.mkdir(parents=True)
+
+    helper_file = helper_dir / "vc-skills.sh"
+    helper_file.write_text(
+        "\n".join(
+            [
+                "# shellcheck shell=bash",
+                installer.HELPER_SHIM_MARKER,
+                "vc-help() { :; }",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (legacy_helper_dir / "vc-skills.zsh").write_text(
+        "# legacy helper\n", encoding="utf-8"
+    )
+    _write_executable(
+        launcher_bin / "vibecrafted",
+        "#!/usr/bin/env bash\nprintf '𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. help ok\\n'\n",
+    )
+    zshrc.write_text(
+        "\n".join(
+            [
+                "# existing user config",
+                installer._old_zshrc_source_line(),
+                installer._shell_source_line(),
+                'export VIBECRAFTED_HOME="$HOME/.vibecrafted"',
+                installer._launcher_path_line(),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(config_home))
+    monkeypatch.setenv("VIBECRAFTED_HOME", str(crafted_home))
+    findings = installer._doctor_fix_rc_files()
+
+    assert any(
+        finding.component == "rc-fix:.zshrc" and finding.level == "ok"
+        for finding in findings
+    )
+    repaired = zshrc.read_text(encoding="utf-8")
+    assert installer._old_zshrc_source_line() not in repaired
+    assert 'export VIBECRAFTED_HOME="$HOME/.vibecrafted"' not in repaired
+    assert repaired.count(installer._shell_source_line()) == 1
+    assert repaired.count(installer._launcher_path_line()) == 1
+    assert "# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helpers" in repaired
+    assert "# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher" in repaired
+
+
 def test_describe_dumb_terminal_noise_flags_starship_and_stdout() -> None:
     detail = installer.describe_dumb_terminal_noise(
         """
