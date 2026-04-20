@@ -435,7 +435,7 @@ def _doctor_action_items(findings: Sequence["DoctorFinding"]) -> List[str]:
         for finding in issues
     ):
         actions.append(
-            "Launcher commands need repair. Re-run `make install` so `vibecrafted`, `vc-help`, and the wrappers land back on PATH."
+            "Launcher commands need repair. Run `vibecrafted doctor --fix-launchers` for an in-place repair, or re-run `make install` to rebuild the full launcher surface."
         )
     if any(
         finding.component.startswith("shell-helper")
@@ -1189,6 +1189,59 @@ def _doctor_fix_rc_files() -> List[DoctorFinding]:
             )
         )
     return findings
+
+
+def _doctor_launcher_source_root(store_path: Path) -> Optional[Path]:
+    tools_home = store_path.parent
+    current_link = tools_home / "tools" / "vibecrafted-current"
+    candidates: List[Path] = [Path(__file__).resolve().parent.parent]
+
+    if current_link.exists():
+        try:
+            candidates.append(current_link.resolve())
+        except OSError:
+            pass
+
+    for candidate in candidates:
+        launcher = candidate / "scripts" / "vibecrafted"
+        version = candidate / "VERSION"
+        skills_dir = candidate / "skills"
+        if launcher.is_file() and version.is_file() and skills_dir.is_dir():
+            return candidate
+    return None
+
+
+def _doctor_fix_launchers(store_path: Path, state: InstallState) -> List[DoctorFinding]:
+    source_root = _doctor_launcher_source_root(store_path)
+    if source_root is None:
+        return [
+            DoctorFinding(
+                "warn",
+                "doctor-fix-launchers",
+                "could not locate a canonical source root with scripts/vibecrafted",
+            )
+        ]
+
+    try:
+        _install_launcher(source_root, dry_run=False)
+        state.launcher_entries = _snapshot_launcher_entries()
+        state.save(store_path)
+    except Exception as exc:  # pragma: no cover - repair failures surface here
+        return [
+            DoctorFinding(
+                "warn",
+                "doctor-fix-launchers",
+                f"launcher repair failed: {exc}",
+            )
+        ]
+
+    return [
+        DoctorFinding(
+            "ok",
+            "doctor-fix-launchers",
+            f"refreshed launcher commands from {source_root}",
+        )
+    ]
 
 
 def _run_smoke_command(
@@ -2125,9 +2178,9 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
 
     # 3b. Drift detection: runtime skills vs source
     source_root = None
-    if current_link.exists():
-        resolved_source = current_link.resolve()
-        skills_src = resolved_source / "skills"
+    source_candidate = _doctor_launcher_source_root(store_path)
+    if source_candidate is not None:
+        skills_src = source_candidate / "skills"
         if skills_src.is_dir():
             source_root = skills_src
     drifted: List[str] = []
@@ -2261,7 +2314,7 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
             [
                 "bash",
                 "-c",
-                'source "$1"; command -v vc-help >/dev/null && command -v vc-init >/dev/null && command -v vc-intents >/dev/null && command -v vc-ownership >/dev/null && command -v vc-marbles >/dev/null && command -v codex-implement >/dev/null && command -v codex-marbles >/dev/null && command -v skills-sync >/dev/null && printf "helper-ok\\n"',
+                'source "$1"; command -v vc-help >/dev/null && command -v vc-agents >/dev/null && command -v vc-init >/dev/null && command -v vc-intents >/dev/null && command -v vc-ownership >/dev/null && command -v vc-marbles >/dev/null && command -v codex-implement >/dev/null && command -v codex-marbles >/dev/null && command -v skills-sync >/dev/null && printf "helper-ok\\n"',
                 "_",
                 str(helper_file),
             ],
@@ -2502,6 +2555,8 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
                 continue
             for installed_file in installed_skill.rglob("*"):
                 if not installed_file.is_file():
+                    continue
+                if installed_file.name == ".DS_Store":
                     continue
                 rel = installed_file.relative_to(installed_skill)
                 if not (source_skill / rel).exists():
@@ -3650,6 +3705,10 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         for finding in _doctor_fix_rc_files():
             icon = OK if finding.level == "ok" else WARN
             print(f"  {icon} {finding.component}: {finding.message}")
+    if getattr(args, "fix_launchers", False):
+        for finding in _doctor_fix_launchers(store_path, state):
+            icon = OK if finding.level == "ok" else WARN
+            print(f"  {icon} {finding.component}: {finding.message}")
 
     if not state.skills:
         # No manifest — discover from disk, but only OUR skills
@@ -4248,6 +4307,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "--fix-rc",
         action="store_true",
         help="Repair legacy shell startup lines and restore canonical helper/PATH hints before verifying",
+    )
+    p_doctor.add_argument(
+        "--fix-launchers",
+        action="store_true",
+        help="Refresh vibecrafted, vc-help, and vc-* wrappers from the installed/current source before verifying",
     )
 
     # list

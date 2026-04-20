@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from argparse import Namespace
 import shutil
 from pathlib import Path
 
 from scripts import vetcoders_install as installer
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _write_executable(path: Path, body: str) -> None:
@@ -32,6 +35,7 @@ def test_run_doctor_smokes_helper_and_launcher_runtime(
                 "# shellcheck shell=bash",
                 installer.HELPER_SHIM_MARKER,
                 "vc-help() { :; }",
+                "vc-agents() { :; }",
                 "vc-init() { :; }",
                 "vc-intents() { :; }",
                 "vc-ownership() { :; }",
@@ -118,6 +122,7 @@ def test_run_doctor_includes_dashboard_smoke(tmp_path: Path, monkeypatch) -> Non
                 "# shellcheck shell=bash",
                 installer.HELPER_SHIM_MARKER,
                 "vc-help() { :; }",
+                "vc-agents() { :; }",
                 "vc-init() { :; }",
                 "vc-intents() { :; }",
                 "vc-ownership() { :; }",
@@ -186,6 +191,7 @@ def test_run_doctor_finds_launchers_outside_local_bin(
                 "# shellcheck shell=bash",
                 installer.HELPER_SHIM_MARKER,
                 "vc-help() { :; }",
+                "vc-agents() { :; }",
                 "codex-implement() { :; }",
                 "codex-marbles() { :; }",
                 "skills-sync() { :; }",
@@ -232,6 +238,94 @@ def test_run_doctor_finds_launchers_outside_local_bin(
     assert indexed["launcher-wrappers"].level == "ok"
     assert indexed["launcher-runtime"].level == "ok"
     assert indexed["dashboard-smoke"].level == "ok"
+
+
+def test_cmd_doctor_fix_launchers_repairs_missing_wrappers(
+    tmp_path: Path, monkeypatch
+) -> None:
+    home = tmp_path / "home"
+    crafted_home = home / ".vibecrafted"
+    config_home = home / ".config"
+    store_path = crafted_home / "skills"
+    launcher_bin = home / ".local" / "bin"
+    source_root = crafted_home / "tools" / "vibecrafted-main"
+    current_link = crafted_home / "tools" / "vibecrafted-current"
+
+    store_path.mkdir(parents=True)
+    launcher_bin.mkdir(parents=True)
+    (source_root / "scripts").mkdir(parents=True)
+    (source_root / "skills").mkdir(parents=True)
+    current_link.parent.mkdir(parents=True, exist_ok=True)
+    current_link.symlink_to(source_root)
+
+    _write_executable(
+        source_root / "scripts" / "vibecrafted",
+        (REPO_ROOT / "scripts" / "vibecrafted").read_text(encoding="utf-8"),
+    )
+    (source_root / "VERSION").write_text("1.4.1-test\n", encoding="utf-8")
+
+    _write_executable(
+        launcher_bin / "vibecrafted",
+        "#!/usr/bin/env bash\nprintf 'stale launcher\\n'\n",
+    )
+    (launcher_bin / "vc-help").symlink_to("vibecrafted")
+
+    state = installer.InstallState(framework_version="1.4.1-test")
+    state.save(store_path)
+
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(config_home))
+    monkeypatch.setenv("VIBECRAFTED_HOME", str(crafted_home))
+    monkeypatch.setattr(installer, "FOUNDATIONS", [])
+
+    exit_code = installer.cmd_doctor(Namespace(fix_rc=False, fix_launchers=True))
+
+    assert exit_code == 0
+    assert (launcher_bin / "vc-intents").is_symlink()
+    assert (launcher_bin / "vc-ownership").is_symlink()
+    assert (crafted_home / "bin" / "vc-intents").is_symlink()
+    assert (crafted_home / "bin" / "vc-ownership").is_symlink()
+
+    refreshed_state = installer.InstallState.load(store_path)
+    assert any(
+        entry.endswith("/vc-intents") for entry in refreshed_state.launcher_entries
+    )
+    findings = installer.run_doctor(store_path, refreshed_state)
+    indexed = {finding.component: finding for finding in findings}
+    assert indexed["launcher-wrappers"].level == "ok"
+
+
+def test_run_doctor_ignores_ds_store_in_stale_file_check(
+    tmp_path: Path, monkeypatch
+) -> None:
+    home = tmp_path / "home"
+    crafted_home = home / ".vibecrafted"
+    store_path = crafted_home / "skills"
+    skill_name = "vc-intents"
+    installed_skill = store_path / skill_name
+    source_skill = REPO_ROOT / "skills" / skill_name
+
+    installed_skill.mkdir(parents=True)
+    (installed_skill / "SKILL.md").write_text(
+        (source_skill / "SKILL.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (installed_skill / ".DS_Store").write_text("junk\n", encoding="utf-8")
+
+    state = installer.InstallState(
+        framework_version="1.4.1-test",
+        skills=[skill_name],
+    )
+    state.save(store_path)
+
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("VIBECRAFTED_HOME", str(crafted_home))
+    monkeypatch.setattr(installer, "FOUNDATIONS", [])
+
+    findings = installer.run_doctor(store_path, state)
+    indexed = {finding.component: finding for finding in findings}
+
+    assert indexed["stale-files"].level == "ok"
 
 
 def test_run_doctor_spawn_e2e_supplies_full_meta_arguments(
