@@ -2087,6 +2087,62 @@ codex-skill-workflow() { _vetcoders_skill_entry codex workflow "$@"; }
 claude-skill-workflow() { _vetcoders_skill_entry claude workflow "$@"; }
 gemini-skill-workflow() { _vetcoders_skill_entry gemini workflow "$@"; }
 
+_vetcoders_skill_wrapper_usage() {
+  local skill="$1"
+  case "$skill" in
+    init)
+      printf 'Usage: vc-init <claude|codex|gemini> [--prompt <text>] [--file <path>]\n' >&2
+      ;;
+    marbles)
+      printf 'Usage: vc-marbles <claude|codex|gemini> [--prompt <text>|--file <path>|--depth <n>] [--count <n>]\n' >&2
+      ;;
+    *)
+      printf 'Usage: vc-%s <claude|codex|gemini> [--prompt <text>] [--file <path>]\n' "$skill" >&2
+      ;;
+  esac
+}
+
+_vetcoders_skill_wrapper() {
+  local skill="$1"
+  shift || true
+
+  local tool="${1:-}"
+  [[ -n "$tool" ]] || {
+    _vetcoders_skill_wrapper_usage "$skill"
+    return 1
+  }
+  _has_agent "$tool" || {
+    printf 'vc-%s expects <claude|codex|gemini> as the first argument.\n' "$skill" >&2
+    _vetcoders_skill_wrapper_usage "$skill"
+    return 1
+  }
+  shift || true
+
+  case "$skill" in
+    init) _vetcoders_skill_init "$tool" "$@" ;;
+    marbles) _vetcoders_marbles "$tool" "$@" ;;
+    *) _vetcoders_skill_entry "$tool" "$skill" "$@" ;;
+  esac
+}
+
+vc-agents() { _vetcoders_skill_wrapper agents "$@"; }
+vc-decorate() { _vetcoders_skill_wrapper decorate "$@"; }
+vc-delegate() { _vetcoders_skill_wrapper delegate "$@"; }
+vc-dou() { _vetcoders_skill_wrapper dou "$@"; }
+vc-followup() { _vetcoders_skill_wrapper followup "$@"; }
+vc-hydrate() { _vetcoders_skill_wrapper hydrate "$@"; }
+vc-init() { _vetcoders_skill_wrapper init "$@"; }
+vc-intents() { _vetcoders_skill_wrapper intents "$@"; }
+vc-justdo() { _vetcoders_skill_wrapper justdo "$@"; }
+vc-marbles() { _vetcoders_skill_wrapper marbles "$@"; }
+vc-ownership() { _vetcoders_skill_wrapper ownership "$@"; }
+vc-partner() { _vetcoders_skill_wrapper partner "$@"; }
+vc-prune() { _vetcoders_skill_wrapper prune "$@"; }
+vc-release() { _vetcoders_skill_wrapper release "$@"; }
+vc-review() { _vetcoders_skill_wrapper review "$@"; }
+vc-scaffold() { _vetcoders_skill_wrapper scaffold "$@"; }
+vc-workflow() { _vetcoders_skill_wrapper workflow "$@"; }
+
 vc-help() {
   local crafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
   cat <<'HELP'

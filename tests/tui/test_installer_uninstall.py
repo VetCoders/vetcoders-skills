@@ -64,11 +64,8 @@ def _setup_installed_surface(
             "#!/usr/bin/env bash\nprintf 'legacy\\n'\n",
         )
         for wrapper_name in (
-            "vc-help",
-            "vc-workflow",
-            "telemetry",
-            "marble-pack",
-            "aicx-pack",
+            *installer.LAUNCHER_WRAPPERS,
+            *installer.LEGACY_LAUNCHER_NAMES,
         ):
             (launcher_bin_dir / wrapper_name).symlink_to("vibecrafted")
         _write_executable(
@@ -103,11 +100,8 @@ def test_cmd_uninstall_removes_launchers_and_legacy_pack_wrappers(
         for removed_name in (
             "vibecrafted",
             "vibecraft",
-            "vc-help",
-            "vc-workflow",
-            "telemetry",
-            "marble-pack",
-            "aicx-pack",
+            *installer.LAUNCHER_WRAPPERS,
+            *installer.LEGACY_LAUNCHER_NAMES,
         ):
             assert not (launcher_bin_dir / removed_name).exists()
             assert not (launcher_bin_dir / removed_name).is_symlink()

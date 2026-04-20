@@ -160,6 +160,41 @@ def test_vc_start_launches_operator_entrypoint_layout(tmp_path: Path) -> None:
     )
 
 
+def test_helper_exports_vc_skill_wrappers() -> None:
+    expected_wrappers = [
+        "vc-agents",
+        "vc-decorate",
+        "vc-delegate",
+        "vc-dou",
+        "vc-followup",
+        "vc-hydrate",
+        "vc-init",
+        "vc-intents",
+        "vc-justdo",
+        "vc-marbles",
+        "vc-ownership",
+        "vc-partner",
+        "vc-prune",
+        "vc-release",
+        "vc-review",
+        "vc-scaffold",
+        "vc-workflow",
+    ]
+    command = f'source "{HELPER_SCRIPT}"; ' + " ".join(
+        f"command -v {wrapper} >/dev/null || {{ echo missing:{wrapper} >&2; exit 1; }};"
+        for wrapper in expected_wrappers
+    )
+
+    result = subprocess.run(
+        ["bash", "-lc", command],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_marbles_from_operator_mode_spawns_launcher_in_fresh_tab_and_loops_right(
     tmp_path: Path,
 ) -> None:

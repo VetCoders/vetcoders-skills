@@ -757,8 +757,22 @@ def test_skill_subcommand_help_is_human_readable_without_agent() -> None:
     assert "vibecrafted implement <agent> [flags]" in result.stdout
 
 
-def test_skill_wrapper_help_is_human_readable_without_agent(tmp_path: Path) -> None:
-    wrapper = tmp_path / "vc-followup"
+@pytest.mark.parametrize(
+    ("wrapper_name", "skill", "description"),
+    [
+        ("vc-followup", "followup", "Post-implementation audit"),
+        ("vc-intents", "intents", "Plan-to-runtime truth audit"),
+        (
+            "vc-ownership",
+            "ownership",
+            "Full-spectrum ownership mode for end-to-end delivery",
+        ),
+    ],
+)
+def test_skill_wrapper_help_is_human_readable_without_agent(
+    tmp_path: Path, wrapper_name: str, skill: str, description: str
+) -> None:
+    wrapper = tmp_path / wrapper_name
     wrapper.symlink_to(LAUNCHER)
 
     result = subprocess.run(
@@ -769,9 +783,9 @@ def test_skill_wrapper_help_is_human_readable_without_agent(tmp_path: Path) -> N
         text=True,
     )
 
-    assert "followup" in result.stdout
-    assert "Post-implementation audit" in result.stdout
-    assert "vc-followup <claude|codex|gemini> [flags]" in result.stdout
+    assert skill in result.stdout
+    assert description in result.stdout
+    assert f"{wrapper_name} <claude|codex|gemini> [flags]" in result.stdout
 
 
 @pytest.mark.parametrize(
@@ -808,6 +822,53 @@ def test_generic_skill_fallback_routes_unwrapped_skills(
 
     subprocess.run(
         ["bash", str(wrapper), skill, "codex", "--prompt", prompt],
+        check=True,
+        cwd=tmp_path,
+        env=env,
+    )
+
+    payload = capture_file.read_text(encoding="utf-8").splitlines()
+    assert payload == ["codex", skill, "--prompt", prompt]
+
+
+@pytest.mark.parametrize(
+    ("wrapper_name", "skill", "prompt"),
+    [
+        ("vc-intents", "intents", "Audit what from the plan really landed"),
+        (
+            "vc-ownership",
+            "ownership",
+            "Take the repo from diagnosis to finished surface",
+        ),
+    ],
+)
+def test_generic_skill_fallback_routes_skill_wrappers(
+    tmp_path: Path, wrapper_name: str, skill: str, prompt: str
+) -> None:
+    home = tmp_path / "home"
+    wrapper = tmp_path / wrapper_name
+    capture_file = tmp_path / "generic-wrapper-args.txt"
+    helper = (
+        home
+        / ".vibecrafted"
+        / "tools"
+        / "vibecrafted-current"
+        / "skills"
+        / "vc-agents"
+        / "shell"
+        / "vetcoders.sh"
+    )
+
+    home.mkdir()
+    wrapper.symlink_to(LAUNCHER)
+    _write_generic_skill_helper(helper)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env["CAPTURE_FILE"] = str(capture_file)
+
+    subprocess.run(
+        ["bash", str(wrapper), "codex", "--prompt", prompt],
         check=True,
         cwd=tmp_path,
         env=env,

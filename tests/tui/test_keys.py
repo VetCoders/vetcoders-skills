@@ -186,6 +186,8 @@ def test_install_launcher_dedupes_zshrc_path_entries(
             "vc-help",
             "vc-start",
             "vc-dashboard",
+            "vc-intents",
+            "vc-ownership",
             "vc-resume",
             "telemetry",
         ):
