@@ -133,8 +133,11 @@ make -C $VIBECRAFTED_ROOT/.vibecrafted/tools/vibecrafted-current doctor
 ```bash
 cd $VIBECRAFTED_ROOT/your-project
 vibecrafted init claude
-vibecrafted implement codex --prompt "Add JWT authentication"  # or: vibecrafted justdo (legacy alias)
+vibecrafted implement codex --prompt "Add JWT authentication"
 ```
+
+Existing `vibecrafted justdo` / `vc-justdo` calls remain compatibility aliases,
+but new docs and scripts should use `implement`.
 
 Type `vibecrafted help` for the command deck, or `vc-` and hit tab once the shell helpers are installed.
 
