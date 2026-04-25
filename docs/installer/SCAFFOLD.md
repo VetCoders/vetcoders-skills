@@ -8,7 +8,7 @@ Current truth as of 2026-04-10:
 - Local browser GUI entrypoint: `make wizard` (alias: `make gui-install`)
 - Automation entrypoint: `curl -fsSL https://vibecrafted.io/install.sh | bash`
 - Mutation engine: `scripts/vetcoders_install.py`
-- Operator-grade reference surface: `scripts/installer_tui.py`
+- Operator-grade terminal surface: `scripts/installer/vetcoders_installer/`
 
 This file replaces the older "rewrite the installer around a full Textual TUI"
 roadmap. That plan was useful exploration, but it is no longer the shipping
@@ -74,7 +74,8 @@ install.sh
 Supporting truth:
 
 - `installer_gui.py` is the public human surface
-- `installer_tui.py` still contributes diagnostics, helper-path logic, and
+- `scripts/installer/vetcoders_installer/` owns the local terminal-native wizard
+- `installer_gui.py` owns browser diagnostics, helper-path logic, and
   operator-friendly summaries
 - `vetcoders_install.py` remains the one mutation engine
 - `install.sh` is responsible for selecting the correct front door

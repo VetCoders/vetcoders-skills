@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -22,39 +23,67 @@ try:
     from control_plane_launch import launch_workflow, normalize_launch_spec
     from control_plane_state import sync_state
     from installer_brand import PRODUCT_LINE, TAGLINE, VAPOR_HEADER
-    from installer_tui import (
-        CATEGORY_LABELS,
-        bundled_bin_root,
-        framework_store_dir,
-        helper_layer_path,
-        read_framework_version,
-        run_diagnostics,
-        start_here_path,
-        summarize_diagnostics,
-    )
-    from runtime_paths import vibecrafted_home
+    from runtime_paths import read_version_file, vibecrafted_home, xdg_config_home
 except ModuleNotFoundError:  # pragma: no cover - depends on entrypoint
     from scripts.control_plane_launch import launch_workflow, normalize_launch_spec
     from scripts.control_plane_state import sync_state
     from scripts.installer_brand import PRODUCT_LINE, TAGLINE, VAPOR_HEADER
-    from scripts.installer_tui import (
-        CATEGORY_LABELS,
-        bundled_bin_root,
-        framework_store_dir,
-        helper_layer_path,
-        read_framework_version,
-        run_diagnostics,
-        start_here_path,
-        summarize_diagnostics,
+    from scripts.runtime_paths import (
+        read_version_file,
+        vibecrafted_home,
+        xdg_config_home,
     )
-    from scripts.runtime_paths import vibecrafted_home
 
 
 OUTPUT_TAIL_LIMIT = 120
+CATEGORY_LABELS = {
+    "frameworks": "Frameworks",
+    "bundled": "Bundled toolchain",
+    "foundations": "Foundations",
+    "toolchains": "Toolchains",
+    "agents": "Agents",
+    "additional_tools": "Additional tools",
+}
+CATEGORY_ORDER = tuple(CATEGORY_LABELS)
+FOUNDATION_COMMANDS = ("loctree-mcp", "aicx-mcp", "prview", "screenscribe")
+BUNDLED_BIN_NAMES = ("aicx-mcp", "aicx", "loctree-mcp", "loctree", "loct", "prview")
+TOOLCHAIN_COMMANDS = ("python3", "node", "git", "rsync")
+AGENT_COMMANDS = ("claude", "codex", "gemini")
+ADDITIONAL_TOOL_COMMANDS = ("mise", "starship", "atuin", "zoxide")
 
 
 def default_source_dir() -> str:
     return str(Path(__file__).resolve().parent.parent)
+
+
+def read_framework_version(source_dir: str) -> str:
+    return read_version_file(source_dir)
+
+
+def framework_store_dir() -> Path:
+    return vibecrafted_home() / "skills"
+
+
+def helper_layer_path() -> Path:
+    return xdg_config_home() / "vetcoders" / "vc-skills.sh"
+
+
+def install_log_path() -> Path:
+    return vibecrafted_home() / "install.log"
+
+
+def start_here_path() -> Path:
+    return vibecrafted_home() / "START_HERE.md"
+
+
+def runtime_skill_views() -> dict[str, Path]:
+    home = Path.home()
+    return {
+        "agents": home / ".agents" / "skills",
+        "claude": home / ".claude" / "skills",
+        "codex": home / ".codex" / "skills",
+        "gemini": home / ".gemini" / "skills",
+    }
 
 
 def installer_script_path(source_dir: str) -> Path:
@@ -118,6 +147,183 @@ def build_install_steps(source_dir: str, *, with_shell: bool) -> list[InstallSte
         )
     )
     return steps
+
+
+def _command_check(name: str) -> dict[str, Any]:
+    path = shutil.which(name)
+    return {
+        "label": name,
+        "found": bool(path),
+        "detail": path or f"{name} not found on PATH",
+        "kind": "command",
+    }
+
+
+def _path_check(
+    label: str, path: Path, *, found: bool | None = None, detail: str | None = None
+) -> dict[str, Any]:
+    is_found = path.exists() if found is None else found
+    return {
+        "label": label,
+        "found": is_found,
+        "detail": detail or str(path),
+        "kind": "path",
+    }
+
+
+def _framework_checks() -> dict[str, dict[str, Any]]:
+    store_dir = framework_store_dir()
+    helper_file = helper_layer_path()
+    skills = []
+    if store_dir.is_dir():
+        skills = sorted(
+            child.name
+            for child in store_dir.iterdir()
+            if child.is_dir() and child.name.startswith("vc-")
+        )
+
+    binary_path = shutil.which("vibecraft") or shutil.which("vibecrafted")
+
+    active_views = []
+    for runtime, path in runtime_skill_views().items():
+        if not path.is_dir():
+            continue
+        entries = [entry.name for entry in path.iterdir()]
+        if entries:
+            active_views.append(f"{runtime} ({len(entries)})")
+
+    return {
+        "workflows": _path_check(
+            "workflows",
+            store_dir,
+            found=bool(skills),
+            detail=f"{len(skills)} installed skill directories in {store_dir}"
+            if skills
+            else f"No installed skill directories in {store_dir}",
+        ),
+        "helpers": _path_check(
+            "helpers",
+            helper_file,
+            detail=str(helper_file)
+            if helper_file.exists()
+            else f"Missing helper file at {helper_file}",
+        ),
+        "binaries": {
+            "label": "binaries",
+            "found": bool(binary_path),
+            "detail": binary_path or "vibecraft/vibecrafted not found on PATH",
+            "kind": "command",
+        },
+        "symlinks": {
+            "label": "symlinks",
+            "found": bool(active_views),
+            "detail": ", ".join(active_views)
+            if active_views
+            else "No runtime skill views detected in $HOME/.agents, $HOME/.claude, $HOME/.codex, or $HOME/.gemini",
+            "kind": "path",
+        },
+    }
+
+
+def _bundled_os() -> str:
+    if sys.platform == "darwin":
+        return "macos"
+    if sys.platform.startswith("linux"):
+        return "linux"
+    if sys.platform.startswith(("win", "cygwin")):
+        return "windows"
+    return sys.platform
+
+
+def _bundled_arch() -> str:
+    machine = platform.machine().lower()
+    if machine in ("x86_64", "amd64"):
+        return "x86_64"
+    if machine in ("aarch64", "arm64"):
+        return "aarch64"
+    if machine == "armv7l":
+        return "armv7"
+    return machine or "unknown"
+
+
+def bundled_bin_root(source_dir: str) -> Path:
+    override = os.environ.get("VIBECRAFTED_BUNDLED_BIN")
+    if override:
+        return Path(override).expanduser()
+    per_arch = Path(source_dir) / "tools" / "bin" / f"{_bundled_os()}-{_bundled_arch()}"
+    if per_arch.is_dir():
+        return per_arch
+    return Path(source_dir) / "tools" / "bin"
+
+
+def _bundled_check(name: str, source_dir: str) -> dict[str, Any]:
+    root = bundled_bin_root(source_dir)
+    path = root / name
+    if path.is_file() and os.access(path, os.X_OK):
+        return {
+            "label": name,
+            "found": True,
+            "detail": str(path),
+            "kind": "bundled",
+        }
+    missing_detail = (
+        f"{name} missing from bundled drop-in ({root})"
+        if root.is_dir()
+        else f"{name} - bundled drop-in directory not present ({root})"
+    )
+    return {
+        "label": name,
+        "found": False,
+        "detail": missing_detail,
+        "kind": "bundled",
+    }
+
+
+def run_diagnostics(
+    source_dir: str | None = None,
+) -> dict[str, dict[str, dict[str, Any]]]:
+    """Check: frameworks, bundled toolchain, foundations, toolchains, agents, tools."""
+    if source_dir is None:
+        source_dir = default_source_dir()
+    diagnostics: dict[str, dict[str, dict[str, Any]]] = {}
+    diagnostics["frameworks"] = _framework_checks()
+    diagnostics["bundled"] = {
+        name: _bundled_check(name, source_dir) for name in BUNDLED_BIN_NAMES
+    }
+    diagnostics["foundations"] = {
+        name: _command_check(name) for name in FOUNDATION_COMMANDS
+    }
+    diagnostics["toolchains"] = {
+        name: _command_check(name) for name in TOOLCHAIN_COMMANDS
+    }
+    diagnostics["agents"] = {name: _command_check(name) for name in AGENT_COMMANDS}
+    diagnostics["additional_tools"] = {
+        name: _command_check(name) for name in ADDITIONAL_TOOL_COMMANDS
+    }
+    return diagnostics
+
+
+def summarize_diagnostics(
+    diagnostics: dict[str, dict[str, dict[str, Any]]],
+) -> tuple[list[str], list[str], dict[str, list[str]]]:
+    found_items: list[str] = []
+    missing_items: list[str] = []
+    needs_install: dict[str, list[str]] = {}
+
+    for category in CATEGORY_ORDER:
+        missing_in_category: list[str] = []
+        for name, entry in diagnostics.get(category, {}).items():
+            label = entry.get("label", name)
+            flat_label = f"{CATEGORY_LABELS[category]}: {label}"
+            if entry.get("found"):
+                found_items.append(flat_label)
+            else:
+                missing_items.append(flat_label)
+                missing_in_category.append(label)
+        if missing_in_category:
+            needs_install[category] = missing_in_category
+
+    return found_items, missing_items, needs_install
 
 
 def install_runtime_env(base_env: dict[str, str] | None = None) -> dict[str, str]:

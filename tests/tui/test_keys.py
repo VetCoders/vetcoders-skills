@@ -2,19 +2,19 @@ import pytest
 import sys
 from pathlib import Path
 
-from scripts import installer_tui
+from scripts import installer_gui
 from scripts import vetcoders_install
-from scripts.runtime_paths import read_version_file
+from scripts.runtime_paths import read_version_file, vibecrafted_home
 
 
 def test_read_framework_version_reads_version_file(tmp_path: Path) -> None:
     (tmp_path / "VERSION").write_text("9.9.9\n", encoding="utf-8")
 
-    assert installer_tui.read_framework_version(str(tmp_path)) == "9.9.9"
+    assert installer_gui.read_framework_version(str(tmp_path)) == "9.9.9"
 
 
 def test_read_framework_version_returns_unknown_when_missing(tmp_path: Path) -> None:
-    assert installer_tui.read_framework_version(str(tmp_path)) == "unknown"
+    assert installer_gui.read_framework_version(str(tmp_path)) == "unknown"
 
 
 def test_runtime_paths_reads_framework_version(tmp_path: Path) -> None:
@@ -30,7 +30,7 @@ def test_build_install_command_includes_compact_noninteractive_flags(
     installer_path.parent.mkdir()
     installer_path.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
 
-    command = installer_tui.build_install_command(str(tmp_path))
+    command = installer_gui.build_install_command(str(tmp_path), with_shell=True)
 
     assert command[0] == sys.executable
     assert command[1] == str(installer_path)
@@ -38,18 +38,18 @@ def test_build_install_command_includes_compact_noninteractive_flags(
         "install",
         "--source",
         str(tmp_path.resolve()),
-        "--with-shell",
         "--compact",
         "--non-interactive",
+        "--with-shell",
     ]
 
 
 def test_build_install_command_raises_when_installer_missing(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
-        installer_tui.build_install_command(str(tmp_path))
+        installer_gui.build_install_command(str(tmp_path), with_shell=True)
 
 
-def test_installer_tui_vibecrafted_home_expands_user(
+def test_installer_gui_runtime_paths_expand_user(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     home = tmp_path / "home"
@@ -57,9 +57,9 @@ def test_installer_tui_vibecrafted_home_expands_user(
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("VIBECRAFTED_HOME", str(portable_vc))
 
-    assert installer_tui.vibecrafted_home() == portable_vc
-    assert installer_tui.framework_store_dir() == portable_vc / "skills"
-    assert installer_tui.install_log_path() == portable_vc / "install.log"
+    assert vibecrafted_home() == portable_vc
+    assert installer_gui.framework_store_dir() == portable_vc / "skills"
+    assert installer_gui.install_log_path() == portable_vc / "install.log"
 
 
 def test_vetcoders_install_env_paths_expand_user(

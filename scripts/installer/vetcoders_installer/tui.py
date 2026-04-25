@@ -14,6 +14,12 @@ from textual.binding import Binding
 from textual.containers import VerticalScroll, Vertical
 from textual.widgets import Static, Checkbox
 
+DEFAULT_RENDER_WIDTH = 57
+MAX_RENDER_WIDTH = 180
+INSTALL_OUTPUT_TAIL = 96
+INSTALL_BOX_MIN_ROWS = 12
+INSTALL_BOX_FIXED_CHROME_ROWS = 14
+
 
 def _trim_home(path: str) -> str:
     return path.replace(str(Path.home()), "~")
@@ -198,11 +204,63 @@ class InstallerIntroApp(App):
         if self.manifest and getattr(self.manifest, "branding", None):
             pass  # Currently keeping exactly what the screens provided
 
-        self.query_one("#header", Static).update(header)
-        self.query_one("#footer", Static).update(footer)
+        self.query_one("#header", Static).update(self._render_chrome(header))
+        self.query_one("#footer", Static).update(self._render_chrome(footer))
 
         await self._render_content()
         self.query_one("#scroll-area", VerticalScroll).scroll_home(animate=False)
+
+    def _terminal_size(self) -> tuple[int, int]:
+        size = getattr(self, "size", None)
+        width = int(getattr(size, "width", 0) or 0)
+        height = int(getattr(size, "height", 0) or 0)
+        if width > 0 and height > 0:
+            return width, height
+        fallback = shutil.get_terminal_size((DEFAULT_RENDER_WIDTH, 32))
+        return fallback.columns, fallback.lines
+
+    def _pane_width(self) -> int:
+        width, _ = self._terminal_size()
+        return max(DEFAULT_RENDER_WIDTH, width - 2)
+
+    def _render_width(self) -> int:
+        return max(DEFAULT_RENDER_WIDTH, min(self._pane_width(), MAX_RENDER_WIDTH))
+
+    def _install_box_rows(self) -> int:
+        _, height = self._terminal_size()
+        return max(INSTALL_BOX_MIN_ROWS, height - INSTALL_BOX_FIXED_CHROME_ROWS)
+
+    def _render_chrome(self, text: str) -> str:
+        width = self._pane_width()
+        lines = []
+        for raw_line in text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                lines.append("")
+            elif set(line) <= {"─"}:
+                lines.append("─" * width)
+            else:
+                lines.append(line.center(width))
+        return "\n".join(lines)
+
+    def _render_box(self, title: str, body_lines: list[str], rows: int = 0) -> str:
+        width = self._render_width()
+        inner_width = max(24, width - 6)
+        display_lines = body_lines[:]
+        if rows:
+            display_lines = display_lines[-rows:]
+            if len(display_lines) < rows:
+                display_lines.extend([""] * (rows - len(display_lines)))
+
+        lines = [f"  ╔{'═' * inner_width}╗"]
+        header = f" {title} "
+        lines.append(f"  ║{header[:inner_width]:<{inner_width}}║")
+        lines.append(f"  ╠{'═' * inner_width}╣")
+        for raw_line in display_lines:
+            line = str(raw_line)
+            lines.append(f"  ║{line[-inner_width:]:<{inner_width}}║")
+        lines.append(f"  ╚{'═' * inner_width}╝")
+        return "\n".join(lines)
 
     async def _render_content(self) -> None:
         container = self.query_one("#content-container", Vertical)
@@ -231,10 +289,8 @@ class InstallerIntroApp(App):
         lines = []
         lines.append("  [bold]Diagnostics[/bold]\n")
 
-        lines.append("  ╔════════════════════════════════════════════════════╗")
-        msg = f"{self._diag_msg:<50}"
-        lines.append(f"  ║ {msg} ║")
-        lines.append("  ╚════════════════════════════════════════════════════╝\n")
+        lines.append(self._render_box("Preflight", [self._diag_msg]))
+        lines.append("")
 
         if self.diagnostics_done:
             cats = []
@@ -347,20 +403,31 @@ class InstallerIntroApp(App):
     def _build_step_5(self) -> str:
         lines = ["  [bold]Installation[/bold]\n"]
 
-        lines.append("  ╔════════════════════════════════════════════════════╗")
-        tail = self.install_log[-3:] if self.install_log else []
+        if self.install_running:
+            header = "Live progress"
+        elif self.install_done and self.install_exit_code == 0:
+            header = "Install log · finished cleanly"
+        elif self.install_error or (
+            self.install_done and self.install_exit_code not in (None, 0)
+        ):
+            header = "Install log · failed"
+        else:
+            header = "Install status"
+
+        tail = [
+            line for line in self.install_log[-INSTALL_OUTPUT_TAIL:] if line.strip()
+        ]
         if not tail:
             if self.install_done:
                 if self.install_exit_code == 0:
-                    tail = ["Finished cleanly."]
+                    tail = ["Install finished cleanly.", "Ready."]
                 else:
                     tail = [self.install_error or "Failed."]
             else:
                 tail = ["Starting..."]
 
-        for line in tail:
-            lines.append(f"  ║ {line[-50:]: <50} ║")
-        lines.append("  ╚════════════════════════════════════════════════════╝\n")
+        lines.append(self._render_box(header, tail, self._install_box_rows()))
+        lines.append("")
 
         for item in self.missing_items:
             if item in self.selected_items:
@@ -424,8 +491,8 @@ class InstallerIntroApp(App):
 
     def _add_install_log(self, line: str) -> None:
         self.install_log.append(line)
-        if len(self.install_log) > 20:
-            self.install_log.pop(0)
+        if len(self.install_log) > INSTALL_OUTPUT_TAIL:
+            self.install_log = self.install_log[-INSTALL_OUTPUT_TAIL:]
         if self._current == 5:
             self._update_static_content(self._build_step_5())
 

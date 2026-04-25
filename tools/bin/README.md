@@ -46,7 +46,7 @@ The installer only looks for names it knows about:
 
 Anything else lands in the tarball but is not auto-installed.
 
-## Resolution order (install-foundations.sh & installer_tui.py)
+## Resolution order (install-foundations.sh & installer_gui.py)
 
 1. `$VIBECRAFTED_BUNDLED_BIN` — explicit absolute path override
 2. `$SOURCE/tools/bin/<os>-<arch>` — per-arch (preferred)

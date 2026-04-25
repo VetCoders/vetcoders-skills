@@ -53,8 +53,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
     plugin bundle artifact
   - `scripts/install-foundations.sh` gains `bundled_bin_root()` and
     `install_from_bundled()` with explicit fallback order
-  - `installer_tui.py` / `installer_gui.py` surface bundled diagnostics as a
-    new category in the pre-flight doctor
+  - `installer_gui.py` surfaces bundled diagnostics as a new category in the
+    pre-flight doctor
   - Documented resolution order and notarization expectations in
     `tools/bin/README.md`
 - `skills/vc-agents/scripts/marbles_verify_watch.sh` — standalone detached
