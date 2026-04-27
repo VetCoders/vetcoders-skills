@@ -657,6 +657,8 @@ def test_repo_launcher_is_directly_executable() -> None:
     assert "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍." in result.stdout
     assert expected_version in result.stdout
     assert "vibecrafted dashboard" in result.stdout
+    assert "vibecrafted telemetry smoke" in result.stdout
+    assert "\n  telemetry smoke" not in result.stdout
     assert 'vibecrafted hydrate codex --prompt "Package the product"' in result.stdout
     assert "START_HERE.md" in result.stdout
 

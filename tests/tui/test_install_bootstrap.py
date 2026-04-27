@@ -92,6 +92,14 @@ def test_install_sh_fallback_prefers_github_source_snapshot_when_channel_missing
     assert "frozen v1.2.1 URL" not in text
 
 
+def test_install_sh_quiets_tar_xattr_noise_and_hides_make_directory_trace() -> None:
+    text = INSTALL_SH.read_text(encoding="utf-8")
+
+    assert "tar --warning=no-unknown-keyword" in text
+    assert "COPYFILE_DISABLE=1 tar" in text
+    assert "make --no-print-directory -C" in text
+
+
 def test_install_sh_attended_pipe_requires_explicit_yes_before_staging(
     tmp_path: Path,
 ) -> None:
@@ -257,6 +265,7 @@ def test_install_sh_archive_install_runs_local_make_target(tmp_path: Path) -> No
     staged_root = home / ".vibecrafted" / "tools" / "vibecrafted-current"
     assert staged_root.is_symlink()
     assert make_capture.read_text(encoding="utf-8").splitlines() == [
+        "--no-print-directory",
         "-C",
         str(staged_root),
         "install",

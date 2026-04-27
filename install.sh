@@ -31,12 +31,26 @@ info() {
   printf '%s\n' "$*"
 }
 
+extract_tarball() {
+  local archive="$1"
+  local destination="$2"
+  local tar_args=(-xzf "$archive" -C "$destination")
+
+  # Release archives can carry macOS LIBARCHIVE/PAX xattrs. GNU tar prints a
+  # wall of harmless "unknown keyword" warnings on Linux unless we quiet them.
+  if tar --warning=no-unknown-keyword -tf "$archive" >/dev/null 2>&1; then
+    tar --warning=no-unknown-keyword "${tar_args[@]}"
+  else
+    COPYFILE_DISABLE=1 tar "${tar_args[@]}"
+  fi
+}
+
 is_interactive_session() {
   [[ -t 0 && -t 1 ]]
 }
 
 has_attended_tty() {
-  if exec 9<>/dev/tty 2>/dev/null; then
+  if { exec 9<>/dev/tty; } 2>/dev/null; then
     exec 9>&- 9<&- || true
     return 0
   fi
@@ -268,7 +282,7 @@ verify_signature() {
 
 if [[ -n "$archive_file" ]]; then
   info "Unpacking local archive: $archive_file"
-  tar -xzf "$archive_file" -C "$extract_root"
+  extract_tarball "$archive_file" "$extract_root"
 else
   info "Downloading 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. snapshot: $archive_url"
   local_archive="$tmpdir/$(basename "$archive_url")"
@@ -278,7 +292,7 @@ else
   info "Verifying integrity..."
   verify_signature "$local_archive" "$base_url"
 
-  tar -xzf "$local_archive" -C "$extract_root"
+  extract_tarball "$local_archive" "$extract_root"
 fi
 
 source_dir=""
@@ -404,7 +418,7 @@ fi
 
 post_install_banner
 info "Launching local make target:"
-info "  make -C $current_link $target"
+info "  make --no-print-directory -C $current_link $target"
 printf '\n'
 
-exec make -C "$current_link" "$target"
+exec make --no-print-directory -C "$current_link" "$target"

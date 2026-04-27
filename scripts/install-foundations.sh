@@ -5,14 +5,14 @@ set -euo pipefail
 #
 # Handles:
 #   loctree / loctree-mcp  — binary from GitHub releases (Loctree/Loctree)
-#   ai-contexters (aicx-mcp) — cargo install OR binary from GH releases
+#   aicx / aicx-mcp       — cargo install OR binary from GH releases
 #   prview                 — cargo install OR binary from GH releases
 #
 # Usage:
 #   bash scripts/install-foundations.sh                   # install all required
 #   bash scripts/install-foundations.sh --all             # install all (including optional)
 #   bash scripts/install-foundations.sh loctree           # install only loctree
-#   bash scripts/install-foundations.sh aicx              # install only ai-contexters
+#   bash scripts/install-foundations.sh aicx              # install only aicx / aicx-mcp
 #   bash scripts/install-foundations.sh --check           # dry-run: show what would install
 #   bash scripts/install-foundations.sh --prefix /usr/local  # custom install prefix
 # ---------------------------------------------------------------------------
@@ -20,8 +20,8 @@ set -euo pipefail
 LOCTREE_VERSION="${LOCTREE_VERSION:-0.8.16}"
 LOCTREE_REPO="Loctree/Loctree"
 
-AICX_CRATE="ai-contexters"
-AICX_REPO="VetCoders/ai-contexters"
+AICX_CRATE="aicx"
+AICX_REPO="Loctree/aicx"
 
 PRVIEW_CRATE="prview"
 PRVIEW_REPO="VetCoders/prview"
@@ -508,7 +508,7 @@ install_from_cargo() {
 }
 
 # ---------------------------------------------------------------------------
-# ai-contexters installer
+# aicx installer
 # ---------------------------------------------------------------------------
 
 install_aicx() {
@@ -529,8 +529,8 @@ install_aicx() {
   os="$(detect_os)"
   arch="$(detect_arch)"
 
-  # ai-contexters may publish platform binaries — try GitHub release
-  local asset_prefix="ai-contexters"
+  # aicx may publish platform binaries — try GitHub release
+  local asset_prefix="aicx"
   local target
   case "$os" in
     linux)
@@ -556,7 +556,7 @@ install_aicx() {
     )
 
     if (( CHECK_ONLY )); then
-      info "Would resolve latest ai-contexters release asset for $target"
+      info "Would resolve latest aicx release asset for $target"
       info "Fallback: cargo install $AICX_CRATE"
       return 0
     fi
@@ -584,7 +584,7 @@ install_aicx() {
       done < <(find "$tmpdir/out" -type f \( -name 'aicx*' \) -print0 2>/dev/null)
       rm -rf "$tmpdir"
       if (( found )); then
-        ok "ai-contexters installed from release"
+        ok "aicx installed from release"
         return 0
       fi
     fi
@@ -753,7 +753,7 @@ Usage: install-foundations.sh [options] [targets...]
 
 Targets:
   loctree      Install loctree + loctree-mcp (binary from GH releases)
-  aicx         Install ai-contexters / aicx-mcp (binary or cargo)
+  aicx         Install aicx / aicx-mcp (binary or cargo)
   prview       Install prview (cargo)
   (no target)  Install required foundations (loctree + aicx)
 

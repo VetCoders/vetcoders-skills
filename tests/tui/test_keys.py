@@ -181,7 +181,13 @@ def test_install_launcher_dedupes_zshrc_path_entries(
     zshrc_content = zshrc.read_text(encoding="utf-8")
     assert zshrc_content.count(path_line) == 1
     assert zshrc_content.count("# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher") == 1
-    assert (home / ".local" / "bin" / "vibecrafted").exists()
+    assert "${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin" in zshrc_content
+    assert "$HOME/.local/bin" in zshrc_content
+    assert (home / ".vibecrafted" / "bin" / "vibecrafted").is_file()
+    assert (home / ".local" / "bin" / "vibecrafted").is_symlink()
+    assert (home / ".local" / "bin" / "vibecrafted").readlink() == (
+        home / ".vibecrafted" / "bin" / "vibecrafted"
+    )
     for launcher_bin in (home / ".local" / "bin", home / ".vibecrafted" / "bin"):
         for wrapper_name in (
             "vc-help",
@@ -195,6 +201,31 @@ def test_install_launcher_dedupes_zshrc_path_entries(
             wrapper_path = launcher_bin / wrapper_name
             assert wrapper_path.is_symlink()
             assert wrapper_path.readlink() == Path("vibecrafted")
+
+
+def test_install_launcher_replaces_legacy_blind_local_bin_path(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    home = tmp_path / "home"
+    repo_root = tmp_path / "repo"
+    launcher_src = repo_root / "scripts" / "vibecrafted"
+    zshrc = home / ".zshrc"
+
+    launcher_src.parent.mkdir(parents=True)
+    launcher_src.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    home.mkdir()
+    zshrc.write_text(
+        '# user\n# 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher\nexport PATH="$HOME/.local/bin:$PATH"\n',
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv("HOME", str(home))
+
+    vetcoders_install._install_launcher(repo_root, dry_run=False)
+
+    zshrc_content = zshrc.read_text(encoding="utf-8")
+    assert 'export PATH="$HOME/.local/bin:$PATH"' not in zshrc_content.splitlines()
+    assert zshrc_content.count(vetcoders_install._launcher_path_line()) == 1
 
 
 def test_pipeline_category_describes_release_not_removed_ship_skill() -> None:

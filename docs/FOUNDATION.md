@@ -47,7 +47,7 @@ multi-gigabyte context windows.
 `vc-research` (what was already researched), `vc-partner` (session context).
 
 **Install**: `make foundations` (binary or cargo fallback) or
-[VetCoders/ai-contexters releases](https://github.com/VetCoders/ai-contexters/releases)
+[Loctree/aicx releases](https://github.com/Loctree/aicx/releases)
 
 ## PRView — Review
 

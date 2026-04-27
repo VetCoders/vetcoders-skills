@@ -1021,7 +1021,7 @@ cmd_help() {
   printf '  %bvibecrafted gui%b                       Launch the localhost control plane\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted tui%b                       Launch the Rust operator console\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted dashboard%b [layout]        Launch an optional repo-owned Zellij dashboard\n' "$_cyan" "$_reset"
-  printf '  %btelemetry smoke%b [flags]              Smoke the marbles telemetry path\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted telemetry smoke%b [flags]  Smoke the marbles telemetry path\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted%b <skill> <agent> [flags]   Run an agent-scoped framework skill\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted%b research [--prompt <text>|--file <path>]   Triple-agent research launcher\n' "$_cyan" "$_reset"
   printf '  %bvc-research%b [--prompt <text>|--file <path>]     Triple-agent research launcher\n' "$_cyan" "$_reset"
@@ -1050,7 +1050,7 @@ cmd_help() {
   printf '  vibecrafted gui --no-open\n'
   printf '  vibecrafted tui\n'
   printf '  vibecrafted dashboard marbles\n'
-  printf '  telemetry smoke --count 1 --no-watch\n'
+  printf '  vibecrafted telemetry smoke --count 1 --no-watch\n'
   printf '  vibecrafted workflow claude --prompt "Plan and implement auth"\n'
   printf '  vibecrafted implement codex --prompt "Ship the feature"\n'
   printf '  vibecrafted codex implement .vibecrafted/plans/my-plan.md\n'
@@ -1154,7 +1154,7 @@ cmd_help_full() {
   printf '  %bvibecrafted init%b [agent]              Interactive init session\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted gui%b                       Launch the localhost control plane\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted tui%b                       Launch the Rust operator console\n' "$_cyan" "$_reset"
-  printf '  %btelemetry smoke%b [flags]              Smoke the marbles telemetry path\n' "$_cyan" "$_reset"
+  printf '  %bvibecrafted telemetry smoke%b [flags]  Smoke the marbles telemetry path\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted resume%b <agent> [flags]    Resume an existing agent session\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted status%b                    Today'"'"'s agent activity\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted update%b                     Pull latest + reinstall\n' "$_cyan" "$_reset"
@@ -1193,7 +1193,7 @@ cmd_help_full() {
   printf '  vibecrafted gui\n'
   printf '  vibecrafted tui\n'
   printf '  vibecrafted dashboard workflow\n'
-  printf '  telemetry smoke --count 1 --no-watch\n'
+  printf '  vibecrafted telemetry smoke --count 1 --no-watch\n'
   printf '  vibecrafted workflow claude --prompt "Plan and implement auth"\n'
   printf '  vibecrafted workflow claude --file /path/to/brief.md\n'
   printf '  vibecrafted intents codex --prompt "Audit what from the plan really landed"\n'
@@ -1259,7 +1259,7 @@ cmd_doctor() {
     printf '%b[error]%b Makefile not found. Is 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. installed?\n' "$_red" "$_reset" >&2
     return 1
   }
-  make -C "$(dirname "$makefile")" doctor
+  make --no-print-directory -C "$(dirname "$makefile")" doctor
 }
 
 cmd_dashboard() {

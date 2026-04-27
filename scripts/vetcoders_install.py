@@ -189,7 +189,13 @@ class Foundation:
 
     def is_installed(self) -> Optional[str]:
         """Return path if installed, None otherwise."""
-        return shutil.which(self.name)
+        found = shutil.which(self.name)
+        if found:
+            return found
+        bundled = vibecrafted_home() / "bin" / self.name
+        if bundled.is_file() and os.access(bundled, os.X_OK):
+            return str(bundled)
+        return None
 
     def install_hint(self) -> str:
         hints = []
@@ -216,8 +222,8 @@ FOUNDATIONS: List[Foundation] = [
         description="AICX MCP server for session history and memory recovery",
         channels=["crates", "github"],
         packages={
-            "crates": "ai-contexters",
-            "github": "https://github.com/VetCoders/ai-contexters/releases",
+            "crates": "aicx",
+            "github": "https://github.com/Loctree/aicx/releases",
         },
         verify_cmd="aicx-mcp --version",
     ),
@@ -1109,7 +1115,11 @@ def _helper_surface_label(*, zsh_available: Optional[bool] = None) -> str:
 
 
 def _launcher_path_line() -> str:
-    return 'export PATH="$HOME/.local/bin:$PATH"'
+    return 'case ":$PATH:" in *":${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin:"*) ;; *) export PATH="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}/bin:$PATH" ;; esac; case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac'
+
+
+def _legacy_launcher_path_lines() -> List[str]:
+    return ['export PATH="$HOME/.local/bin:$PATH"']
 
 
 def _doctor_repair_rc_content(
@@ -1567,13 +1577,18 @@ def _find_launcher_wrapper(name: str) -> Optional[Path]:
 
 
 def _uninstall_rc_entries() -> List[Tuple[str, str]]:
-    return [
+    entries = [
         (_shell_source_line(), "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helpers"),
         (_shell_source_line(), "VetCoders shell helpers"),
         (_old_zshrc_source_line(), "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. shell helpers"),
         (_old_zshrc_source_line(), "VetCoders shell helpers"),
         (_launcher_path_line(), "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher"),
     ]
+    entries.extend(
+        (legacy_line, "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher")
+        for legacy_line in _legacy_launcher_path_lines()
+    )
+    return entries
 
 
 def _rc_has_framework_install_hints(rcfile: Path) -> bool:
@@ -2721,6 +2736,10 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
 
     # 7e. Zellij availability and version
     zellij_bin = shutil.which("zellij")
+    if not zellij_bin:
+        bundled_zellij = vibecrafted_home() / "bin" / "zellij"
+        if bundled_zellij.is_file() and os.access(bundled_zellij, os.X_OK):
+            zellij_bin = str(bundled_zellij)
     if zellij_bin:
         try:
             zellij_ver = subprocess.run(
@@ -2783,48 +2802,58 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
 
     # 7g. Agent CLI stream contract: verify expected flags are recognized
     _agent_flag_checks = {
-        "claude": ["--version"],
-        "codex": ["--version"],
-        "gemini": ["--version"],
+        "claude": [["--version"]],
+        "codex": [["--version"]],
+        "gemini": [["--version"], ["-v"], ["--help"]],
     }
-    for agent_name, flags in _agent_flag_checks.items():
+    for agent_name, flag_options in _agent_flag_checks.items():
         agent_bin = shutil.which(agent_name)
         if not agent_bin:
             continue
-        try:
-            flag_result = subprocess.run(
-                [agent_bin] + flags,
-                capture_output=True,
-                text=True,
-                timeout=10,
+        last_detail = ""
+        stream_ok = False
+        stream_line = ""
+        stream_flags: List[str] = []
+        for flags in flag_options:
+            try:
+                flag_result = subprocess.run(
+                    [agent_bin] + flags,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                if flag_result.returncode == 0:
+                    stream_ok = True
+                    stream_flags = flags
+                    stream_line = (
+                        (flag_result.stdout or "").strip().splitlines()[0]
+                        if flag_result.stdout
+                        else "ok"
+                    )
+                    break
+                last_detail = (
+                    f"'{agent_name} {' '.join(flags)}' exited {flag_result.returncode}"
+                )
+            except (OSError, subprocess.TimeoutExpired):
+                last_detail = (
+                    f"timed out or failed to run '{agent_name} {' '.join(flags)}'"
+                )
+        if stream_ok:
+            if agent_name == "gemini" and stream_flags == ["--help"]:
+                stream_line = "CLI responds to --help; version flag unavailable"
+            findings.append(
+                DoctorFinding(
+                    "ok",
+                    f"agent-stream:{agent_name}",
+                    stream_line,
+                )
             )
-            if flag_result.returncode == 0:
-                ver_line = (
-                    (flag_result.stdout or "").strip().splitlines()[0]
-                    if flag_result.stdout
-                    else "ok"
-                )
-                findings.append(
-                    DoctorFinding(
-                        "ok",
-                        f"agent-stream:{agent_name}",
-                        ver_line,
-                    )
-                )
-            else:
-                findings.append(
-                    DoctorFinding(
-                        "warn",
-                        f"agent-stream:{agent_name}",
-                        f"'{agent_name} {' '.join(flags)}' exited {flag_result.returncode}",
-                    )
-                )
-        except (OSError, subprocess.TimeoutExpired):
+        else:
             findings.append(
                 DoctorFinding(
                     "warn",
                     f"agent-stream:{agent_name}",
-                    f"timed out or failed to run '{agent_name} {' '.join(flags)}'",
+                    last_detail,
                 )
             )
 
@@ -2899,7 +2928,7 @@ def print_doctor(
 
     if fails:
         print(
-            f"  {red('Installation has issues.')} Run {bold('vetcoders install')} to fix.\n"
+            f"  {red('Installation has issues.')} Run {bold('vibecrafted doctor --fix-rc --fix-launchers')} or {bold('make install')} to fix.\n"
         )
         exit_code = 1
     elif warns:
@@ -3447,18 +3476,29 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
     if launcher_src.exists():
         if not dry_run:
             legacy_redirect_src = repo_root / "scripts" / "vibecraft"
+            canonical_bin_dir = vibecrafted_home() / "bin"
+            canonical_bin_dir.mkdir(parents=True, exist_ok=True)
+            canonical_launcher = canonical_bin_dir / "vibecrafted"
+            shutil.copy2(launcher_src, canonical_launcher)
+            canonical_launcher.chmod(0o755)
+
+            canonical_legacy = canonical_bin_dir / "vibecraft"
+            if legacy_redirect_src.exists():
+                shutil.copy2(legacy_redirect_src, canonical_legacy)
+                canonical_legacy.chmod(0o755)
+
             for launcher_bin_dir in _launcher_bin_dirs():
                 launcher_bin_dir.mkdir(parents=True, exist_ok=True)
                 launcher_dst = launcher_bin_dir / "vibecrafted"
-                shutil.copy2(launcher_src, launcher_dst)
-                launcher_dst.chmod(0o755)
+                if launcher_dst != canonical_launcher:
+                    create_symlink(canonical_launcher, launcher_dst)
                 for wrapper in LAUNCHER_WRAPPERS:
                     create_symlink(Path("vibecrafted"), launcher_bin_dir / wrapper)
                 # Replace legacy vibecraft binary with a thin redirect
                 legacy_dst = launcher_bin_dir / "vibecraft"
                 if legacy_redirect_src.exists():
-                    shutil.copy2(legacy_redirect_src, legacy_dst)
-                    legacy_dst.chmod(0o755)
+                    if legacy_dst != canonical_legacy:
+                        create_symlink(canonical_legacy, legacy_dst)
         else:
             for launcher_bin_dir in _launcher_bin_dirs():
                 for wrapper in LAUNCHER_WRAPPERS:
@@ -3466,19 +3506,26 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
                         Path("vibecrafted"), launcher_bin_dir / wrapper, dry_run=True
                     )
         # Ensure $HOME/.local/bin is in PATH via shell rc files
-        path_line = _launcher_path_line()
+        canonical_path_line = _launcher_path_line()
+        path_lines = [canonical_path_line, *_legacy_launcher_path_lines()]
         path_comment = "𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. launcher"
         for rcname in (".bashrc", ".zshrc"):
             rcfile = Path.home() / rcname
             if rcfile.exists():
                 content = rcfile.read_text()
-                cleaned, removed = _strip_rc_entry(content, path_line, path_comment)
+                cleaned = content
+                removed = 0
+                for path_line in path_lines:
+                    cleaned, removed_now = _strip_rc_entry(
+                        cleaned, path_line, path_comment
+                    )
+                    removed += removed_now
                 has_path = _rc_has_vibecrafted_bin_path(cleaned)
                 changed = removed > 0
                 if not has_path:
                     if cleaned and not cleaned.endswith("\n"):
                         cleaned += "\n"
-                    cleaned += f"\n# {path_comment}\n{path_line}\n"
+                    cleaned += f"\n# {path_comment}\n{canonical_path_line}\n"
                     changed = True
                 if changed and not dry_run:
                     rcfile.write_text(cleaned)
