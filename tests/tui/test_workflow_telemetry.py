@@ -365,7 +365,7 @@ def test_workflow_helper_mints_fresh_run_when_ambient_id_is_stale(
     assert payload["SKILL_NAME"] == "justdo"
 
 
-def test_legacy_review_helper_generates_real_run_id_and_lock(tmp_path: Path) -> None:
+def test_review_helper_generates_real_run_id_and_lock(tmp_path: Path) -> None:
     org_repo = _org_repo()
     plan_file = tmp_path / "review-plan.md"
     plan_file.write_text("# Review plan\n", encoding="utf-8")

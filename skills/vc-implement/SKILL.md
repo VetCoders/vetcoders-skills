@@ -16,7 +16,7 @@ description: >
   "zrób to", "zaimplementuj to", "dowiez to", "I'm tired but this needs to ship",
   "full implementation", "od pomyslu do realizacji", "caly feature",
   "before tomorrow", "nie mam siły ale musi byc gotowe".
-  Legacy alias: vc-justdo (kept for agents already wired to that name).
+  Alias: vc-justdo (kept for agents already wired to that name).
 compatibility:
   tools:
     - exec_command
@@ -30,7 +30,7 @@ compatibility:
 
 # vc-implement — For When It Must Get Done
 
-> **Front-face:** `vc-implement`. **Legacy alias:** `vc-justdo`. Both names
+> **Front-face:** `vc-implement`. **Alias:** `vc-justdo`. Both names
 > dispatch to the same autonomous implementation skill. Agents already trained
 > on `vc-justdo` continue to work without changes.
 
@@ -74,7 +74,7 @@ vc-implement claude --prompt 'Implement caching layer e2e'
 vibecrafted implement gemini --file /path/to/feature-plan.md
 ```
 
-The legacy aliases keep working for already-wired agents:
+The alternate names keep working for already-wired agents:
 
 ```bash
 vibecrafted justdo codex --prompt 'Ship the feature'

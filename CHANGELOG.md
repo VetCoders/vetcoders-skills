@@ -74,7 +74,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   time, exit code, session_id) so marbles state is the single source of truth
   for multi-loop runs.
 - New skill **`vc-implement`** becomes the canonical end-to-end implementation
-  skill. The `vc-justdo` name stays in-tree as a **backward-compatible legacy
+  skill. The `vc-justdo` name stays in-tree as a **backward-compatible
   alias** (frontmatter: `canonical: vc-implement`) so agents already wired to
   the old name keep working. Every public surface (START_HERE `Simplest path`,
   install banner, skill registry in `vetcoders_install.py`) now shows
@@ -118,8 +118,8 @@ research` / `vc-dashboard`) with matching launcher and test updates.
   WORKFLOWS, installer/DESIGN, workflows/MARBLES — copy brought in line with
   the canonical command set (`vibecrafted implement`) and the current 1.4.1
   surface.
-- FLOW + SKILL polish across `vc-delegate`, `vc-init`, `vc-justdo` (marked
-  legacy), `vc-partner`, `vc-research`, `vc-scaffold`, `vc-workflow`.
+- FLOW + SKILL polish across `vc-delegate`, `vc-init`, `vc-justdo` (alias),
+  `vc-partner`, `vc-research`, `vc-scaffold`, `vc-workflow`.
 
 ### Fixed
 

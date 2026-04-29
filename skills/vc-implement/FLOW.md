@@ -1,6 +1,6 @@
 # `vc-implement` Flow
 
-> Front-face: `vc-implement`. Legacy alias: `vc-justdo`. Both names hit the
+> Front-face: `vc-implement`. Alias: `vc-justdo`. Both names hit the
 > same dispatcher.
 
 ## Flow
@@ -29,7 +29,7 @@ flowchart TD
 | `vibecrafted implement <agent>` | `--prompt` or `--file` | implementation report, transcript, and meta | `0` on dispatch |
 | `vibecrafted justdo <agent>`    | alias of `implement`   | same                                        | `0` on dispatch |
 | `vc-implement <agent>`          | same                   | same                                        | `0` on dispatch |
-| `vc-justdo <agent>`             | legacy alias           | same                                        | `0` on dispatch |
+| `vc-justdo <agent>`             | alias                  | same                                        | `0` on dispatch |
 
 ### Escalation edges
 

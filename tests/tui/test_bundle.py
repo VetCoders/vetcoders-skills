@@ -26,7 +26,7 @@ def test_discover_bundle_skills_tracks_live_skill_surface() -> None:
     ]
 
     assert "vc-implement" in skill_names
-    assert "vc-justdo" in skill_names  # legacy alias kept in bundle
+    assert "vc-justdo" in skill_names  # alias kept in bundle
     assert "vc-marbles" in skill_names
     assert "vc-ship" not in skill_names
     assert "vc-ownership" in skill_names
@@ -66,7 +66,7 @@ def test_write_bundle_uses_current_metadata_and_skill_inventory(tmp_path: Path) 
     assert manifest["version"] == bundle.read_version(bundle.REPO_ROOT)
     assert manifest["license"] != "MIT"
     assert "skills/vc-implement/SKILL.md" in members
-    assert "skills/vc-justdo/SKILL.md" in members  # legacy alias kept in bundle
+    assert "skills/vc-justdo/SKILL.md" in members  # alias kept in bundle
     assert "skills/vc-marbles/SKILL.md" in members
     assert "skills/vc-ship/SKILL.md" not in members
     assert "skills/vc-ownership/SKILL.md" in members

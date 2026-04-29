@@ -218,7 +218,7 @@ PY
 }
 
 spawn_mark_unknown_liveness() {
-  # Legacy live meta without launcher_pid is not safe to reap. Mark it
+  # Older live meta without launcher_pid is not safe to reap. Mark it
   # explicitly so dashboards stop pretending it is verified-live.
   local meta_path="$1"
   [[ -f "$meta_path" ]] || return 0
@@ -264,7 +264,7 @@ spawn_gc_dead_runs() {
   while IFS= read -r -d '' meta_path; do
     pid_value="$(spawn_read_meta_field "$meta_path" "launcher_pid")"
     # Safe reap contract: only reap when we can VERIFY the PID is dead.
-    # Missing launcher_pid = pre-GC-era meta or legacy launcher that never
+    # Missing launcher_pid = pre-GC-era meta or older launcher that never
     # wrote it — we cannot prove death, so we leave it alone. This avoids
     # false-positive reaping of still-running agents whose meta was written
     # by an older launcher template. TTL-based cleanup is a separate path.

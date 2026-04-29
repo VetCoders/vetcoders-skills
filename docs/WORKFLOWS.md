@@ -85,7 +85,7 @@ flowchart TD
 - `make vibecrafted` and `make wizard` are installer entry points, not skill
   execution paths; they exist to get the command deck and wrappers onto the machine.
 - `vibecrafted implement` is the canonical autonomous delivery command. The
-  `justdo` command and `vc-justdo` helper remain legacy aliases for installed
+  `justdo` command and `vc-justdo` helper remain aliases for installed
   agents and old prompts, not the official front face.
 - `vc-review` reviews a bounded target such as PR 14, `HEAD~10..HEAD`, a branch
   diff, or a generated artifact pack. Use `vc-followup` when the question is

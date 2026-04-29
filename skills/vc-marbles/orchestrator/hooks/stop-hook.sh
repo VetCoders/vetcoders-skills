@@ -27,7 +27,7 @@ COMPLETION_PROMISE=$(echo "$FRONTMATTER" | grep '^completion_promise:' | sed 's/
 # Session isolation: the state file is project-scoped, but the Stop hook
 # fires in every Claude Code session in that project. If another session
 # started the loop, this session must not block (or touch the state file).
-# Legacy state files without session_id fall through (preserves old behavior).
+# Older state files without session_id fall through (preserves old behavior).
 STATE_SESSION=$(echo "$FRONTMATTER" | grep '^session_id:' | sed 's/session_id: *//' || true)
 HOOK_SESSION=$(echo "$HOOK_INPUT" | jq -r '.session_id // ""')
 if [[ -n "$STATE_SESSION" ]] && [[ "$STATE_SESSION" != "$HOOK_SESSION" ]]; then

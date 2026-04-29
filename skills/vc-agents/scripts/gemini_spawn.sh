@@ -111,7 +111,7 @@ qfilter="$(spawn_shell_quote "$SCRIPT_DIR/gemini_stream_filter.jq")"
 # grep '^{' strips non-JSON lines so jq doesn't choke.
 vibecrafted_home="${VIBECRAFTED_HOME:-$HOME/.vibecrafted}"
 qvhome="$(spawn_shell_quote "$vibecrafted_home")"
-# --approval-mode yolo supersedes -y: latter is legacy boolean that does not
+# --approval-mode yolo supersedes -y: latter is an older boolean that does not
 # cover run_shell_command in current gemini-cli. Observed 2026-04-22: gemini
 # reached run_shell_command and got "requires user confirmation, not supported
 # in non-interactive mode" — the explicit approval mode cures it.

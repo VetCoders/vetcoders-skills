@@ -71,7 +71,7 @@ vibecrafted implement codex --prompt "Add user authentication with JWT"
 ```
 
 `vibecrafted implement` runs the autonomous delivery contract in `vc-implement`
-(`justdo` remains a legacy alias for existing prompts and shell environments):
+(`justdo` remains an alias for existing prompts and shell environments):
 
 - **Orient** — map the repo, load prior intent, and choose the smallest shape that works
 - **Implement** — make the change, add tests, and integrate with the live runtime

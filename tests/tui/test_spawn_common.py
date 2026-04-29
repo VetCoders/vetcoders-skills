@@ -1101,8 +1101,8 @@ PY
     assert payload["ghost_reason"] == "launcher_pid dead at reap"
 
 
-def test_gc_marks_live_meta_without_pid_as_unknown_legacy(tmp_path: Path) -> None:
-    meta = tmp_path / "legacy.meta.json"
+def test_gc_marks_live_meta_without_pid_as_unknown_schema(tmp_path: Path) -> None:
+    meta = tmp_path / "older.meta.json"
     report = tmp_path / "report.md"
     transcript = tmp_path / "trace.log"
 

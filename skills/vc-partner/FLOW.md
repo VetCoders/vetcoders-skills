@@ -27,7 +27,7 @@ flowchart TD
 
 - Small native cut inside the same session -> `vibecrafted delegate <agent>`
 - Need separate execution units -> `vc-agents`
-- Ready for autonomous implementation -> `vibecrafted implement <agent>` (legacy alias: `justdo`)
+- Ready for autonomous implementation -> `vibecrafted implement <agent>` (alias: `justdo`)
 
 ### Session artifacts
 

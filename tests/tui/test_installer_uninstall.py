@@ -61,7 +61,7 @@ def _setup_installed_surface(
         )
         _write_executable(
             launcher_bin_dir / "vibecraft",
-            "#!/usr/bin/env bash\nprintf 'legacy\\n'\n",
+            "#!/usr/bin/env bash\nprintf 'compat\\n'\n",
         )
         for wrapper_name in (
             *installer.LAUNCHER_WRAPPERS,
@@ -76,7 +76,7 @@ def _setup_installed_surface(
     return home, crafted_home, store_path, helper_file, zshrc
 
 
-def test_cmd_uninstall_removes_launchers_and_legacy_pack_wrappers(
+def test_cmd_uninstall_removes_launchers_and_compat_pack_wrappers(
     tmp_path: Path, monkeypatch
 ) -> None:
     home, crafted_home, store_path, helper_file, zshrc = _setup_installed_surface(

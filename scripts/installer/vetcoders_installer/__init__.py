@@ -677,10 +677,10 @@ def _show_intro_flow(
                     return "cancelled"
                 return "completed"
             except Exception:
-                # Textual crashed -- fall through to legacy path.
+                # Textual crashed -- fall through to the manual path.
                 pass
 
-    # -- Legacy manual ANSI path --
+    # -- Manual ANSI path --
     # Re-assemble bodies from layers for _show_mock_screen.
     bodies: list[str] = []
     for name in screen_names:

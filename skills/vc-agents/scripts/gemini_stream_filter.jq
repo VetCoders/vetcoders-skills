@@ -1,7 +1,7 @@
 # Gemini CLI stream-json filter
-# Handles both legacy format (type=message, tool_use, tool_result)
+# Handles both older format (type=message, tool_use, tool_result)
 # and Gemini 3.1 format (type=gemini with thoughts[] + toolCalls[])
-# Verified against real output 2026-03-27 (legacy) + 2026-04-12 (3.1)
+# Verified against real output 2026-03-27 (older) + 2026-04-12 (3.1)
 
 def stamp: (now | strftime("%H:%M:%S"));
 def tool_tag($name): "\u001b[36m[" + stamp + " " + $name + "]\u001b[0m ";
@@ -27,10 +27,10 @@ elif .type == "gemini" then
     "\n" + tool_tag(.name // "?")
   )
 
-# Legacy format: type=message with role=assistant
+# Older format: type=message with role=assistant
 elif .type == "message" then
   if .role == "assistant" then
-    # Support thoughts on legacy message events too (hybrid format)
+    # Support thoughts on older message events too (hybrid format)
     emit_thoughts,
     (if (.content // "") != "" then .content else empty end)
   else empty end

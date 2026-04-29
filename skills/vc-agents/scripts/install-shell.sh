@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-# Find source file (new name first, then legacy)
+# Find source file (new name first, then compat path)
 source_file="$repo_root/skills/vc-agents/shell/vetcoders.sh"
 [[ -f "$source_file" ]] || source_file="$repo_root/skills/vc-agents/shell/vetcoders.zsh"
 [[ -f "$source_file" ]] || source_file="$repo_root/vc-agents/shell/vetcoders.sh"
@@ -60,7 +60,7 @@ config_base="${XDG_CONFIG_HOME:-$HOME/.config}"
 target_dir="$config_base/vetcoders"
 target_file="$target_dir/vc-skills.sh"
 
-# Legacy compat location for existing zsh installs
+# Compat location for existing zsh installs
 legacy_dir="$config_base/zsh"
 legacy_file="$legacy_dir/vc-skills.zsh"
 
@@ -118,7 +118,7 @@ if (( dry_run )); then
 else
   mkdir -p "$target_dir"
   write_helper_shim
-  # Legacy compat symlink so old .zshrc source lines still work
+  # Compat symlink so old .zshrc source lines still work
   mkdir -p "$legacy_dir"
   ln -sfn "$target_file" "$legacy_file"
 fi

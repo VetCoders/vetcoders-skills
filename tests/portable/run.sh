@@ -110,7 +110,7 @@ HOME="$bootstrap_home" XDG_CONFIG_HOME="$bootstrap_config_dir" VIBECRAFTED_HOME=
 require_symlink "$bootstrap_home/.vibecrafted/tools/vibecrafted-current"
 require_file "$bootstrap_home/.vibecrafted/tools/vibecrafted-current/Makefile"
 require_file "$bootstrap_home/.vibecrafted/skills/vc-agents/scripts/codex_spawn.sh"
-# Helper file lives at canonical location; legacy symlink also exists
+# Helper file lives at canonical location; compat symlink also exists
 require_file "$bootstrap_config_dir/vetcoders/vc-skills.sh"
 require_file "$bootstrap_config_dir/zsh/vc-skills.zsh"
 
@@ -133,7 +133,7 @@ require_symlink "$home_dir/.gemini/skills/vc-agents"
 require_file "$home_dir/.codex/skills/vc-agents/scripts/codex_spawn.sh"
 require_file "$home_dir/.claude/skills/vc-agents/scripts/claude_spawn.sh"
 require_file "$home_dir/.gemini/skills/vc-agents/scripts/gemini_spawn.sh"
-# Canonical + legacy helper locations
+# Canonical + compat helper locations
 require_file "$config_dir/vetcoders/vc-skills.sh"
 require_file "$config_dir/zsh/vc-skills.zsh"
 assert_contains "$config_dir/vetcoders/vc-skills.sh" '𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. helper shim'
@@ -345,7 +345,7 @@ jq -e '.skill_code == "marb"' "$skill_meta" >/dev/null || die "skill helper did 
 jq -e '.run_id | startswith("marb-")' "$skill_meta" >/dev/null || die "skill helper did not wire run_id"
 jq -e '.liveness == "terminal"' "$skill_meta" >/dev/null || die "skill helper did not finish with terminal liveness"
 
-# If zsh is available, also smoke test zsh loading via legacy compat symlink
+# If zsh is available, also smoke test zsh loading via compat symlink
 if command -v zsh >/dev/null 2>&1; then
   log "helper zsh smoke (bonus)"
   # shellcheck disable=SC2016
@@ -390,8 +390,8 @@ if [[ -e "$repo_root/docs/index.html" ]]; then
   assert_not_contains "$repo_root/docs/index.html" "The Founders' Framework"
 fi
 assert_contains "$repo_root/docs/QUICK_START.md" 'vibecrafted init claude'
-# Canonical command shape only — no hardcoded prompt text (brittle), no legacy
-# `justdo` (backward-compatible CLI but not an advertised surface per the
+# Canonical command shape only — no hardcoded prompt text (brittle), no
+# `justdo` in public quickstart copy (backward-compatible CLI but not an advertised surface per the
 # canonical rename to `vc-implement`).
 assert_contains "$repo_root/docs/QUICK_START.md" 'vibecrafted implement codex'
 assert_contains "$repo_root/docs/presence/quickstart.html" 'https://vibecrafted.io/en/quickstart/'

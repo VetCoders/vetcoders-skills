@@ -24,7 +24,7 @@ flowchart TD
 
 ### Escalation edges
 
-- Plan is ready for execution -> `vibecrafted workflow <agent>` or `implement` (legacy alias: `justdo`)
+- Plan is ready for execution -> `vibecrafted workflow <agent>` or `implement` (alias: `justdo`)
 - Shared steering is still needed -> `vibecrafted partner <agent>`
 - The repo already exists and needs truth before planning -> `vibecrafted init <agent>`
 

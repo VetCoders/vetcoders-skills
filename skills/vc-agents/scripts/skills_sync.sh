@@ -211,7 +211,7 @@ if (( with_shell )); then
     printf '  ssh %s ln -sfn %s %s\n' "$host" "$remote_shell_target" "$remote_legacy_target"
   else
     ssh -n "$host" "ln -sfn $remote_shell_target $remote_legacy_target" \
-      || die "Could not link legacy helper path $remote_legacy_target on $host"
+      || die "Could not link compat helper path $remote_legacy_target on $host"
   fi
 
   if (( shell_no_zshrc )); then

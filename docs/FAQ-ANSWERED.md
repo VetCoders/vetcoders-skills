@@ -5,13 +5,13 @@ Answers from the trenches. This is the truth as of April 2026.
 ## Installation
 
 - **Why does the installer write to `$VIBECRAFTED_ROOT/.vibecrafted/` and not `$HOME/.agents/` like other tools?**
-  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is the _orchestrator_, not just a collection of scripts. `$HOME/.agents/` is the legacy dumping ground for
+  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. is the _orchestrator_, not just a collection of scripts. `$HOME/.agents/` is the old dumping ground for
   standalone agent configs. `$VIBECRAFTED_ROOT/.vibecrafted/` is the central command store where the actual skill source code lives,
   where artifacts are archived, and where the multi-agent state is managed. We separate the _source_ (vibecrafted) from
   the _view_ (the symlinks in agent-specific dirs).
 
 - **What happens to my existing skills in `$HOME/.agents/skills/` after installation?**
-  The installer is surgical. It detects legacy `vetcoders-*` skills and offers to prune them. If you have custom,
+  The installer is surgical. It detects old `vetcoders-*` skills and offers to prune them. If you have custom,
   non-VetCoders skills there, it leaves them alone. 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. skills are symlinked into `$HOME/.agents/skills/` (and
   others) so your agents "see" them, but the source of truth remains in `$VIBECRAFTED_ROOT/.vibecrafted/`.
 
@@ -96,7 +96,7 @@ Answers from the trenches. This is the truth as of April 2026.
   you through the process.
 
 - **Why is there no `vc-test` skill?**
-  Testing isn't a "skill"—it's a requirement of _every_ skill. `vc-workflow`, `vc-implement` (legacy alias `vc-justdo`),
+  Testing isn't a "skill"—it's a requirement of _every_ skill. `vc-workflow`, `vc-implement` (alias `vc-justdo`),
   and `vc-marbles` all have testing and validation baked into their "Execution" and "Validate" phases.
 
 - **What is the Definition of Undone and why is it not the Definition of Done?**
@@ -176,10 +176,10 @@ Answers from the trenches. This is the truth as of April 2026.
   A single iteration (followup + fix) takes 2-5 minutes. A task typically converges in 2-4 loops. Massive refactors
   might take 10+.
 
-- **When should I use `vc-implement` (legacy alias `vc-justdo`) vs running individual skills manually?**
+- **When should I use `vc-implement` (alias `vc-justdo`) vs running individual skills manually?**
   Use `vc-implement` when the task is clear and you want the agent to take full ownership from research to final
   convergence. Use individual skills (init → workflow → followup) when you want to supervise the architectural "cuts" at
-  each step. The legacy `vc-justdo` name still resolves to the same skill, so already-trained agents keep working.
+  each step. The `vc-justdo` name still resolves to the same skill, so already-trained agents keep working.
 
 - **What is the difference between `vc-review` and `vc-followup`?**
   `vc-review` is bounded: give it a PR, branch diff, commit range, or review artifact pack and expect findings-first

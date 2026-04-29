@@ -95,8 +95,8 @@ def test_helper_surface_label_prefers_canonical_helper(
 
     legacy = home / ".config" / "zsh" / "vc-skills.zsh"
     legacy.parent.mkdir(parents=True)
-    legacy.write_text("# legacy\n", encoding="utf-8")
-    assert vetcoders_install._helper_surface_label() == "legacy zsh"
+    legacy.write_text("# compat\n", encoding="utf-8")
+    assert vetcoders_install._helper_surface_label() == "compat zsh"
 
     canonical = home / ".config" / "vetcoders" / "vc-skills.sh"
     canonical.parent.mkdir(parents=True)
@@ -203,7 +203,7 @@ def test_install_launcher_dedupes_zshrc_path_entries(
             assert wrapper_path.readlink() == Path("vibecrafted")
 
 
-def test_install_launcher_replaces_legacy_blind_local_bin_path(
+def test_install_launcher_replaces_old_blind_local_bin_path(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     home = tmp_path / "home"

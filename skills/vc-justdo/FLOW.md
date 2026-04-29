@@ -1,4 +1,4 @@
-# `vc-justdo` Flow — legacy alias of `vc-implement`
+# `vc-justdo` Flow — alias of `vc-implement`
 
 > Canonical flow lives in [`../vc-implement/FLOW.md`](../vc-implement/FLOW.md).
 > This file is a redirect kept for backwards compatibility.
@@ -7,7 +7,7 @@
 
 ```bash
 vibecrafted implement codex --prompt 'Ship the feature'   # canonical
-vibecrafted justdo    codex --prompt 'Ship the feature'   # legacy alias, same dispatch
+vibecrafted justdo    codex --prompt 'Ship the feature'   # same dispatch
 ```
 
 Both paths land on the same internal skill (id: `justdo`, run-id prefix:

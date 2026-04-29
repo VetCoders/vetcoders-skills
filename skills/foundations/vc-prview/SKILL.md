@@ -45,7 +45,7 @@ prview -R --remote-only <branch> <base>
 Fallback paths:
 
 - `~/Git/prview-rs/target/release/prview -R --remote-only <branch> <base>`
-- `prview --use-bash-full -R --remote-only <branch> <base>` (legacy bridge)
+- `prview --use-bash-full -R --remote-only <branch> <base>` (compat bridge)
 
 ### GitHub PR by number
 

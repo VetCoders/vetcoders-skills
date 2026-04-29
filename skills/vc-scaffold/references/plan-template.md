@@ -53,7 +53,7 @@ Example: "The monolith is becoming unmaintainable. We need to extract the paymen
 
 **Explicitly out of scope:**
 
-- Legacy system rewrite (not happening)
+- Rewrite of the old system (not happening)
 - Migrate to language Z (out of bounds)
 
 ## Architecture Overview

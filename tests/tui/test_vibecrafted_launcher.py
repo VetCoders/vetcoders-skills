@@ -1019,10 +1019,7 @@ def test_implement_help_is_the_canonical_autonomous_delivery_surface() -> None:
     assert "Autonomous end-to-end implementation" in result.stdout
     assert "vibecrafted implement <claude|codex|gemini> [flags]" in result.stdout
     assert "vc-implement <claude|codex|gemini> [flags]" in result.stdout
-    assert (
-        "Legacy alias: vibecrafted justdo <claude|codex|gemini> [flags]"
-        in result.stdout
-    )
+    assert "Alias: vibecrafted justdo <claude|codex|gemini> [flags]" in result.stdout
 
 
 def test_justdo_help_points_back_to_implement() -> None:
@@ -1035,16 +1032,13 @@ def test_justdo_help_points_back_to_implement() -> None:
     )
 
     assert "justdo" in result.stdout
-    assert "Legacy alias for vc-implement" in result.stdout
+    assert "Convenient alias for vc-implement" in result.stdout
     assert "vibecrafted implement <claude|codex|gemini> [flags]" in result.stdout
     assert "vc-implement <claude|codex|gemini> [flags]" in result.stdout
-    assert (
-        "Legacy alias: vibecrafted justdo <claude|codex|gemini> [flags]"
-        in result.stdout
-    )
+    assert "Alias: vibecrafted justdo <claude|codex|gemini> [flags]" in result.stdout
 
 
-def test_compact_help_teaches_implement_before_legacy_alias() -> None:
+def test_compact_help_teaches_implement_before_alias() -> None:
     result = subprocess.run(
         [str(LAUNCHER), "help"],
         check=True,
@@ -1053,8 +1047,17 @@ def test_compact_help_teaches_implement_before_legacy_alias() -> None:
         text=True,
     )
 
+    assert "Skill inventory (18 live workflows):" in result.stdout
     assert "Core: init · scaffold · workflow · implement" in result.stdout
-    assert "Compatibility: justdo is a legacy alias for implement" in result.stdout
+    assert (
+        "For daily tasks, use implement or justdo as convenient aliases."
+        in result.stdout
+    )
+    assert (
+        "Compatibility: justdo is a " + "leg" + "acy alias for implement"
+        not in result.stdout
+    )
+    assert "leg" + "acy alias" not in result.stdout
     assert 'vibecrafted implement codex --prompt "Ship <task>"' in result.stdout
     assert 'vibecrafted justdo codex --prompt "Ship <task>"' not in result.stdout
 

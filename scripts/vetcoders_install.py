@@ -1110,7 +1110,7 @@ def _helper_surface_label(*, zsh_available: Optional[bool] = None) -> str:
     if helper_file.exists():
         return "bash + zsh" if zsh_available else "bash only"
     if legacy_file.exists():
-        return "legacy zsh"
+        return "compat zsh"
     return "not installed"
 
 
@@ -1186,7 +1186,7 @@ def _doctor_fix_rc_files() -> List[DoctorFinding]:
             DoctorFinding(
                 "ok",
                 f"rc-fix:{rcname}",
-                "repaired legacy rc entries and restored canonical launcher/helper hints",
+                "repaired compat rc entries and restored canonical launcher/helper hints",
             )
         )
 
@@ -2090,7 +2090,7 @@ def prune_legacy_skills(
             removed += 1
 
     if removed:
-        print(f"  {OK} Removed {removed} legacy entries")
+        print(f"  {OK} Removed {removed} old entries")
 
     # Clean old source line from .zshrc
     zshrc = Path.home() / ".zshrc"
@@ -2436,7 +2436,7 @@ def run_doctor(store_path: Path, state: InstallState) -> List[DoctorFinding]:
             DoctorFinding(
                 "warn",
                 "shell-helpers",
-                f"legacy location only: {legacy_file} — re-run install",
+                f"compat location only: {legacy_file} — re-run install",
             )
         )
     elif state.shell_helpers:
@@ -3383,12 +3383,12 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
         interactive=interactive,
     )
 
-    # --- Prune legacy vetcoders-* skills ---
+    # --- Prune old vetcoders-* skills ---
     prune_legacy_skills(
         store_path, all_runtimes, dry_run=dry_run, interactive=interactive
     )
 
-    # --- Execute: clean legacy and duplicate RC entries ---
+    # --- Execute: clean compat and duplicate RC entries ---
     for rcname in (".bashrc", ".zshrc"):
         rcfile = Path.home() / rcname
         if rcfile.exists():
@@ -3471,7 +3471,7 @@ def _cmd_install_verbose(args: argparse.Namespace, repo_root: Path) -> int:
 
 
 def _install_launcher(repo_root: Path, dry_run: bool) -> None:
-    """Install vibecrafted launcher to portable and legacy bin surfaces."""
+    """Install vibecrafted launcher to portable and compat bin surfaces."""
     launcher_src = repo_root / "scripts" / "vibecrafted"
     if launcher_src.exists():
         if not dry_run:
@@ -3494,7 +3494,7 @@ def _install_launcher(repo_root: Path, dry_run: bool) -> None:
                     create_symlink(canonical_launcher, launcher_dst)
                 for wrapper in LAUNCHER_WRAPPERS:
                     create_symlink(Path("vibecrafted"), launcher_bin_dir / wrapper)
-                # Replace legacy vibecraft binary with a thin redirect
+                # Replace old vibecraft binary with a thin redirect
                 legacy_dst = launcher_bin_dir / "vibecraft"
                 if legacy_redirect_src.exists():
                     if legacy_dst != canonical_legacy:
@@ -3762,7 +3762,7 @@ def _cmd_install_compact(args: argparse.Namespace, repo_root: Path) -> int:
             store_path, all_runtimes, dry_run=dry_run, interactive=False
         )
 
-        # Clean legacy RC entries
+        # Clean compat RC entries
         for rcname in (".bashrc", ".zshrc"):
             rcfile = Path.home() / rcname
             if rcfile.exists():
@@ -4390,7 +4390,7 @@ def cmd_restore(args: argparse.Namespace) -> int:
     if helper_backup.is_dir():
         print(bold("Restoring helpers..."))
         # Helper file
-        # Try new name first, then legacy
+        # Try new name first, then compat path
         backed_helper = helper_backup / "vc-skills.sh"
         if not backed_helper.exists():
             backed_helper = helper_backup / "vc-skills.zsh"
@@ -4530,7 +4530,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p_doctor.add_argument(
         "--fix-rc",
         action="store_true",
-        help="Repair legacy shell startup lines and restore canonical helper/PATH hints before verifying",
+        help="Repair old shell startup lines and restore canonical helper/PATH hints before verifying",
     )
     p_doctor.add_argument(
         "--fix-launchers",

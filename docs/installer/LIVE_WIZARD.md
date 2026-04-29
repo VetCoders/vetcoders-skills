@@ -28,10 +28,10 @@ Source lives in the `vibecrafted-io` repo:
 
 Server-side bits live in this repo (`vibecrafted`):
 
-| Path                                   | Role                                                                 |
-| -------------------------------------- | -------------------------------------------------------------------- |
-| `scripts/installer_gui.py`             | HTTP server: API + static file serving + fallback inline HTML        |
-| `scripts/installer_gui.py::build_html` | Legacy inline HTML kept as fallback when no Svelte bundle is present |
+| Path                                   | Role                                                           |
+| -------------------------------------- | -------------------------------------------------------------- |
+| `scripts/installer_gui.py`             | HTTP server: API + static file serving + fallback inline HTML  |
+| `scripts/installer_gui.py::build_html` | Fallback inline HTML kept for when no Svelte bundle is present |
 
 ## Runtime contract
 
@@ -47,7 +47,7 @@ prebuilt Svelte site plus its `_astro/`, `presence/`, and root static files.
 Every `/api/*` route stays reserved for the live controller, so the bundle
 and the API live on the same origin with zero CORS or mixed-content issues.
 
-When no bundle is found, the server falls back to the legacy
+When no bundle is found, the server falls back to the inline
 `build_html(preflight)` template. The fallback keeps the installer usable
 on any clean framework checkout that has not built the site yet.
 

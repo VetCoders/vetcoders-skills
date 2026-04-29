@@ -3,11 +3,11 @@ name: vc-justdo
 version: 2.1.0
 canonical: vc-implement
 description: >
-  Legacy alias of vc-implement — kept for agents already wired to the
+  Alias of vc-implement — kept for agents already wired to the
   vc-justdo name. Same end-to-end autonomous implementation skill: agent takes
   ownership of the task, picks the right tools, implements properly, runs
   followup audits, loops marbles until clean, and delivers a finished surface.
-  Trigger phrases (legacy): "just do", "just do it", "zrób to", "dowiez to",
+  Trigger phrases: "just do", "just do it", "zrób to", "dowiez to",
   "implement this e2e", "build this properly", "I'm tired but this needs to
   ship", "full implementation", "od pomyslu do realizacji", "caly feature",
   "before tomorrow", "nie mam siły ale musi byc gotowe".
@@ -23,9 +23,9 @@ compatibility:
     - js_repl
 ---
 
-# vc-justdo — Legacy alias of `vc-implement`
+# vc-justdo — Alias of `vc-implement`
 
-> **Use `vc-implement` going forward.** This skill name is the legacy alias kept
+> **Use `vc-implement` going forward.** This skill name is an alias kept
 > alive so agents (Codex, Claude, Gemini sessions, plugin marketplaces) that
 > already learned `vc-justdo` keep working without disruption.
 
@@ -36,9 +36,9 @@ run-id prefix: `just`). The launcher accepts:
 
 ```bash
 vibecrafted implement <agent>     # canonical
-vibecrafted justdo <agent>        # legacy alias, identical behavior
+vibecrafted justdo <agent>        # alias, identical behavior
 vc-implement <agent>              # shell helper, canonical
-vc-justdo <agent>                 # shell helper, legacy alias
+vc-justdo <agent>                 # shell helper, same workflow
 ```
 
 Per-agent shell helpers (`codex-justdo`, `claude-justdo`, `gemini-justdo`,

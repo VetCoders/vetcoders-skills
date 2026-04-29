@@ -2005,7 +2005,7 @@ Spawn helpers (per agent):
   <agent>-release                Ship to market
   <agent>-prune                  Repo pruning
   <agent>-skill-implement        Autonomous e2e implementation (vc-implement)
-  <agent>-justdo                 Legacy alias for autonomous e2e implementation
+  <agent>-justdo                 Alias for autonomous e2e implementation
   <agent>-partner                Collaborative partner mode with the user in the loop
   <agent>-observe --last         Check last report
   <agent>-await --last           Wait for metadata completion + summary

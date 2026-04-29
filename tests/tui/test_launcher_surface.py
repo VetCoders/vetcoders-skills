@@ -30,11 +30,13 @@ def _run_launcher_help(tmp_path: Path, *args: str) -> str:
 def test_compact_help_uses_release_engine_contract(tmp_path: Path) -> None:
     output = _run_launcher_help(tmp_path, "help")
 
-    assert "Release engine for AI-built software." in output
-    assert "Ship AI-built software without the vibe hangover." in output
-    assert "Skill inventory (18 live skills + 1 compatibility alias):" in output
+    assert "Release engine for AI-developed software." in output
+    assert "Install locally. Work from evidence." in output
+    assert "Skill inventory (18 live workflows):" in output
     assert "Core: init · scaffold · workflow · implement" in output
-    assert "Compatibility: justdo is a legacy alias for implement" in output
+    assert "For daily tasks, use implement or justdo as convenient aliases." in output
+    assert "compatibility alias" not in output
+    assert "leg" + "acy alias" not in output
     assert 'vibecrafted implement codex --prompt "Ship <task>"' in output
     assert 'vibecrafted justdo codex --prompt "Ship <task>"' not in output
     assert "Founders' Framework" not in output
@@ -51,10 +53,10 @@ def test_full_help_examples_keep_decorate_between_dou_and_hydrate(
     assert "vibecrafted dou claude" in output
     assert "vibecrafted decorate codex" in output
     assert "vibecrafted hydrate codex" in output
-    assert "justdo = legacy alias for implement" in output
+    assert "justdo = alias for implement" in output
 
 
-def test_implement_help_is_canonical_and_names_legacy_alias(tmp_path: Path) -> None:
+def test_implement_help_is_canonical_and_names_alias(tmp_path: Path) -> None:
     output = _run_launcher_help(tmp_path, "implement", "--help")
 
     assert (
@@ -63,7 +65,7 @@ def test_implement_help_is_canonical_and_names_legacy_alias(tmp_path: Path) -> N
     )
     assert "vibecrafted implement <claude|codex|gemini> [flags]" in output
     assert "vc-implement <claude|codex|gemini> [flags]" in output
-    assert "Legacy alias: vibecrafted justdo <claude|codex|gemini> [flags]" in output
+    assert "Alias: vibecrafted justdo <claude|codex|gemini> [flags]" in output
     assert 'vibecrafted implement codex --prompt "Ship the feature"' in output
 
 
@@ -95,4 +97,4 @@ def test_docs_skill_index_locks_command_semantics() -> None:
         in skills
     )
     assert "Post-implementation direction audit" in skills
-    assert "`justdo` command and `vc-justdo` helper remain legacy aliases" in workflows
+    assert "`justdo` command and `vc-justdo` helper remain aliases" in workflows

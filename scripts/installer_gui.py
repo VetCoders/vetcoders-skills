@@ -409,7 +409,7 @@ class InstallController:
         4. <source>/dist (release-tarball layout)
 
         Returns None when no bundle is present; the request handler
-        then falls back to the legacy inline HTML.
+        then falls back to the inline HTML.
         """
         candidates: list[Path] = []
         if explicit:
@@ -1668,9 +1668,9 @@ def build_html(preflight: dict[str, Any]) -> str:
                 <section class="rail-card rail-brand">
                   <div class="eyebrow">Control plane</div>
                   <strong>%%HEADER%%</strong>
-                  <h1>Ship AI-built software without the vibe hangover</h1>
+                  <h1>Install locally. Work from evidence.</h1>
                   <p class="rail-lead">
-                    Wizard-first onboarding for founders and operators. Same repo-owned installer truth, calmer rhythm.
+                    One local installer. One visible plan.
                   </p>
                 </section>
 
@@ -1721,7 +1721,7 @@ def build_html(preflight: dict[str, Any]) -> str:
                 <section class="main-card control-plane">
                   <section class="panel-card">
                     <div class="eyebrow">Start</div>
-                    <h3>Launch the control plane without touching raw shell glue</h3>
+                    <h3>Install without shell glue</h3>
                     <p class="summary-copy">
                       The GUI is launch-capable on purpose: it dispatches through the same command deck, then switches to observability instead of pretending to be the operator console.
                     </p>
@@ -1791,7 +1791,7 @@ def build_html(preflight: dict[str, Any]) -> str:
                     <div class="eyebrow">Foundations</div>
                     <h3>Doctor truth and helper surface</h3>
                     <p class="summary-copy">
-                      Same machine truth as the installer preflight, exposed as a calmer control-plane summary.
+                      Installer scan, shown in one place.
                     </p>
                     <div class="status-grid">
                       <div class="count">
@@ -1858,17 +1858,17 @@ def build_html(preflight: dict[str, Any]) -> str:
                     <article class="slide is-active" data-step="0">
                       <section class="slide-card">
                         <div class="eyebrow">Step 1 of 6</div>
-                        <h2 class="slide-title">Welcome to the control plane</h2>
+                        <h2 class="slide-title">Install Vibecrafted</h2>
                         <div class="slide-body">
                           <div class="lead-grid">
                             <div class="main-card">
                               <p class="slide-copy">
-                                This setup stages the control plane, checks the machine shape, and only then runs the real repo-owned install flow.
+                                This setup checks the machine and runs the repo-owned installer.
                               </p>
                             </div>
                             <div class="main-card">
                               <p class="slide-copy">
-                                Until you explicitly launch the install, this wizard is read-only. It explains what changes, why it matters, and how to back out.
+                                Until you launch the install, this wizard is read-only.
                               </p>
                             </div>
                           </div>
@@ -1889,17 +1889,17 @@ def build_html(preflight: dict[str, Any]) -> str:
                           <ul class="decision-points">
                             <li>TwinSweep-style effortlessness: local web surface, lower-friction first run, readable trust contract.</li>
                             <li>`rmcp-memex`-style wizard rhythm: welcome, detection, checklist, explicit execution, clean finish state.</li>
-                            <li>No parallel installer universe: the GUI wraps the same compact install truth used by automation.</li>
+                          <li>No second installer: this view runs the same install path as automation.</li>
                           </ul>
                           <div class="summary-grid">
                             <section class="summary-card">
                               <h3>Human front door</h3>
                               <p class="summary-copy">
-                                Recommended for founders, PMs, and teammates who should understand the machine shape before they start memorizing commands.
+                                Useful when someone needs the install path before memorizing commands.
                               </p>
                             </section>
                             <section class="summary-card">
-                              <h3>Local checkout GUI</h3>
+                              <h3>Local install view</h3>
                               <p class="summary-copy">
                                 `make wizard` opens this same browser-guided surface from a local checkout. `make vibecrafted` stays the shell-first default.
                               </p>
@@ -1963,9 +1963,9 @@ def build_html(preflight: dict[str, Any]) -> str:
                         <div class="slide-body">
                           <div class="install-grid">
                             <section class="status-card">
-                              <div class="chip" id="status-chip">Ready to launch</div>
+                              <div class="chip" id="status-chip">Ready</div>
                               <p class="status-copy" id="status-text">
-                                Review the command preview and launch when the machine shape looks right.
+                                Review the plan, then install.
                               </p>
                               <ul class="timeline" id="status-plan"></ul>
                               <div class="button-row">
@@ -2003,7 +2003,7 @@ def build_html(preflight: dict[str, Any]) -> str:
                           <section class="success-panel" id="finish-panel" hidden>
                             <strong>Install finished cleanly.</strong>
                             <p class="summary-copy" id="finish-summary">
-                              The guided path completed. Use START_HERE for the plain-language onboarding flow, then switch to the command deck where the real work begins.
+                              Install complete. Open START_HERE, then use the command deck.
                             </p>
                             <ul class="next-steps">
                               <li><code>vibecrafted help</code></li>
@@ -2353,7 +2353,7 @@ def build_html(preflight: dict[str, Any]) -> str:
                     <li data-state="${state}">
                       <div>
                         <strong>${escapeHtml(label)}</strong>
-                        <div class="item-detail">${state === 'running' ? 'Streaming live output now.' : state === 'done' ? 'Completed in this run.' : state === 'failed' ? 'Review the log before retrying.' : 'Queued for execution.'}</div>
+                        <div class="item-detail">${state === 'running' ? 'Running now.' : state === 'done' ? 'Done.' : state === 'failed' ? 'Failed. Check the log.' : 'Queued.'}</div>
                       </div>
                       <span class="timeline-state ${badgeClass}">${badgeText}</span>
                     </li>
@@ -2395,20 +2395,20 @@ def build_html(preflight: dict[str, Any]) -> str:
                 if (installSucceeded(status)) {
                   dom.statusChip.className = 'chip ok';
                   dom.statusChip.textContent = 'Install complete';
-                  dom.statusText.textContent = 'The guided path finished cleanly. Use START_HERE for the plain-language path, then switch to the command deck.';
-                  dom.statusMeta.textContent = 'Foundations and installer exited cleanly.';
+                  dom.statusText.textContent = 'Install finished. Open START_HERE, then use the command deck.';
+                  dom.statusMeta.textContent = 'Installer exited cleanly.';
                   dom.finishPanel.hidden = false;
                   dom.finishLocked.hidden = true;
-                  dom.finishSummary.textContent = 'Use the guide for the plain-language onboarding path, then run the command deck where the real work begins.';
+                  dom.finishSummary.textContent = 'Open START_HERE, then use the command deck.';
                   setStep(5);
                   return;
                 }
 
                 if (status.completed) {
                   dom.statusChip.className = 'chip fail';
-                  dom.statusChip.textContent = 'Needs attention';
-                  dom.statusText.textContent = status.error || `Installer exited with code ${status.exit_code}. Review the log above before retrying.`;
-                  dom.statusMeta.textContent = 'The guided shell stayed up so you can inspect the failure.';
+                  dom.statusChip.textContent = 'Failed';
+                  dom.statusText.textContent = status.error || `Installer exited with code ${status.exit_code}. Check the log.`;
+                  dom.statusMeta.textContent = 'The installer stayed open.';
                   dom.finishPanel.hidden = true;
                   dom.finishLocked.hidden = false;
                   setStep(4);
@@ -2416,9 +2416,9 @@ def build_html(preflight: dict[str, Any]) -> str:
                 }
 
                 dom.statusChip.className = 'chip';
-                dom.statusChip.textContent = 'Ready to launch';
-                dom.statusText.textContent = 'Review the preflight cards, then start the install when the machine shape looks right.';
-                dom.statusMeta.textContent = 'Guided foundations + compact mode, repo-owned installer truth.';
+                dom.statusChip.textContent = 'Ready';
+                dom.statusText.textContent = 'Review the plan, then install.';
+                dom.statusMeta.textContent = 'Local installer. Repo-owned plan.';
                 dom.finishPanel.hidden = true;
                 dom.finishLocked.hidden = false;
                 setStep(currentStep);

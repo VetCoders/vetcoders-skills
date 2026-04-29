@@ -290,7 +290,7 @@ _skill_summary() {
     hydrate) printf 'Packaging and go-to-market hydration.\n' ;;
     implement) printf 'Autonomous end-to-end implementation with followup and marbles built in.\n' ;;
     intents) printf 'Plan-to-runtime truth audit across prior intent and present repo state.\n' ;;
-    justdo) printf 'Legacy alias for vc-implement, kept for existing agents and scripts.\n' ;;
+    justdo) printf 'Convenient alias for vc-implement, kept for existing agents and scripts.\n' ;;
     marbles) printf 'Counterexample loop that keeps fixing what is still wrong until the surface is clean.\n' ;;
     ownership) printf 'Full-spectrum operational ownership across code, runtime, docs, packaging, and ship surface.\n' ;;
     partner) printf 'Collaborative debugging, architecture triage, and shared executive reasoning with the user in the loop.\n' ;;
@@ -365,10 +365,10 @@ cmd_skill_help() {
     printf '  vc-marbles <pause|stop|resume|session|inspect|delete> [args]\n'
   fi
   if [[ "$skill" == "justdo" ]]; then
-    printf '  Legacy alias: vibecrafted justdo %s [flags] / vc-justdo %s [flags]\n' "$agent" "$agent"
+    printf '  Alias: vibecrafted justdo %s [flags] / vc-justdo %s [flags]\n' "$agent" "$agent"
   fi
   if [[ "$skill" == "implement" ]]; then
-    printf '  Legacy alias: vibecrafted justdo %s [flags] / vc-justdo %s [flags]\n' "$agent" "$agent"
+    printf '  Alias: vibecrafted justdo %s [flags] / vc-justdo %s [flags]\n' "$agent" "$agent"
   fi
   printf '\n'
   printf '%bExamples:%b\n' "$_bold" "$_reset"
@@ -380,7 +380,7 @@ cmd_skill_help() {
     justdo)
       printf '  vibecrafted implement codex --prompt "Ship the feature"\n'
       printf '  vc-implement claude --file /path/to/brief.md\n'
-      printf '  vibecrafted justdo codex --prompt "Ship the feature"  # legacy alias\n'
+      printf '  vibecrafted justdo codex --prompt "Ship the feature"  # same workflow\n'
       ;;
     marbles)
       printf '  vibecrafted marbles codex --count 3 --depth 3\n'
@@ -1010,8 +1010,8 @@ cmd_help() {
   printf '\n'
   printf '%b⚒  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. %s%b\n' "$_bold$_copper" "$ver" "$_reset"
   printf '%b─────────────────────────────────────────%b\n' "$_steel" "$_reset"
-  printf '  Release engine for AI-built software.\n'
-  printf '  Ship AI-built software without the vibe hangover.\n'
+  printf '  Release engine for AI-developed software.\n'
+  printf '  Install locally. Work from evidence.\n'
   printf '\n'
   printf '%bFront door:%b\n' "$_bold" "$_reset"
   printf '  %bvibecrafted help%b                      Show the command deck\n' "$_cyan" "$_reset"
@@ -1031,10 +1031,10 @@ cmd_help() {
   printf '  %bvibecrafted doctor%b                    Verify installation health\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted uninstall%b                 Reverse the install\n' "$_cyan" "$_reset"
   printf '\n'
-  printf '%bSkill inventory (18 live skills + 1 compatibility alias):%b\n' "$_bold" "$_reset"
+  printf '%bSkill inventory (18 live workflows):%b\n' "$_bold" "$_reset"
   printf '  Core: init · scaffold · workflow · implement · followup · marbles · dou · decorate · hydrate · release\n'
   printf '  Support: agents · delegate · intents · ownership · partner · prune · research · review\n'
-  printf '  Compatibility: justdo is a legacy alias for implement\n'
+  printf '  For daily tasks, use implement or justdo as convenient aliases.\n'
   printf '\n'
   printf '%bStart here:%b\n' "$_bold" "$_reset"
   printf '  If you want the simplest path, skip the dashboard and use plain commands:\n'
@@ -1077,8 +1077,8 @@ cmd_help_full() {
   printf '\n'
   printf '%b⚒  𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. %s%b (Full Reference)\n' "$_bold$_copper" "$ver" "$_reset"
   printf '%b─────────────────────────────────────────%b\n' "$_steel" "$_reset"
-  printf '  Release engine for AI-built software.\n'
-  printf '  Ship AI-built software without the vibe hangover.\n'
+  printf '  Release engine for AI-developed software.\n'
+  printf '  Install locally. Work from evidence.\n'
   printf '\n'
   printf '%b=== PIPELINE (canonical order) ===%b\n' "$_bold" "$_reset"
   printf '\n'
@@ -1165,7 +1165,7 @@ cmd_help_full() {
   printf '%b=== ALIASES ===%b\n' "$_bold" "$_reset"
   printf '\n'
   printf '  %bstats%b = status       %bcheck%b = doctor       %bremove%b = uninstall\n' "$_dim" "$_reset" "$_dim" "$_reset" "$_dim" "$_reset"
-  printf '  %bjustdo%b = legacy alias for implement       %bvc-justdo%b = legacy alias for vc-implement\n' "$_dim" "$_reset" "$_dim" "$_reset"
+  printf '  %bjustdo%b = alias for implement       %bvc-justdo%b = alias for vc-implement\n' "$_dim" "$_reset" "$_dim" "$_reset"
   printf '\n'
   printf '%b=== SKILL FLAGS (uniform contract) ===%b\n' "$_bold" "$_reset"
   printf '\n'

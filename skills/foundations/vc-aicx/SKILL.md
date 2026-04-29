@@ -30,9 +30,9 @@ for the _why_, not just a blind dump of _how_.
    sidecar metadata — no filesystem grep needed. Returns chunk paths with their
    sidecar metadata for selective re-entry.
    b) The cli reference: - the full reference can be retrieved by calling `aicx --help`.
-   c) The legacy methods - **`aicx_refs(hours=<retrieval_hours>, project="<project>", strict=true)`** — list stored context files - **`aicx_rank(project=<project>, hours=168, strict=true, top=5)`** — prioritize densest chunks
+   c) The older methods - **`aicx_refs(hours=<retrieval_hours>, project="<project>", strict=true)`** — list stored context files - **`aicx_rank(project=<project>, hours=168, strict=true, top=5)`** — prioritize densest chunks
 
-   > These are the legacy entry points. No longer recommended as `aicx_search` provides all their functionality and more.
+   > These are older entry points. Prefer `aicx_search`; it provides the same functionality and more.
 
 2. `aicx intents` (cli):
    Extracts project intents, outcomes, tasks, and architectural decisions from session histories into structured formats.

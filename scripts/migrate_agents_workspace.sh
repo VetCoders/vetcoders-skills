@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Migration script for legacy `.ai-agents/` directories.
-# Performs a "hard" move of legacy `.ai-agents/` folders
+# Migration script for older `.ai-agents/` directories.
+# Performs a "hard" move of older `.ai-agents/` folders
 # into the central archive at $VIBECRAFTED_ROOT/.vibecrafted/artifacts/<org>/<repo>/<YYYY_MMDD>/
 # Moves only these folders: plans, pipeline, reports, tmp
 # Leaves any other files in .ai-agents/ untouched (for example GUIDELINES.md)
@@ -53,13 +53,13 @@ warn()  { printf '  \033[33m[skip]\033[0m %s\n' "$*"; }
 dry()   { printf '  \033[36m[dry]\033[0m %s\n' "$*"; }
 
 echo ""
-echo "  Migrating legacy .ai-agents/ workspace folders to $VIBECRAFTED_HOME/artifacts/"
+echo "  Migrating older .ai-agents/ workspace folders to $VIBECRAFTED_HOME/artifacts/"
 echo "  Searching: ${SEARCH_DIRS[*]}"
 echo "  ─────────────────────────────────────────────────────────"
 echo ""
 
 # Extract the date from a filename (format: 20260324_...) -> 2026_0324
-# If the filename has no date prefix, fall back to "legacy"
+# If the filename has no date prefix, fall back to "undated"
 extract_date_prefix() {
   local fname="$1"
   local date_part
@@ -67,7 +67,7 @@ extract_date_prefix() {
   if [[ -n "$date_part" ]]; then
     echo "${date_part:0:4}_${date_part:4:4}"
   else
-    echo "legacy"
+    echo "undated"
   fi
 }
 
@@ -84,7 +84,7 @@ newest_date_in_dir() {
   if [[ -n "$newest_file" ]]; then
     local file_date
     file_date="$(extract_date_prefix "$newest_file")"
-    if [[ "$file_date" != "legacy" ]]; then
+    if [[ "$file_date" != "undated" ]]; then
       echo "$file_date"
       return
     fi

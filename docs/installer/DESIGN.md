@@ -71,7 +71,7 @@ Bundle contents:
     - vc-hydrate
     - vc-implement
     - vc-init
-    - vc-justdo (legacy alias of vc-implement)
+    - vc-justdo (alias of vc-implement)
     - vc-marbles
     - vc-partner
     - vc-prune
@@ -91,7 +91,7 @@ Select skills to install:
     [x] 6. vc-hydrate
     [x] 7. vc-implement
     [x] 8. vc-init
-    [x] 9. vc-justdo  (legacy alias of vc-implement)
+    [x] 9. vc-justdo  (alias of vc-implement)
     [x] 10. vc-marbles
     [x] 11. vc-partner
     [x] 12. vc-prune
@@ -161,7 +161,7 @@ Installing shared skills...
   -> vc-hydrate
   -> vc-implement
   -> vc-init
-  -> vc-justdo (legacy alias of vc-implement)
+  -> vc-justdo (alias of vc-implement)
   -> vc-marbles
   -> vc-partner
   -> vc-prune
