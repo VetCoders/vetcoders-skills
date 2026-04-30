@@ -158,6 +158,11 @@ pub struct App {
     pub error_lines: Vec<String>,
     pub artifact_title: String,
     pub artifact_lines: Vec<String>,
+    /// Cached rust-mux supervisor snapshots (from
+    /// `crate::mux::current_summaries`). Refreshed on every `App::refresh`
+    /// so the Monitor tab can render MCP daemon health without doing IO
+    /// inside the draw path.
+    pub mux_summaries: Vec<crate::mux::MuxSummary>,
 }
 
 impl App {
@@ -187,9 +192,11 @@ impl App {
             error_lines: Vec::new(),
             artifact_title: String::new(),
             artifact_lines: Vec::new(),
+            mux_summaries: Vec::new(),
         };
         apply_run_filters(&mut app.runs, app.queue_scope, &app.search_query);
         app.sync_selection();
+        app.refresh_mux();
         Ok(app)
     }
 
@@ -201,6 +208,45 @@ impl App {
         apply_run_filters(&mut runs, self.queue_scope, &self.search_query);
         self.runs = runs;
         self.sync_selection();
+        self.refresh_mux();
+    }
+
+    /// Refresh cached rust-mux status snapshots from the discovered
+    /// status files. Cheap (a few small JSON reads) so it is safe to call
+    /// on the same cadence as the run-state refresh.
+    pub fn refresh_mux(&mut self) {
+        self.mux_summaries = crate::mux::current_summaries();
+    }
+
+    /// Lines for the Monitor tab "MCP daemons" panel. Returns an empty
+    /// vec when no mux services are known (operator may simply not be
+    /// running rust-mux), otherwise one summary line per service plus a
+    /// header.
+    pub fn mux_status_lines(&self) -> Vec<String> {
+        if self.mux_summaries.is_empty() {
+            return Vec::new();
+        }
+        let total = self.mux_summaries.len();
+        let unhealthy = self
+            .mux_summaries
+            .iter()
+            .filter(|summary| !summary.is_healthy())
+            .count();
+        let mut lines = Vec::with_capacity(total + 1);
+        if unhealthy == 0 {
+            lines.push(format!("MCP daemons ({total} healthy):"));
+        } else {
+            lines.push(format!("MCP daemons ({unhealthy}/{total} need attention):"));
+        }
+        for summary in &self.mux_summaries {
+            let marker = if summary.is_healthy() {
+                "  • "
+            } else {
+                "  ! "
+            };
+            lines.push(format!("{marker}{}", summary.summary_line()));
+        }
+        lines
     }
 
     pub fn toggle_filter(&mut self) {

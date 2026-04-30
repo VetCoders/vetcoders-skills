@@ -214,6 +214,101 @@ pub fn read_all_known_snapshots() -> Vec<(PathBuf, Result<MuxStatusSnapshot>)> {
         .collect()
 }
 
+/// UI-friendly snapshot of one rust-mux service. Cached on the `App` so
+/// the Monitor tab can render mux status without doing IO inside the draw
+/// path. Carries either the parsed snapshot or the error chain that
+/// stopped us from reading it, never both.
+#[derive(Clone, Debug)]
+pub struct MuxSummary {
+    /// The status file the snapshot came from. Surfaced in the UI so the
+    /// operator can grep for the right service when something is off.
+    pub path: PathBuf,
+    /// Service name or, if the snapshot failed to parse, the file stem
+    /// from `path`. Always renderable.
+    pub display_name: String,
+    /// Either the parsed snapshot or a one-line error description (no
+    /// stack, just `format!("{err:#}")`).
+    pub state: MuxSummaryState,
+}
+
+/// `Healthy(snapshot)` if `is_healthy` is true on the parsed status.
+/// `Unhealthy(snapshot)` if the snapshot parsed but the daemon reports a
+/// non-healthy state. `Unreadable { error }` if the file could not be
+/// read or the JSON did not parse — the operator still sees the entry,
+/// because an unreadable status file is itself a signal.
+#[derive(Clone, Debug)]
+pub enum MuxSummaryState {
+    Healthy(MuxStatusSnapshot),
+    Unhealthy(MuxStatusSnapshot),
+    Unreadable { error: String },
+}
+
+impl MuxSummary {
+    /// Build a summary from a `(path, Result<snapshot>)` pair (the shape
+    /// `read_all_known_snapshots` returns).
+    pub fn from_path_and_result(path: PathBuf, result: Result<MuxStatusSnapshot>) -> Self {
+        match result {
+            Ok(snapshot) => {
+                let display_name = snapshot.service_name.clone();
+                let state = if snapshot.server_status.is_healthy() {
+                    MuxSummaryState::Healthy(snapshot)
+                } else {
+                    MuxSummaryState::Unhealthy(snapshot)
+                };
+                MuxSummary {
+                    path,
+                    display_name,
+                    state,
+                }
+            }
+            Err(err) => {
+                let display_name = path
+                    .file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .map(ToOwned::to_owned)
+                    .unwrap_or_else(|| path.to_string_lossy().into_owned());
+                MuxSummary {
+                    path,
+                    display_name,
+                    state: MuxSummaryState::Unreadable {
+                        error: format!("{err:#}"),
+                    },
+                }
+            }
+        }
+    }
+
+    /// `true` when the underlying daemon is in a healthy state. Returns
+    /// `false` for both unhealthy snapshots and unreadable status files.
+    pub fn is_healthy(&self) -> bool {
+        matches!(self.state, MuxSummaryState::Healthy(_))
+    }
+
+    /// One-line render for the Monitor tab. Healthy and unhealthy
+    /// snapshots reuse `MuxStatusSnapshot::summary_line`; unreadable
+    /// entries render `<name>: unreadable (<error>)` so the operator can
+    /// see why we have nothing to show.
+    pub fn summary_line(&self) -> String {
+        match &self.state {
+            MuxSummaryState::Healthy(snapshot) | MuxSummaryState::Unhealthy(snapshot) => {
+                snapshot.summary_line()
+            }
+            MuxSummaryState::Unreadable { error } => {
+                format!("{}: unreadable ({error})", self.display_name)
+            }
+        }
+    }
+}
+
+/// Convenience: read every known status file and convert to the
+/// UI-friendly `MuxSummary` shape in one call. Used by `App::refresh`.
+pub fn current_summaries() -> Vec<MuxSummary> {
+    read_all_known_snapshots()
+        .into_iter()
+        .map(|(path, result)| MuxSummary::from_path_and_result(path, result))
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -456,6 +551,39 @@ mod tests {
                 files.iter().map(|p| p.as_path()).collect();
             assert_eq!(unique.len(), files.len(), "no duplicates: {files:?}");
         });
+    }
+
+    #[test]
+    fn mux_summary_classifies_healthy_unhealthy_and_unreadable() {
+        let path = PathBuf::from("/tmp/general-memory.json");
+
+        let healthy = MuxSummary::from_path_and_result(
+            path.clone(),
+            MuxStatusSnapshot::from_json(RUNNING_FIXTURE),
+        );
+        assert!(healthy.is_healthy());
+        assert_eq!(healthy.display_name, "general-memory");
+        assert!(matches!(healthy.state, MuxSummaryState::Healthy(_)));
+        assert!(healthy.summary_line().contains("Running"));
+
+        let failed = MuxSummary::from_path_and_result(
+            path.clone(),
+            MuxStatusSnapshot::from_json(FAILED_FIXTURE),
+        );
+        assert!(!failed.is_healthy());
+        assert!(matches!(failed.state, MuxSummaryState::Unhealthy(_)));
+        assert!(failed.summary_line().contains("Failed"));
+        assert!(failed.summary_line().contains("max restarts reached"));
+
+        let broken_path = PathBuf::from("/tmp/loctree-broken.json");
+        let unreadable =
+            MuxSummary::from_path_and_result(broken_path.clone(), Err(anyhow::anyhow!("nope")));
+        assert!(!unreadable.is_healthy());
+        assert_eq!(unreadable.display_name, "loctree-broken");
+        let line = unreadable.summary_line();
+        assert!(line.contains("loctree-broken"));
+        assert!(line.contains("unreadable"));
+        assert!(line.contains("nope"));
     }
 
     #[test]

@@ -507,6 +507,143 @@ fn terminal_launch_probe_inherits_config_dir_from_launch_command() {
 }
 
 #[test]
+fn mux_status_lines_render_healthy_and_attention_headers() {
+    use std::path::PathBuf;
+    use vibecrafted_operator::mux::{MuxStatusSnapshot, MuxSummary, MuxSummaryState};
+
+    let healthy_json = r#"{
+        "service_name": "general-memory",
+        "server_status": "Running",
+        "restarts": 0,
+        "connected_clients": 2,
+        "active_clients": 1,
+        "max_active_clients": 5,
+        "pending_requests": 0,
+        "cached_initialize": true,
+        "initializing": false,
+        "queue_depth": 0,
+        "child_pid": 4242,
+        "max_request_bytes": 1048576,
+        "restart_backoff_ms": 1000,
+        "restart_backoff_max_ms": 30000,
+        "max_restarts": 5
+    }"#;
+    let failed_json = r#"{
+        "service_name": "brave-search",
+        "server_status": {"Failed": "max restarts reached"},
+        "restarts": 5,
+        "connected_clients": 0,
+        "active_clients": 0,
+        "max_active_clients": 5,
+        "pending_requests": 0,
+        "cached_initialize": false,
+        "initializing": false,
+        "queue_depth": 0,
+        "max_request_bytes": 1048576,
+        "restart_backoff_ms": 1000,
+        "restart_backoff_max_ms": 30000,
+        "max_restarts": 5
+    }"#;
+
+    let mut app = App {
+        config: AppConfig {
+            state_root: "/tmp/state".into(),
+            command_deck: "/usr/bin/vibecrafted".into(),
+            launch_root: "/tmp/repo".into(),
+            launch_runtime: LaunchRuntime::Terminal,
+            terminal_binary: "zellij".into(),
+            tick_rate: Duration::from_millis(250),
+        },
+        state: ControlPlaneState::empty("/tmp/state"),
+        runs: vec![],
+        selected: 0,
+        active_tab: AppTab::Monitor.index(),
+        launch_kind: LaunchKind::Workflow,
+        launch_agent: 0,
+        launch_prompt: "Ship it".to_string(),
+        launch_runtime: LaunchRuntime::Terminal,
+        dispatch_selected: DispatchFocus::Kind as usize,
+        focus: LaunchFocus::Browse,
+        status_line: String::new(),
+        launch_history: Vec::new(),
+        deep_selected: 0,
+        queue_scope: QueueScope::Live,
+        search_query: String::new(),
+        error_title: String::new(),
+        error_lines: Vec::new(),
+        artifact_title: String::new(),
+        artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
+    };
+
+    // No mux services → empty render, never a misleading "0 healthy" header.
+    assert!(app.mux_status_lines().is_empty());
+
+    // Two healthy services → "MCP daemons (2 healthy):" header + bullet rows.
+    app.mux_summaries = vec![
+        MuxSummary::from_path_and_result(
+            PathBuf::from("/tmp/memory.json"),
+            MuxStatusSnapshot::from_json(healthy_json),
+        ),
+        MuxSummary::from_path_and_result(
+            PathBuf::from("/tmp/memory2.json"),
+            MuxStatusSnapshot::from_json(healthy_json),
+        ),
+    ];
+    let lines = app.mux_status_lines();
+    assert_eq!(lines[0], "MCP daemons (2 healthy):");
+    assert!(lines.iter().filter(|l| l.contains("• ")).count() == 2);
+    assert!(!lines.iter().any(|l| l.contains("! ")));
+
+    // Mixed healthy + failed → header switches to "x/n need attention".
+    app.mux_summaries = vec![
+        MuxSummary::from_path_and_result(
+            PathBuf::from("/tmp/memory.json"),
+            MuxStatusSnapshot::from_json(healthy_json),
+        ),
+        MuxSummary::from_path_and_result(
+            PathBuf::from("/tmp/brave.json"),
+            MuxStatusSnapshot::from_json(failed_json),
+        ),
+        MuxSummary::from_path_and_result(
+            PathBuf::from("/tmp/loctree-broken.json"),
+            Err(anyhow::anyhow!("not json")),
+        ),
+    ];
+    let lines = app.mux_status_lines();
+    assert_eq!(lines[0], "MCP daemons (2/3 need attention):");
+    assert!(
+        lines
+            .iter()
+            .any(|l| l.contains("• ") && l.contains("Running"))
+    );
+    assert!(
+        lines
+            .iter()
+            .any(|l| l.contains("! ") && l.contains("Failed"))
+    );
+    assert!(
+        lines
+            .iter()
+            .any(|l| l.contains("! ") && l.contains("unreadable"))
+    );
+
+    // Sanity-check the marker classes.
+    assert!(matches!(
+        app.mux_summaries[0].state,
+        MuxSummaryState::Healthy(_)
+    ));
+    assert!(matches!(
+        app.mux_summaries[1].state,
+        MuxSummaryState::Unhealthy(_)
+    ));
+    assert!(matches!(
+        app.mux_summaries[2].state,
+        MuxSummaryState::Unreadable { .. }
+    ));
+}
+
+#[test]
 fn launch_commands_propagate_operator_env_and_custom_terminal_binary() {
     let deck = Path::new("/usr/bin/vibecrafted");
     let mut env = BTreeMap::new();
@@ -608,6 +745,7 @@ fn deep_controls_expose_attach_resume_and_artifacts() {
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     assert_eq!(
@@ -682,6 +820,7 @@ fn native_artifact_viewer_reads_files_and_clipboard_payload_prefers_resume_comma
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     assert_eq!(
@@ -723,6 +862,7 @@ fn empty_state_detail_lines_offer_human_quick_start() {
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     let lines = app.detail_lines();
@@ -761,6 +901,7 @@ fn prompt_lines_include_human_kind_copy_and_command_preview() {
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     let lines = app.prompt_lines();
@@ -801,6 +942,7 @@ fn tab_navigation_wraps_and_dispatch_focus_tracks_selected_field() {
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     app.previous_tab();
@@ -870,6 +1012,7 @@ fn tab_labels_surface_monitor_dispatch_and_controls_context() {
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     let labels = app.tab_labels();
@@ -968,6 +1111,7 @@ fn changing_launch_kind_reorients_the_operator_into_dispatch() {
         error_lines: Vec::new(),
         artifact_title: String::new(),
         artifact_lines: Vec::new(),
+        mux_summaries: Vec::new(),
     };
 
     app.set_launch_kind(LaunchKind::Review);

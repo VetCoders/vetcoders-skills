@@ -721,6 +721,7 @@ mod tests {
             error_lines: Vec::new(),
             artifact_title: String::new(),
             artifact_lines: Vec::new(),
+            mux_summaries: Vec::new(),
         }
     }
 
