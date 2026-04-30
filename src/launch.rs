@@ -167,13 +167,28 @@ impl LaunchCommand {
             .find(|pair| pair.first().is_some_and(|value| value == "--session"))
             .and_then(|pair| pair.get(1))
             .map(|value| value.to_string_lossy().into_owned())?;
+        // The launch command may carry a top-level `--config-dir <dir>` flag so
+        // that zellij talks to the repo-local namespace under
+        // `<root>/config/zellij`. The readiness probe MUST inspect the same
+        // namespace, otherwise it can succeed/fail against a completely
+        // different socket directory and report nonsense to the operator.
+        let config_dir = self
+            .args
+            .windows(2)
+            .find(|pair| pair.first().is_some_and(|value| value == "--config-dir"))
+            .and_then(|pair| pair.get(1))
+            .cloned();
+        let mut args: Vec<OsString> = Vec::new();
+        if let Some(dir) = config_dir {
+            args.push("--config-dir".into());
+            args.push(dir);
+        }
+        args.push("list-sessions".into());
+        args.push("--short".into());
+        args.push("--no-formatting".into());
         Some(LaunchReadinessProbe {
             program: self.program.clone(),
-            args: vec![
-                "list-sessions".into(),
-                "--short".into(),
-                "--no-formatting".into(),
-            ],
+            args,
             env: self.env.clone(),
             session_name,
         })

@@ -424,6 +424,89 @@ fn terminal_launch_omits_session_flag_when_session_name_is_none() {
 }
 
 #[test]
+fn terminal_launch_probe_inherits_config_dir_from_launch_command() {
+    let _guard = env_lock().lock().unwrap();
+    let previous = env::var_os("ZELLIJ_CONFIG_DIR");
+    unsafe {
+        env::remove_var("ZELLIJ_CONFIG_DIR");
+    }
+    let workspace = tempdir().unwrap();
+    let zellij_dir = workspace.path().join("config/zellij");
+    fs::create_dir_all(&zellij_dir).unwrap();
+    fs::write(zellij_dir.join("config.kdl"), "// repo-local zellij\n").unwrap();
+    let canonical_zellij_dir = zellij_dir.canonicalize().unwrap_or(zellij_dir.clone());
+
+    let deck = Path::new("/usr/bin/vibecrafted");
+    let request = LaunchRequest {
+        kind: LaunchKind::Workflow,
+        agent: "claude".to_string(),
+        prompt: "Ship the launcher.".to_string(),
+        runtime: LaunchRuntime::Terminal,
+        root: Some(workspace.path().to_path_buf()),
+        terminal_binary: Some("/opt/bin/zellij".into()),
+        env: BTreeMap::new(),
+        count: Some(3),
+        depth: Some(3),
+        session_name: Some("vc-op-workflow-77".to_string()),
+    };
+
+    let command = build_launch_command(deck, &request);
+    let launch_args = command
+        .args
+        .iter()
+        .map(|value| value.to_string_lossy().into_owned())
+        .collect::<Vec<_>>();
+    let launch_config_idx = launch_args
+        .iter()
+        .position(|value| value == "--config-dir")
+        .expect("launch should carry --config-dir when repo has config/zellij/config.kdl");
+    let launch_config_dir = launch_args
+        .get(launch_config_idx + 1)
+        .expect("--config-dir flag must be followed by a path");
+
+    let probe = command
+        .readiness_probe()
+        .expect("named terminal launch should expose a readiness probe");
+    let probe_args = probe
+        .args
+        .iter()
+        .map(|value| value.to_string_lossy().into_owned())
+        .collect::<Vec<_>>();
+
+    let probe_config_idx = probe_args
+        .iter()
+        .position(|value| value == "--config-dir")
+        .expect("probe must carry --config-dir to match launch namespace (P1-01)");
+    let probe_config_dir = probe_args
+        .get(probe_config_idx + 1)
+        .expect("probe --config-dir flag must be followed by a path");
+    let list_sessions_idx = probe_args
+        .iter()
+        .position(|value| value == "list-sessions")
+        .expect("probe must invoke list-sessions");
+
+    assert_eq!(probe_config_dir, launch_config_dir);
+    assert!(
+        probe_config_dir.contains(&canonical_zellij_dir.to_string_lossy().into_owned())
+            || probe_config_dir == &zellij_dir.to_string_lossy().into_owned(),
+        "probe config dir should match the repo-local namespace: probe={probe_config_dir:?} expected={canonical_zellij_dir:?}"
+    );
+    assert!(
+        probe_config_idx < list_sessions_idx,
+        "--config-dir must precede the list-sessions subcommand: args={probe_args:?}"
+    );
+
+    match previous {
+        Some(value) => unsafe {
+            env::set_var("ZELLIJ_CONFIG_DIR", value);
+        },
+        None => unsafe {
+            env::remove_var("ZELLIJ_CONFIG_DIR");
+        },
+    }
+}
+
+#[test]
 fn launch_commands_propagate_operator_env_and_custom_terminal_binary() {
     let deck = Path::new("/usr/bin/vibecrafted");
     let mut env = BTreeMap::new();
