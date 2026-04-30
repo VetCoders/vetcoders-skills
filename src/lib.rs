@@ -1,6 +1,7 @@
 pub mod app;
 pub mod config;
 pub mod launch;
+pub mod mux;
 pub mod state;
 pub mod ui;
 
