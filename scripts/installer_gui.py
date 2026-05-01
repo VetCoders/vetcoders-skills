@@ -427,14 +427,17 @@ class InstallController:
                 root / "dist",
                 root.parent / "vibecrafted-io" / "site" / "dist",
                 root.parent / "vc-runtime" / "vibecrafted-io" / "site" / "dist",
+            ]
+        )
+        if root.name == "vibecrafted" or (root / "VERSION").is_file():
+            candidates.append(
                 Path.home()
                 / "Libraxis"
                 / "vc-runtime"
                 / "vibecrafted-io"
                 / "site"
-                / "dist",
-            ]
-        )
+                / "dist"
+            )
 
         for candidate in candidates:
             if (candidate / "en" / "install" / "index.html").is_file():

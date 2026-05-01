@@ -57,11 +57,17 @@ RUN if [ "$INSTALL_FOUNDATIONS" = "true" ]; then \
     VIBECRAFTED_BIN=/usr/local/bin bash /opt/vibecrafted/scripts/install-foundations.sh --all; \
   fi
 
+RUN groupadd --system vibecrafted \
+  && useradd --system --gid vibecrafted --home-dir /workspace --shell /bin/bash vibecrafted
+
 RUN mkdir -p /workspace /workspace/.vibecrafted \
-  && git config --global --add safe.directory /workspace \
+  && chown -R vibecrafted:vibecrafted /workspace \
+  && git config --system --add safe.directory /workspace \
   && vibecrafted version
 
 WORKDIR /workspace
+
+USER vibecrafted
 
 ENTRYPOINT ["vibecrafted-docker-entrypoint"]
 CMD ["help"]
