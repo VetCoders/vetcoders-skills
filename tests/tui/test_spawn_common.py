@@ -19,9 +19,28 @@ CODEX_STREAM_FILTER = (
 )
 
 
+# Strip ambient env vars that affect spawn-routing decisions before each
+# test script runs. Without this, tests that source common.sh inherit the
+# parent shell's ZELLIJ / VIBECRAFTED_* state — and when pytest itself is
+# launched from inside a marbles-spawned zellij session whose name happens
+# to match the test's _expected_operator_session(run_id), the routing
+# guard in spawn_in_operator_session collapses to in-session pane routing
+# instead of the asserted new-tab path.
+_ENV_SANITIZE = """
+unset ZELLIJ ZELLIJ_PANE_ID ZELLIJ_SESSION_NAME ZELLIJ_TAB_NAME ZELLIJ_CONFIG_DIR
+unset VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION VIBECRAFTED_PANE_SEQ VIBECRAFTED_MARBLES_TAB_NAME
+unset VIBECRAFTED_OPERATOR_SESSION VIBECRAFTED_RUN_ID VIBECRAFTED_RUN_LOCK
+unset VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME VIBECRAFTED_LOOP_NR
+unset VIBECRAFTED_ZELLIJ_CLOSE_AGENT_PANES VIBECRAFTED_INLINE_STARTUP_WATCH
+unset SPAWN_LOOP_NR SPAWN_META SPAWN_TRANSCRIPT SPAWN_REPORT SPAWN_ROOT
+unset SPAWN_RUN_ID SPAWN_RUN_LOCK SPAWN_AGENT SPAWN_SKILL_CODE SPAWN_SKILL_NAME
+unset SPAWN_PROMPT_ID
+"""
+
+
 def _bash(script: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["bash", "-lc", script],
+        ["bash", "-lc", _ENV_SANITIZE + script],
         check=True,
         cwd=REPO_ROOT,
         capture_output=True,

@@ -720,7 +720,7 @@ HEADER
       printf '\n...\n'
     done < <(_collect_reports "$total_count")
 
-    printf '\n---\n𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. with AI Agents (c)2024-2026 VetCoders\n'
+    printf '\n---\n𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. with AI Agents by VetCoders (c)2024-2026 LibraxisAI\n'
   } > "$convergence"
 
   _launch_verification "$current" 1
