@@ -1344,7 +1344,7 @@ def test_spawn_in_operator_session_targets_named_session(tmp_path: Path) -> None
     # the routing guard forces a new-tab to avoid landing in a stale operator tab.
     assert "new-tab" in payload
     assert "--name" in payload
-    assert "workflow" in payload
+    assert run_id in payload
 
 
 def test_spawn_in_operator_session_suppresses_zellij_tab_number_output(
@@ -1624,7 +1624,7 @@ def test_spawn_probe_uses_active_tab_and_restores_focus(tmp_path: Path) -> None:
     assert any(call[:3] == ["action", "focus-pane-id", "terminal_42"] for call in calls)
 
 
-def test_spawn_in_operator_session_new_tab_opens_monitor_and_disables_inline_watch(
+def test_spawn_in_operator_session_new_tab_uses_run_tab_without_startup_monitor(
     tmp_path: Path,
 ) -> None:
     run_id = "rsch-014520"
@@ -1681,37 +1681,119 @@ def test_spawn_in_operator_session_new_tab_opens_monitor_and_disables_inline_wat
     calls = _split_zellij_calls(capture_file.read_text(encoding="utf-8"))
     assert len(calls) == 2
 
-    monitor_call, workflow_call = calls
-    assert monitor_call[:4] == ["--session", operator_session, "action", "new-pane"]
-    assert "--name" in monitor_call
-    assert "startup-monitor" in monitor_call
-    assert "--direction" in monitor_call
-    assert "down" in monitor_call
-
+    list_tabs_call, workflow_call = calls
+    assert list_tabs_call[:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "list-tabs",
+        "--json",
+    ]
     assert workflow_call[:4] == ["--session", operator_session, "action", "new-tab"]
     assert "--name" in workflow_call
-    assert "workflow" in workflow_call
-
-    monitor_cmd = Path(monitor_call[monitor_call.index("--") + 1]).read_text(
-        encoding="utf-8"
-    )
-    assert "; exit" in monitor_cmd
-    monitor_script_match = re.search(
-        r"(/[^'\"\s]*vc-startup-monitor\.[^'\"\s]*)", monitor_cmd
-    )
-    assert monitor_script_match is not None
-    monitor_script = Path(monitor_script_match.group(1))
-    assert monitor_script.parent == expected_tmp_root
-    monitor_body = monitor_script.read_text(encoding="utf-8")
-    assert "trap 'rm -f \"$0\"' EXIT" not in monitor_body
-    assert (
-        "Your vibecrafted session %s invoked the %s run that landed in %s %s."
-        in monitor_body
-    )
-    assert "spawn_watch_startup" in monitor_body
+    assert run_id in workflow_call
+    assert "workflow" not in workflow_call[workflow_call.index("--name") + 1]
+    assert not any("startup-monitor" in arg for call in calls for arg in call)
 
     workflow_script = Path(workflow_call[workflow_call.index("--") + 1])
     assert workflow_script.parent == expected_tmp_root
     workflow_cmd = workflow_script.read_text(encoding="utf-8")
-    assert "VIBECRAFTED_INLINE_STARTUP_WATCH=0" in workflow_cmd
+    assert "VIBECRAFTED_INLINE_STARTUP_WATCH=0" not in workflow_cmd
     assert str(launcher) in workflow_cmd
+
+
+def test_spawn_in_operator_session_existing_run_tab_stacks_and_restores_focus(
+    tmp_path: Path,
+) -> None:
+    run_id = "ownr-014520"
+    operator_session = _expected_operator_session(run_id)
+    expected_tmp_root = tmp_path / ".vibecrafted" / "tmp"
+    launcher = tmp_path / "launch.sh"
+    launcher.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o755)
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    capture_file = tmp_path / "zellij-calls.txt"
+    zellij = fake_bin / "zellij"
+    zellij.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "{",
+                '  printf -- "--CALL--\\n"',
+                '  printf "%s\\n" "$@"',
+                '} >> "$CAPTURE_FILE"',
+                'if [[ "${1:-}" == "--session" && "${3:-}" == "action" && "${4:-}" == "list-tabs" ]]; then',
+                f'  printf \'[{{"name":"operator","tab_id":2}},{{"name":"{run_id}","tab_id":7}}]\\n\'',
+                "  exit 0",
+                "fi",
+                'if [[ "${1:-}" == "--session" && "${3:-}" == "action" && "${4:-}" == "current-tab-info" ]]; then',
+                "  printf '{\"tab_id\":2}\\n'",
+                "  exit 0",
+                "fi",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    zellij.chmod(0o755)
+
+    _bash(
+        f'''
+        set -euo pipefail
+        export PATH="{fake_bin}:$PATH"
+        export CAPTURE_FILE="{capture_file}"
+        export VIBECRAFTED_RUN_ID="{run_id}"
+        export VIBECRAFTED_OPERATOR_SESSION="{operator_session}"
+        export SPAWN_ROOT="{tmp_path}"
+        source "{COMMON_SH}"
+        spawn_in_operator_session "{launcher}" "ownership-codex"
+        '''
+    )
+
+    calls = _split_zellij_calls(capture_file.read_text(encoding="utf-8"))
+    assert len(calls) == 4
+    assert calls[0][:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "list-tabs",
+        "--json",
+    ]
+    assert calls[1][:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "current-tab-info",
+        "--json",
+    ]
+
+    pane_call = calls[2]
+    assert pane_call[:4] == ["--session", operator_session, "action", "new-pane"]
+    assert "--tab-id" in pane_call
+    assert "7" in pane_call
+    assert "--stacked" in pane_call
+    assert "--close-on-exit" in pane_call
+    assert "--name" in pane_call
+    assert "ownership-codex" in pane_call
+    assert not any(
+        call[:4] == ["--session", operator_session, "action", "new-tab"]
+        for call in calls
+    )
+    assert not any("startup-monitor" in arg for call in calls for arg in call)
+
+    workflow_script = Path(pane_call[pane_call.index("--") + 1])
+    assert workflow_script.parent == expected_tmp_root
+    workflow_cmd = workflow_script.read_text(encoding="utf-8")
+    assert "VIBECRAFTED_INLINE_STARTUP_WATCH=0" not in workflow_cmd
+    assert str(launcher) in workflow_cmd
+
+    assert calls[3][:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "go-to-tab-by-id",
+        "2",
+    ]
