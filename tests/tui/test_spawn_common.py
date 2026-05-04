@@ -32,9 +32,11 @@ unset VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION VIBECRAFTED_PANE_SEQ VIBECRAFTED_MARBLE
 unset VIBECRAFTED_OPERATOR_SESSION VIBECRAFTED_RUN_ID VIBECRAFTED_RUN_LOCK
 unset VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME VIBECRAFTED_LOOP_NR
 unset VIBECRAFTED_ZELLIJ_CLOSE_AGENT_PANES VIBECRAFTED_ZELLIJ_KEEP_AGENT_PANES VIBECRAFTED_INLINE_STARTUP_WATCH
+unset VIBECRAFTED_SPAWN_STAGGER VIBECRAFTED_SPAWN_STAGGER_SECONDS
 unset SPAWN_LOOP_NR SPAWN_META SPAWN_TRANSCRIPT SPAWN_REPORT SPAWN_ROOT
 unset SPAWN_RUN_ID SPAWN_RUN_LOCK SPAWN_AGENT SPAWN_SKILL_CODE SPAWN_SKILL_NAME
 unset SPAWN_PROMPT_ID
+export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0
 """
 
 
@@ -1797,3 +1799,130 @@ def test_spawn_in_operator_session_existing_run_tab_stacks_and_restores_focus(
         "go-to-tab-by-id",
         "2",
     ]
+
+
+def test_zellij_launch_slot_serializes_parallel_spawns(tmp_path: Path) -> None:
+    lock_root = tmp_path / "locks"
+    done_file = tmp_path / "done"
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        export TMPDIR="{lock_root}"
+        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0.2
+        source "{COMMON_SH}"
+        (
+          lock="$(spawn_acquire_zellij_launch_slot session-a)"
+          printf 'first-acquired\n' >> "{done_file}"
+          sleep 0.4
+          spawn_release_zellij_launch_slot "$lock"
+        ) &
+        first_pid=$!
+        sleep 0.05
+        start=$(python3 - <<'PY'
+import time
+print(time.time())
+PY
+)
+        lock="$(spawn_acquire_zellij_launch_slot session-a)"
+        end=$(python3 - <<'PY'
+import time
+print(time.time())
+PY
+)
+        spawn_release_zellij_launch_slot "$lock"
+        wait "$first_pid"
+        python3 - "$start" "$end" <<'PY'
+import sys
+start = float(sys.argv[1])
+end = float(sys.argv[2])
+if end - start < 0.25:
+    raise SystemExit(f"slot was not serialized long enough: {{end - start:.3f}}s")
+PY
+        '''
+    )
+
+    assert result.stderr == ""
+    assert done_file.read_text(encoding="utf-8") == "first-acquired\n"
+
+
+def test_zellij_launch_slot_reclaims_stale_lock_from_dead_owner(tmp_path: Path) -> None:
+    lock_root = tmp_path / "locks"
+    expected_lock_dir = (
+        lock_root / "vibecrafted-zellij-launch-locks" / "session-stale.lock"
+    )
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        export TMPDIR="{lock_root}"
+        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0
+        source "{COMMON_SH}"
+        mkdir -p "{expected_lock_dir}"
+        # Plant a PID that is guaranteed to be unreachable. Linux/macOS reserve
+        # PID 1 for init; an arbitrary very-high PID we never spawned is dead.
+        printf '99999999' > "{expected_lock_dir}/pid"
+        # Re-enable stagger purely for the acquire path.
+        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0.05
+        lock="$(spawn_acquire_zellij_launch_slot session-stale)"
+        if [[ -z "$lock" ]]; then
+          echo "acquire returned empty path" >&2
+          exit 1
+        fi
+        if [[ ! -d "$lock" ]]; then
+          echo "lock dir missing after reclaim" >&2
+          exit 1
+        fi
+        spawn_release_zellij_launch_slot "$lock"
+        if [[ -d "$lock" ]]; then
+          echo "lock dir not cleaned after release" >&2
+          exit 1
+        fi
+        '''
+    )
+    assert result.returncode == 0
+    assert result.stderr == ""
+
+
+def test_zellij_launch_slot_bounded_wait_breaks_deadlock(tmp_path: Path) -> None:
+    lock_root = tmp_path / "locks"
+    holder_dir = lock_root / "vibecrafted-zellij-launch-locks" / "session-wedge.lock"
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        export TMPDIR="{lock_root}"
+        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0
+        source "{COMMON_SH}"
+        mkdir -p "{holder_dir}"
+        # Write OUR own pid so kill -0 reports alive — i.e. holder looks
+        # wedged-but-alive and stale-PID recovery cannot reclaim it.
+        printf '%s' "$$" > "{holder_dir}/pid"
+        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0.05
+        export VIBECRAFTED_SPAWN_STAGGER_MAX_WAIT_SECONDS=1
+        start=$(python3 - <<'PY'
+import time
+print(time.time())
+PY
+)
+        lock="$(spawn_acquire_zellij_launch_slot session-wedge)"
+        end=$(python3 - <<'PY'
+import time
+print(time.time())
+PY
+)
+        spawn_release_zellij_launch_slot "$lock"
+        python3 - "$start" "$end" <<'PY'
+import sys
+start = float(sys.argv[1])
+end = float(sys.argv[2])
+elapsed = end - start
+if elapsed > 5:
+    raise SystemExit(f"bounded wait did not break deadlock: {{elapsed:.3f}}s")
+if elapsed < 0.8:
+    raise SystemExit(f"bounded wait short-circuited too soon: {{elapsed:.3f}}s")
+PY
+        '''
+    )
+    assert result.returncode == 0
+    assert result.stderr == ""
