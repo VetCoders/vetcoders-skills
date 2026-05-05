@@ -13,6 +13,10 @@ spawn_operator_session_name_for_run_id() {
   local run_id="${1:-}"
   local base
   base="$(spawn_session_base_name)"
+  if [[ "${VIBECRAFTED_ZELLIJ_GROUP_BY_CWD:-1}" != "0" ]]; then
+    printf '%s\n' "$base"
+    return 0
+  fi
   if [[ -n "$run_id" ]]; then
     printf '%s-%s\n' "$base" "$run_id"
   else

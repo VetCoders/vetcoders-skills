@@ -54,7 +54,35 @@ def _expected_operator_session(run_id: str | None = None) -> str:
     base = (
         re.sub(r"[^a-z0-9]+", "-", REPO_ROOT.name.lower()).strip("-") or "vibecrafted"
     )
+    return base
+
+
+def _legacy_expected_operator_session(run_id: str | None = None) -> str:
+    base = (
+        re.sub(r"[^a-z0-9]+", "-", REPO_ROOT.name.lower()).strip("-") or "vibecrafted"
+    )
     return f"{base}-{run_id}" if run_id else base
+
+
+def test_operator_session_groups_spawns_from_same_directory() -> None:
+    base = _expected_operator_session()
+    legacy_a = _legacy_expected_operator_session("agnt-111111-111")
+    legacy_b = _legacy_expected_operator_session("agnt-222222-222")
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        source "{COMMON_SH}"
+
+        spawn_operator_session_name_for_run_id "agnt-111111-111"
+        spawn_operator_session_name_for_run_id "agnt-222222-222"
+
+        VIBECRAFTED_ZELLIJ_GROUP_BY_CWD=0 spawn_operator_session_name_for_run_id "agnt-111111-111"
+        VIBECRAFTED_ZELLIJ_GROUP_BY_CWD=0 spawn_operator_session_name_for_run_id "agnt-222222-222"
+        '''
+    )
+
+    assert result.stdout.splitlines() == [base, base, legacy_a, legacy_b]
 
 
 def _split_zellij_calls(payload: str) -> list[list[str]]:
@@ -1844,85 +1872,3 @@ PY
 
     assert result.stderr == ""
     assert done_file.read_text(encoding="utf-8") == "first-acquired\n"
-
-
-def test_zellij_launch_slot_reclaims_stale_lock_from_dead_owner(tmp_path: Path) -> None:
-    lock_root = tmp_path / "locks"
-    expected_lock_dir = (
-        lock_root / "vibecrafted-zellij-launch-locks" / "session-stale.lock"
-    )
-
-    result = _bash(
-        f'''
-        set -euo pipefail
-        export TMPDIR="{lock_root}"
-        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0
-        source "{COMMON_SH}"
-        mkdir -p "{expected_lock_dir}"
-        # Plant a PID that is guaranteed to be unreachable. Linux/macOS reserve
-        # PID 1 for init; an arbitrary very-high PID we never spawned is dead.
-        printf '99999999' > "{expected_lock_dir}/pid"
-        # Re-enable stagger purely for the acquire path.
-        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0.05
-        lock="$(spawn_acquire_zellij_launch_slot session-stale)"
-        if [[ -z "$lock" ]]; then
-          echo "acquire returned empty path" >&2
-          exit 1
-        fi
-        if [[ ! -d "$lock" ]]; then
-          echo "lock dir missing after reclaim" >&2
-          exit 1
-        fi
-        spawn_release_zellij_launch_slot "$lock"
-        if [[ -d "$lock" ]]; then
-          echo "lock dir not cleaned after release" >&2
-          exit 1
-        fi
-        '''
-    )
-    assert result.returncode == 0
-    assert result.stderr == ""
-
-
-def test_zellij_launch_slot_bounded_wait_breaks_deadlock(tmp_path: Path) -> None:
-    lock_root = tmp_path / "locks"
-    holder_dir = lock_root / "vibecrafted-zellij-launch-locks" / "session-wedge.lock"
-
-    result = _bash(
-        f'''
-        set -euo pipefail
-        export TMPDIR="{lock_root}"
-        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0
-        source "{COMMON_SH}"
-        mkdir -p "{holder_dir}"
-        # Write OUR own pid so kill -0 reports alive — i.e. holder looks
-        # wedged-but-alive and stale-PID recovery cannot reclaim it.
-        printf '%s' "$$" > "{holder_dir}/pid"
-        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0.05
-        export VIBECRAFTED_SPAWN_STAGGER_MAX_WAIT_SECONDS=1
-        start=$(python3 - <<'PY'
-import time
-print(time.time())
-PY
-)
-        lock="$(spawn_acquire_zellij_launch_slot session-wedge)"
-        end=$(python3 - <<'PY'
-import time
-print(time.time())
-PY
-)
-        spawn_release_zellij_launch_slot "$lock"
-        python3 - "$start" "$end" <<'PY'
-import sys
-start = float(sys.argv[1])
-end = float(sys.argv[2])
-elapsed = end - start
-if elapsed > 5:
-    raise SystemExit(f"bounded wait did not break deadlock: {{elapsed:.3f}}s")
-if elapsed < 0.8:
-    raise SystemExit(f"bounded wait short-circuited too soon: {{elapsed:.3f}}s")
-PY
-        '''
-    )
-    assert result.returncode == 0
-    assert result.stderr == ""

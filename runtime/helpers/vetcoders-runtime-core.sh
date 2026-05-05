@@ -312,6 +312,10 @@ _vetcoders_operator_session_name_for_run_id() {
   local run_id="${1:-}"
   local base
   base="$(_vetcoders_session_base_name)"
+  if [[ "${VIBECRAFTED_ZELLIJ_GROUP_BY_CWD:-1}" != "0" ]]; then
+    _vetcoders_compact_session_name "$base"
+    return 0
+  fi
   if [[ -n "$run_id" ]]; then
     _vetcoders_compact_session_name "${base}-${run_id}" "$run_id"
   else
