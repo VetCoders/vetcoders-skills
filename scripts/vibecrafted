@@ -27,7 +27,7 @@ _reset='\033[0m'
 
 _agents=(claude codex gemini)
 _modes=(implement research review plan prompt observe await)
-_skills=(decorate delegate dou followup hydrate implement intents justdo marbles ownership partner prune release research review scaffold workflow)
+_skills=(decorate delegate dou followup hydrate implement intents justdo marbles ownership partner polarize prune release research review scaffold workflow)
 
 _script_repo_root() {
   local script_dir
@@ -294,6 +294,7 @@ _skill_summary() {
     marbles) printf 'Counterexample loop that keeps fixing what is still wrong until the surface is clean.\n' ;;
     ownership) printf 'Full-spectrum operational ownership across code, runtime, docs, packaging, and ship surface.\n' ;;
     partner) printf 'Collaborative debugging, architecture triage, and shared executive reasoning with the user in the loop.\n' ;;
+    polarize) printf 'Post-marbles concept and product truth polarization skill.\n' ;;
     prune) printf 'Runtime and publish-cone cleanup with hard cuts and proof.\n' ;;
     release) printf 'Release mechanics, deployment reality, and ship-readiness work.\n' ;;
     research) printf 'Triple-agent research pass for ground truth before implementation.\n' ;;
@@ -316,6 +317,11 @@ _print_skill_specific_flags() {
       printf '\n%bSkill-specific flags:%b\n' "$_bold" "$_reset"
       printf '  --count <n>                    Marbles loop count (default: 3)\n'
       printf '  --depth <n>                    Marbles plan crawl depth (default: 3)\n'
+      ;;
+    polarize)
+      printf '\n%bSkill-specific flags:%b\n' "$_bold" "$_reset"
+      printf '  --task <text>                  Run loct prism preflight and inject the payload\n'
+      printf '  --no-aicx                      Opt out of AICX evidence for the prism preflight\n'
       ;;
     resume)
       printf '\n%bResume flags:%b\n' "$_bold" "$_reset"
@@ -386,6 +392,11 @@ cmd_skill_help() {
       printf '  vibecrafted marbles codex --count 3 --depth 3\n'
       printf '  vc-marbles claude --prompt "Loop until clean"\n'
       printf '  vc-marbles resume marb-134707\n'
+      ;;
+    polarize)
+      printf '  vibecrafted polarize codex --task "marbles versus polarize skills: polarize them"\n'
+      printf '  vc-polarize claude --task "installer public contract" --no-aicx\n'
+      printf '  vc-polarize gemini --prompt "Choose one launch thesis after marbles"\n'
       ;;
     followup)
       printf '  vibecrafted followup codex --prompt "Audit post-implementation direction"\n'
@@ -991,7 +1002,7 @@ cmd_help() {
       cmd_skill_help "implement"
       return
       ;;
-    decorate|delegate|dou|followup|hydrate|intents|justdo|marbles|ownership|partner|prune|release|research|review|scaffold|workflow)
+    decorate|delegate|dou|followup|hydrate|intents|justdo|marbles|ownership|partner|polarize|prune|release|research|review|scaffold|workflow)
       cmd_skill_help "$topic"
       return
       ;;
@@ -1031,8 +1042,8 @@ cmd_help() {
   printf '  %bvibecrafted doctor%b                    Verify installation health\n' "$_cyan" "$_reset"
   printf '  %bvibecrafted uninstall%b                 Reverse the install\n' "$_cyan" "$_reset"
   printf '\n'
-  printf '%bSkill inventory (18 live workflows):%b\n' "$_bold" "$_reset"
-  printf '  Core: init · scaffold · workflow · implement · followup · marbles · dou · decorate · hydrate · release\n'
+  printf '%bSkill inventory (19 live workflows):%b\n' "$_bold" "$_reset"
+  printf '  Core: init · scaffold · workflow · implement · followup · marbles · polarize · dou · decorate · hydrate · release\n'
   printf '  Support: agents · delegate · intents · ownership · partner · prune · research · review\n'
   printf '  For daily tasks, use implement or justdo as convenient aliases.\n'
   printf '\n'
@@ -1818,7 +1829,7 @@ main() {
       run_mode "$cmd" "$mode" "$@"
       ;;
     implement) run_skill "implement" "$@" ;;
-    decorate|delegate|dou|followup|hydrate|intents|justdo|marbles|ownership|partner|prune|release|research|review|scaffold|workflow)
+    decorate|delegate|dou|followup|hydrate|intents|justdo|marbles|ownership|partner|polarize|prune|release|research|review|scaffold|workflow)
       run_skill "$cmd" "$@"
       ;;
     *)

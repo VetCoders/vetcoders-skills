@@ -1,10 +1,11 @@
 ---
 name: vc-init
-version: 4.2.0
+version: 4.4.0
 description: >
   Technical due diligence before stabilization. The vibe-coding weekend
   got the app to launch. Now we find the taped-together auth, god tables, and silent
-  failures. Init equips the agent with Perception, Intentions, and Security/Stability Ground Truth.
+  failures. Init equips the agent with Perception (via the MCP-first loctree
+  context engine), Intentions (AICX), and Security/Stability Ground Truth.
   Trigger: "init", "initialize", "bootstrap", "daj kontekst", "zainicjuj",
   "przygotuj agenta", "start fresh with context".
 ---
@@ -86,25 +87,53 @@ summarize. Full reference in `vc-intents` and `vc-aicx` skills, or `aicx --help`
 
 ### Sense 2 — Perception (over memory)
 
-`loctree-mcp` (stdio) is the primary structural tool. Use broad → specific:
+**MCP-first, atlas-shaped.** `loctree-mcp` is the agent's primary discovery
+channel. A single `context()` call materializes the Context Atlas
+(`loctree.context_atlas.v1`) — structural + runtime + risk + next-moves +
+AICX overlay — into a versioned on-disk cache. Subsequent calls are instant
+reads. The CLI (`loct ...`) is the **operator** surface (markdown pill,
+shell pipes, interactive debugging); agents share the same engine through
+MCP and are allowed to use the CLI **only if the MCP server is not**
+**available**.
 
-1. **`repo-view`** — overview: file count, LOC, languages, health, top hubs.
-   USE FIRST at start of any session.
-2. **`tree`** — directory structure with LOC counts. Project layout, large files.
-3. **`focus`** — directory deep-dive: files, LOC, exports, internal deps.
-4. **`slice`** — file context: file + imports + dependents. USE BEFORE modifying
-   any file.
-5. **`find`** — symbols/imports/features. Modes: `symbols` (regex), `who-imports`
-   (reverse deps), `where-symbol`, `tagmap` (files+crowd+dead), `crowd`
-   (functional clustering). First choice before grep.
-6. **`follow`** — structural signals: `dead`, `cycles`, `twins`, `hotspots`,
-   `trace` (Tauri/IPC end-to-end), `commands` (Tauri FE↔BE), `events`,
-   `pipelines`, `all`.
-7. **`impact`** — what breaks if you change/delete this file (direct + transitive
-   consumers). USE BEFORE deleting or major refactor.
+#### Primary call
 
-CLI reference: `loct --help` and `loct <subcommand> --help`. All tools accept
-`project` (default: cwd); first use auto-scans, subsequent calls use cache.
+```jsonc
+// Single first move — every session
+{ "tool": "context", "project": "<repo-root>", "with_aicx": true }
+```
+
+MCP **fails-fast** if `<repo-root>` lacks `.git`. The atlas materializes
+seven sections (six cards + `receipt`): core, structural, runtime,
+memory-trail, verification-gates, risk-register, receipt. A repo-level
+answer is incomplete until **core + structural + runtime** have been read.
+
+Scope by passing `file: "<path>"` (before edit), `task: "<text>"` (semantic
+relevance), or `changed: true` (Living Tree WIP). CI guards: `no_scan`,
+`fail_stale`, `fresh`. Full parameter map and atlas card index live in
+[`references/loct-context-engine.md`](references/loct-context-engine.md).
+
+#### Authority labels — read before acting
+
+`repo_verified` (snapshot fact, top trust) · `loctree_derived` (analyzer
+inference) · `aicx_operator` (sticky operator intent) · `aicx_agent` (prior
+agent outcome) · `aicx_failure` (prior failed path — don't repeat) ·
+`semantic_guess` (heuristic — verify) · `stale_or_unknown` (re-check).
+
+#### Drill-down (after the atlas, when scope is known)
+
+- `slice(file)` before edit · `impact(file)` before delete/rename ·
+  `find(pattern)` instead of grep · `follow(scope)` for dead/cycles/twins/
+  hotspots/trace · `focus(directory)` for module deep-dive · `query(kind,
+target)` for graph queries.
+- Analysis (signal, not orientation): `health` · `findings` · `audit` ·
+  `doctor` · `coverage` · `manifests` · `dist` · `insights`.
+- Atlas paging: `context_manifest` · `context_section` · `context_next`.
+
+**Living Tree reflex:** before any edit window longer than a few minutes,
+call `doctor()` to compare fingerprint against your last call. If it
+moved, re-issue `context(fresh: true)` — that's how concurrent agents
+avoid silent drift.
 
 ### Sense 3 — Ground Truth over intuition
 
@@ -187,6 +216,16 @@ tracks. Structural truth beats synthetic checks.
 - Assuming Auth handles edge cases like token expiration
 - Writing "run pytest" without actually running pytest (unverified claims)
 - Committing `.env` while hesitating to work with it locally because "security risk"
+- Reaching for `repo-view` + `tree` + `focus` cascade when one `context()` call
+  materializes the same atlas plus risk, action, authority, and AICX overlay
+- Grepping or `find -name` before calling `context()` / `find()` —
+  authority labels and reverse deps are lost the moment you bypass the atlas
+- Treating empty `structural` / `runtime` cards as broken — that's the atlas
+  telling you to scope with `file:` or `task:`
+- Skipping `doctor()` / fingerprint check during long Living Tree edits —
+  multi-agent coordination silently fails when fingerprints diverge under you
+- Shelling out to `loct ...` from an agent for capabilities MCP already
+  exposes — split-brain between agent and operator surfaces, lost provenance
 
 ---
 

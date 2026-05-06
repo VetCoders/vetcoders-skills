@@ -39,15 +39,15 @@ scaffold → init → [WORKFLOW] → followup → marbles → dou → decorate �
 ## Pipeline Overview
 
 ```
- EXAMINE (loctree)         RESEARCH (web)          IMPLEMENT (agents)
- ┌────────────────┐        ┌────────────────┐      ┌────────────────┐
- │ repo-view      │        │ Brave Search   │      │ write plans    │
- │ focus 1-3 dirs │ ─────▸ │ WebFetch docs  │ ───▸ │ spawn agents   │
- │ slice + impact │        │ Context7 libs  │      │ collect reports│
- │ find symbols   │        │ curate         │      │ review + merge │
- └────────────────┘        └────────────────┘      └────────────────┘
-        ↓                          ↓                       ↓
-   CONTEXT.md                 RESEARCH.md             REPORTS/*.md
+ EXAMINE (loctree)         RESEARCH (web)          IMPLEMENT (agents)      CONVERGE (marbles+polarize)
+ ┌────────────────┐        ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
+ │ repo-view      │        │ Brave Search   │      │ write plans    │      │ marbles: fix   │
+ │ focus 1-3 dirs │ ─────▸ │ WebFetch docs  │ ───▸ │ spawn agents   │ ───▸ │ gates (P0=0)   │
+ │ slice + impact │        │ Context7 libs  │      │ collect reports│      │ polarize: align│
+ │ find symbols   │        │ curate         │      │ review + merge │      │ docs & product │
+ └────────────────┘        └────────────────┘      └────────────────┘      └────────────────┘
+        ↓                          ↓                       ↓                       ↓
+   CONTEXT.md                 RESEARCH.md             REPORTS/*.md            THESIS.md
 ```
 
 Canonical artifact root: `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/{plans,reports,tmp}/`.
@@ -200,18 +200,18 @@ canonical `plans/`, reports → canonical `reports/` under
 `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/`. Repo-local
 `.vibecrafted/plans` and `.vibecrafted/reports` are convenience symlinks only.
 
-### Review & Mandatory Marbles Escalation
+### Phase 4 — CONVERGE (Marbles & Polarize)
 
-After implementation agents complete:
+After implementation agents complete, the code exists but may not be true or shippable.
+Do not stop at implementation. Proceed through the convergence boundary:
 
-1. Read all reports.
-2. Run quality gate (`make check` or equivalent).
-3. Verify against `CONTEXT.md` risk map.
-4. **MANDATORY ESCALATION** — if quality gate fails or there are gaps/regressions:
+1. **Gate Check** — Read all reports, run quality gates (`make check`), verify risk map.
+2. **Code Truth (`vc-marbles`)** — If gates fail, tests are red, or the runtime path is fragile:
    - **DO NOT STOP.** Do not present a diff summary with broken tests or known gaps.
-   - Explain the gaps and immediately invoke `vc-marbles`.
-   - Loop until gates are green.
-5. Once converged (or if gates passed initially), present the final diff summary.
+   - Invoke `vc-marbles` to loop until gates are green (P0=0) and the codebase stops lying.
+3. **Product Truth (`vc-polarize`)** — Once the code is stable (gates pass), check for "conceptual smear" (e.g., conflicting docs, ambiguous public interfaces, or architectural "split brains" where two valid paths compete).
+   - If the concept is smeared (high prism score), invoke `vc-polarize` to choose one axis, reject alternatives, and align the product surface (docs, artifacts, release briefs).
+4. **Handoff** — Present the final diff summary and/or `THESIS.md` ready for `dou` and Release.
 
 ## Quick Reference
 

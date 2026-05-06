@@ -687,6 +687,7 @@ _vetcoders_dashboard_layout_name() {
   case "$requested" in
     ""|dashboard|mc|mission-control|vc-dashboard) printf 'dashboard\n' ;;
     marbles|vc-marbles) printf 'marbles\n' ;;
+    polarize|vc-polarize) printf 'polarize\n' ;;
     workflow|vc-workflow) printf 'workflow\n' ;;
     research|vc-research) printf 'research\n' ;;
     operator|vibecrafted) printf 'operator\n' ;;
@@ -856,12 +857,14 @@ _vetcoders_prompt_file() {
 _vetcoders_contract_reset() {
   _vetcoders_contract_prompt=""
   _vetcoders_contract_file=""
+  _vetcoders_contract_task=""
   _vetcoders_contract_session=""
   _vetcoders_contract_count=""
   _vetcoders_contract_depth=""
   _vetcoders_contract_runtime=""
   _vetcoders_contract_root=""
   _vetcoders_contract_tail=""
+  _vetcoders_contract_no_aicx=""
 }
 
 _vetcoders_append_tail() {
@@ -885,10 +888,18 @@ _vetcoders_parse_contract() {
         _vetcoders_contract_prompt="$*"
         break
         ;;
-      -f|--file|--task)
+      -f|--file)
         shift
         [[ $# -gt 0 ]] || { echo "Missing value for --file" >&2; return 1; }
         _vetcoders_contract_file="$1"
+        ;;
+      --task)
+        shift
+        [[ $# -gt 0 ]] || { echo "Missing value for --task" >&2; return 1; }
+        _vetcoders_contract_task="$1"
+        ;;
+      --no-aicx)
+        _vetcoders_contract_no_aicx=1
         ;;
       --session)
         shift
@@ -1041,6 +1052,99 @@ _vetcoders_compose_skill_prompt() {
     base+=$'\n\n'
     base+="$extra"
   fi
+  printf '%s\n' "$base"
+}
+
+_vetcoders_polarize_prism_axes() {
+  local task="$1"
+  printf '%s\n' "$task"
+  printf '%s\n' "$task code truth"
+  printf '%s\n' "$task product truth"
+}
+
+_vetcoders_polarize_prism_command_text() {
+  local root="$1"
+  local task="$2"
+  local no_aicx="${3:-}"
+  local args=(loct prism --project "$root")
+  if [[ "$no_aicx" == "1" ]]; then
+    args+=(--no-aicx)
+  else
+    args+=(--with-aicx)
+  fi
+  while IFS= read -r axis; do
+    [[ -n "$axis" ]] || continue
+    args+=(--task "$axis")
+  done < <(_vetcoders_polarize_prism_axes "$task")
+  args+=(--json)
+  _vetcoders_shell_quote_join "${args[@]}"
+}
+
+_vetcoders_write_polarize_prism_payload() {
+  local root="$1"
+  local run_id="$2"
+  local task="$3"
+  local no_aicx="${4:-}"
+  local out_dir payload_file command_file
+  local -a prism_args
+
+  command -v loct >/dev/null 2>&1 || {
+    echo "vc-polarize requires loct for prism preflight; loct not found on PATH." >&2
+    return 1
+  }
+
+  out_dir="$(_vetcoders_store_dir "$root")/polarize/$run_id"
+  mkdir -p "$out_dir"
+  payload_file="$out_dir/prism.json"
+  command_file="$out_dir/prism.command.txt"
+
+  prism_args=(prism --project "$root")
+  if [[ "$no_aicx" == "1" ]]; then
+    prism_args+=(--no-aicx)
+  else
+    prism_args+=(--with-aicx)
+  fi
+  while IFS= read -r axis; do
+    [[ -n "$axis" ]] || continue
+    prism_args+=(--task "$axis")
+  done < <(_vetcoders_polarize_prism_axes "$task")
+  prism_args+=(--json)
+
+  printf '%s\n' "$(_vetcoders_polarize_prism_command_text "$root" "$task" "$no_aicx")" > "$command_file"
+  (cd "$root" && loct "${prism_args[@]}") > "$payload_file" || {
+    echo "vc-polarize prism preflight failed. Command: $(cat "$command_file")" >&2
+    return 1
+  }
+
+  printf '%s\n' "$payload_file"
+}
+
+_vetcoders_compose_polarize_prompt() {
+  local prompt_text="${1:-}"
+  local file_path="${2:-}"
+  local task="${3:-}"
+  local payload_file="${4:-}"
+  local prism_command="${5:-}"
+  local base payload_body
+
+  base="$(_vetcoders_compose_skill_prompt "polarize" "$prompt_text" "$file_path")" || return 1
+  if [[ -n "$task" ]]; then
+    base+=$'\n\n'
+    base+="Polarize task: $task"
+  fi
+  if [[ -n "$payload_file" ]]; then
+    payload_body="$(cat "$payload_file")"
+    base+=$'\n\n'
+    base+="Prism preflight command: $prism_command"
+    base+=$'\n'
+    base+="Prism payload file: $payload_file"
+    base+=$'\n\n'
+    base+="The full prism payload is injected below. Treat it as the starting evidence pack, then verify live runtime truth before editing."
+    base+=$'\n\n```json\n'
+    base+="$payload_body"
+    base+=$'\n```'
+  fi
+
   printf '%s\n' "$base"
 }
 
@@ -1309,8 +1413,6 @@ _vetcoders_skill() {
     echo "--session is only supported by vibecrafted resume." >&2
     return 1
   }
-  local prompt
-  prompt="$(_vetcoders_compose_skill_prompt "$skill" "$_vetcoders_contract_prompt" "$_vetcoders_contract_file")" || return 1
   local skill_code root run_id run_lock
   skill_code="$(_vetcoders_skill_prefix "$skill")"
   root="${_vetcoders_contract_root:-$(_vetcoders_repo_root)}"
@@ -1319,6 +1421,20 @@ _vetcoders_skill() {
   run_lock="$inherited_run_lock"
   if [[ -z "$run_lock" || ! -f "$run_lock" ]]; then
     run_lock="$(_vetcoders_create_run_lock "$run_id" "$tool" "$skill" "$root")" || return 1
+  fi
+  local prompt prism_payload prism_command
+  if [[ "$skill" == "polarize" && -n "$_vetcoders_contract_task" ]]; then
+    prism_payload="$(_vetcoders_write_polarize_prism_payload "$root" "$run_id" "$_vetcoders_contract_task" "$_vetcoders_contract_no_aicx")" || return 1
+    prism_command="$(_vetcoders_polarize_prism_command_text "$root" "$_vetcoders_contract_task" "$_vetcoders_contract_no_aicx")"
+    prompt="$(_vetcoders_compose_polarize_prompt "$_vetcoders_contract_prompt" "$_vetcoders_contract_file" "$_vetcoders_contract_task" "$prism_payload" "$prism_command")" || return 1
+  else
+    if [[ -n "$_vetcoders_contract_task" ]]; then
+      if [[ -n "$_vetcoders_contract_prompt" ]]; then
+        _vetcoders_contract_prompt+=$'\n\n'
+      fi
+      _vetcoders_contract_prompt+="Task: $_vetcoders_contract_task"
+    fi
+    prompt="$(_vetcoders_compose_skill_prompt "$skill" "$_vetcoders_contract_prompt" "$_vetcoders_contract_file")" || return 1
   fi
   local spawn_args=(--runtime "$(_vetcoders_effective_runtime)")
   [[ -n "$_vetcoders_contract_root" ]] && spawn_args+=(--root "$_vetcoders_contract_root")
@@ -1619,6 +1735,13 @@ _vetcoders_marbles() {
     echo "--session is only supported by vibecrafted resume." >&2
     return 1
   }
+  if [[ -n "$_vetcoders_contract_task" ]]; then
+    [[ -z "$_vetcoders_contract_file" ]] || {
+      echo "Marbles accepts one file source: use either --task or --file, not both." >&2
+      return 1
+    }
+    _vetcoders_contract_file="$_vetcoders_contract_task"
+  fi
 
   local source_count=0
   [[ -n "$_vetcoders_contract_depth" ]] && ((source_count+=1))
@@ -1871,6 +1994,10 @@ codex-skill-partner() { _vetcoders_skill_entry codex partner "$@"; }
 claude-skill-partner() { _vetcoders_skill_entry claude partner "$@"; }
 gemini-skill-partner() { _vetcoders_skill_entry gemini partner "$@"; }
 
+codex-skill-polarize() { _vetcoders_skill_entry codex polarize "$@"; }
+claude-skill-polarize() { _vetcoders_skill_entry claude polarize "$@"; }
+gemini-skill-polarize() { _vetcoders_skill_entry gemini polarize "$@"; }
+
 codex-skill-prune() { _vetcoders_skill_entry codex prune "$@"; }
 claude-skill-prune() { _vetcoders_skill_entry claude prune "$@"; }
 gemini-skill-prune() { _vetcoders_skill_entry gemini prune "$@"; }
@@ -1906,6 +2033,10 @@ _vetcoders_skill_wrapper_usage() {
     marbles)
       printf 'Usage: vc-marbles <claude|codex|gemini> [--prompt <text>|--file <path>|--depth <n>] [--count <n>]\n' >&2
       printf '       vc-marbles <pause|stop|resume|session|inspect|delete|gc> [args]\n' >&2
+      ;;
+    polarize)
+      printf 'Usage: vc-polarize <claude|codex|gemini> --task <text> [--prompt <text>] [--file <path>] [--no-aicx]\n' >&2
+      printf '       vc-polarize <claude|codex|gemini> [--prompt <text>] [--file <path>]\n' >&2
       ;;
     *)
       printf 'Usage: vc-%s <claude|codex|gemini> [--prompt <text>] [--file <path>]\n' "$skill" >&2
@@ -1974,6 +2105,7 @@ vc-implement() { _vetcoders_skill_wrapper justdo "$@"; }
 vc-marbles() { _vetcoders_skill_wrapper marbles "$@"; }
 vc-ownership() { _vetcoders_skill_wrapper ownership "$@"; }
 vc-partner() { _vetcoders_skill_wrapper partner "$@"; }
+vc-polarize() { _vetcoders_skill_wrapper polarize "$@"; }
 vc-prune() { _vetcoders_skill_wrapper prune "$@"; }
 vc-release() { _vetcoders_skill_wrapper release "$@"; }
 vc-review() { _vetcoders_skill_wrapper review "$@"; }

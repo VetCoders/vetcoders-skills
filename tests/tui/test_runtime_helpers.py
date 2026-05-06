@@ -103,13 +103,14 @@ def test_vetcoders_spawn_script_path_stays_command_compatible() -> None:
 def test_vetcoders_keeps_launcher_entrypoints_available() -> None:
     result = _run_vetcoders_helper(
         HELPER_SCRIPT,
-        "command -v vc-implement && command -v vc-research && command -v codex-implement",
+        "command -v vc-implement && command -v vc-research && command -v vc-polarize && command -v codex-implement",
         {"VIBECRAFTED_ROOT": str(REPO_ROOT)},
     )
 
     assert result.returncode == 0
     assert "vc-implement" in result.stdout
     assert "vc-research" in result.stdout
+    assert "vc-polarize" in result.stdout
     assert "codex-implement" in result.stdout
     assert "command not found" not in result.stderr
 
@@ -168,6 +169,59 @@ def test_vc_skill_wrapper_help_after_agent_does_not_launch_worker() -> None:
     assert result.returncode == 0
     assert "Usage: vc-ownership <claude|codex|gemini>" in result.stderr
     assert "launched" not in result.stdout
+
+
+def test_vc_polarize_task_injects_prism_payload(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_loct = fake_bin / "loct"
+    args_file = tmp_path / "loct-args.txt"
+    capture_file = tmp_path / "prompt.md"
+    fake_loct.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env bash
+            printf '%s\n' "$@" > "$LOCT_ARGS_FILE"
+            cat <<'JSON'
+            {"schema_version":"loctree.prism.v1","total_score":13,"axis_scores":{"spread":3}}
+            JSON
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_loct.chmod(0o755)
+
+    result = _run_vetcoders_helper(
+        HELPER_SCRIPT,
+        (
+            f'export PATH="{fake_bin}:$PATH"; '
+            '_vetcoders_prompt_text() { printf \'%s\' "$3" > "$CAPTURE_FILE"; }; '
+            "vc-polarize codex --task 'marbles versus polarize skills: polarize them'"
+        ),
+        {
+            "VIBECRAFTED_ROOT": str(REPO_ROOT),
+            "VIBECRAFTED_HOME": str(tmp_path / "home" / ".vibecrafted"),
+            "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
+            "LOCT_ARGS_FILE": str(args_file),
+            "CAPTURE_FILE": str(capture_file),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    args = args_file.read_text(encoding="utf-8").splitlines()
+    assert args[:4] == ["prism", "--project", str(REPO_ROOT), "--with-aicx"]
+    assert "marbles versus polarize skills: polarize them" in args
+    assert "marbles versus polarize skills: polarize them code truth" in args
+    assert "marbles versus polarize skills: polarize them product truth" in args
+    assert "--json" in args
+
+    prompt = capture_file.read_text(encoding="utf-8")
+    assert "Perform the vc-polarize skill on this repository." in prompt
+    assert "Polarize task: marbles versus polarize skills: polarize them" in prompt
+    assert "Prism preflight command: loct prism" in prompt
+    assert "--with-aicx" in prompt
+    assert '"schema_version":"loctree.prism.v1"' in prompt
+    assert '"total_score":13' in prompt
 
 
 def test_runtime_core_preserves_origin_org_repo_resolution(tmp_path: Path) -> None:

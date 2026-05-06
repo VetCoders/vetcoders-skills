@@ -382,6 +382,7 @@ _vetcoders_skill_prefix() {
     justdo) printf 'just\n' ;;
     marbles) printf 'marb\n' ;;
     partner) printf 'prtn\n' ;;
+    polarize) printf 'polr\n' ;;
     plan) printf 'plan\n' ;;
     prune) printf 'prun\n' ;;
     release) printf 'rels\n' ;;

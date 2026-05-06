@@ -1524,6 +1524,7 @@ SKILL_WRAPPER_NAMES = [
     "marbles",
     "ownership",
     "partner",
+    "polarize",
     "prune",
     "release",
     "research",

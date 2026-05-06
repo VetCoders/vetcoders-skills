@@ -46,9 +46,10 @@ vc-marbles gemini --count 2 --file /path/to/plan.md
 
 ## Core Doctrine
 
-`vc-marbles` is not a mini-task implementer. It is the executor of truth in an already-generated codebase. Begins **after** implementation is in.
+`vc-marbles` is not a mini-task implementer. It is the executor of **Code Truth** in an already-generated codebase. Begins **after** implementation is in.
 
-Job: take the naturally overgenerated output of agentic coding and pack it into shape — remove drift, collapse duplicate truths, harden the runtime path, expose product decisions hiding behind "code issues", turn "it sort of works" into "this is the actual shape of the system."
+Job: take the naturally overgenerated output of agentic coding and harden it into a stable, testable foundation — remove technical drift, stabilize fragile pathways, eliminate entropy, and drive P0/P1/P2 failures to zero.
+Do **not** attempt to solve product-level conceptual smear (e.g. conflicting documentation, split product directions). Expose those product decisions hiding behind "code issues" and leave them for `vc-polarize` to resolve.
 
 A worker is intentionally **blind to prior marble history**. It works against the **current workspace state** and **current evidence surface** only. The loop lives outside the worker. The worker forces the present tree to tell the truth.
 
@@ -136,7 +137,7 @@ Do not invent sequential round numbers. Include opaque round id if injected. If 
 
 **1. Accuse the present tree.** Every target traces to: tool output, failing gate, structural audit, or production-risk counterexample. **No evidence, no target.**
 
-**2. Pick the smallest high-impact surface.** At most 3 targets. Prefer: high-severity breakage, high-frequency paths, silent failure modes, weak boundaries, issues that close a class of failure, places where multiple surfaces disagree about reality, places where code forces a hidden product decision. Avoid: broad rewrites, surface-only cleanup, speculative architecture changes, "while I'm here" edits.
+**2. Pick the smallest high-impact surface.** At most 3 targets. Prefer: high-severity breakage, high-frequency paths, silent failure modes, weak boundaries, issues that close a class of failure. When encountering places where multiple surfaces disagree about reality or code forces a hidden product decision, **expose them but do not decide them** — leave them for `vc-polarize`. Avoid: broad rewrites, surface-only cleanup, speculative architecture changes, "while I'm here" edits.
 
 **3. Fortify.** Smallest set of changes that materially increases truth. Typical: add missing scoping/auth, add missing indexes or reshape hot queries, replace swallowed exceptions with actionable handling, add smoke tests or gate enforcement, collapse duplicated contracts, delete wrappers that create a second lie, remove rotten abstractions. VetCoders axiom: **move on over backward compatibility** — cut cleanly if a local abstraction is rotten and blocks stabilization.
 
@@ -185,3 +186,4 @@ Marbles stabilizes the **truth of the problem**, not just one patch. Multiple ro
 ## Finish Condition
 
 Stop after the commit and report. Do not self-extend into the next round. Do not write instructions to your successor.
+If the implementation is stable but has a high conceptual smear (competing truths, fragmented product surface), hand off to `vc-polarize`.

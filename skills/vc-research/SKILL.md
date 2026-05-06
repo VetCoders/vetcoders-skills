@@ -201,11 +201,11 @@ Write the synthesis to `$VIBECRAFTED_HOME/artifacts/<org>/<repo>/<YYYY_MMDD>/res
 
 Operator non-negotiables:
 
-1. Synthesis NIE zawiera verbatim treści raportów — tylko cytaty file:line do nich.
-2. Reports zostają jako osobne pliki w run directory. Immutable expert testimony.
-3. Każda nietrywialna teza w synthesis MUSI mieć file:line ref do co najmniej jednego raportu.
-4. Dissent jest cytowany z file:line do obu/wszystkich stron + reasoned judgment.
-5. Synthesis jest krótki (zwykle 3-8KB). Wartość = jakość interpretacji + precyzja cytowania.
+1. The synthesis does NOT contain verbatim content from the reports — only file:line citations to them.
+2. The reports remain as separate files in the run directory. Immutable expert testimony.
+3. Every nontrivial thesis in the synthesis MUST have a file:line reference to at least one report.
+4. Dissent is cited with file:line to both/all sides + reasoned judgment.
+5. The synthesis is short (usually 3–8KB). Its value = quality of interpretation + precision of citation.
 
 Present the synthesis to the user. This is the input for `vc-workflow` Phase 3 (Implement) or standalone implementation.
 
