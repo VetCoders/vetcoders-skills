@@ -131,7 +131,7 @@ pub struct ClientEntry {
     pub selected: bool,
     /// Services defined in this client's config
     pub services: Vec<String>,
-    /// Whether the client is already rewired to use rmcp_mux
+    /// Whether the client is already rewired to use rust-mux
     pub already_rewired: bool,
     /// Whether the config file exists (client may be installed but without MCP config)
     pub config_exists: bool,

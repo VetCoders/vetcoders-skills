@@ -37,7 +37,7 @@ pub fn draw_ui(f: &mut Frame, app: &AppState) {
     };
     let title = Paragraph::new(Line::from(vec![
         Span::styled(
-            "rmcp_mux wizard",
+            "rust-mux wizard",
             Style::default().add_modifier(Modifier::BOLD),
         ),
         Span::raw(" — "),
@@ -428,7 +428,7 @@ pub fn draw_client_details(f: &mut Frame, app: &AppState, area: Rect) {
                 Span::styled("Status:   ", Style::default().fg(Color::Cyan)),
                 if client.already_rewired {
                     Span::styled(
-                        "Already rewired to rmcp_mux",
+                        "Already rewired to rust-mux",
                         Style::default().fg(Color::Green),
                     )
                 } else {
@@ -459,7 +459,7 @@ pub fn draw_client_details(f: &mut Frame, app: &AppState, area: Rect) {
         if client.selected {
             if client.config_exists {
                 lines.push(Line::from(Span::styled(
-                    "This client will be rewired to use rmcp_mux proxy.",
+                    "This client will be rewired to use rust-mux-proxy.",
                     Style::default().fg(Color::Green),
                 )));
             } else {

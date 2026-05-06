@@ -46,8 +46,8 @@ pub fn load_all_services(path: &Path) -> Result<Vec<ServiceEntry>> {
         });
 
         if !already_configured {
-            // Generate a socket path for the detected service
-            let socket_path = format!("~/mcp-sockets/{}.sock", det.name);
+            // Generate a socket path for the detected service using the v0.4.0 canonical layout.
+            let socket_path = format!("~/.rmcp-servers/rust-mux/sockets/{}.sock", det.name);
             det.config.socket = Some(socket_path);
             services.push(det);
         }
@@ -132,8 +132,8 @@ pub fn detect_running_mcp_servers() -> Vec<ServiceEntry> {
             continue;
         }
 
-        // Skip rust-mux itself and its proxy
-        if args.contains("rust-mux") || args.contains("rust-mux") {
+        // Skip rust-mux itself, its proxy, and the legacy rmcp_mux binary names
+        if args.contains("rust-mux") || args.contains("rmcp_mux") {
             continue;
         }
 

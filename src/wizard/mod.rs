@@ -1,4 +1,4 @@
-//! Interactive wizard for configuring rmcp_mux services and rewiring MCP clients.
+//! Interactive wizard for configuring rust-mux services and rewiring MCP clients.
 //!
 //! The wizard provides a four-step TUI flow:
 //! 1. Server Detection - detect and select MCP servers
