@@ -137,9 +137,9 @@ vibecrafted polarize gemini --prompt 'Choose one launch thesis after marbles'
 ```
 
 When `--task` is present, the runner must execute a fresh prism preflight before
-choosing the execution path. The runner reads `total_score` from the prism JSON,
-maps it to the Loctree prism recommendation band, and only dispatches an agent
-for `pass` and `doctrine` bands:
+choosing the execution path. The runner reads Loctree's `band_action` from the
+prism JSON, falls back to `total_score` for older payloads, and only dispatches
+an agent for `pass` and `doctrine` bands:
 
 ```bash
 loct prism --with-aicx --task '<operator task>' --task '<operator task> code truth' --task '<operator task> product truth' --json

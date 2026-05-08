@@ -1173,6 +1173,10 @@ import pathlib
 import sys
 
 data = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+band_action = str(data.get("band_action", "")).strip().lower()
+if band_action in {"abort", "memo", "pass", "doctrine"}:
+    print(band_action)
+    raise SystemExit(0)
 score = int(data.get("total_score", 0))
 if score < 5:
     print("abort")
