@@ -25,7 +25,7 @@ cargo build -p vibecrafted-shell-ffi --release
 
 echo "=== [2/5] Swift bindings ==="
 cd uniffi-bindgen && cargo run -- generate \
-    --library ../../../target/release/libvibecrafted_shell_ffi.dylib \
+    --library ../../target/release/libvibecrafted_shell_ffi.dylib \
     --language swift \
     --out-dir ../app/Vibecrafted/Bridge/
 cd ..
