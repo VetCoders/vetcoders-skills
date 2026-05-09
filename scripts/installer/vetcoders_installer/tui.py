@@ -11,6 +11,7 @@ from typing import Any
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+import shutil
 from textual.containers import VerticalScroll, Vertical
 from textual.widgets import Static, Checkbox
 
@@ -258,7 +259,7 @@ class InstallerIntroApp(App):
         lines.append(f"  ╠{'═' * inner_width}╣")
         for raw_line in display_lines:
             line = str(raw_line)
-            lines.append(f"  ║{line[-inner_width:]:<{inner_width}}║")
+            lines.append(f"  ║{line[:inner_width]:<{inner_width}}║")
         lines.append(f"  ╚{'═' * inner_width}╝")
         return "\n".join(lines)
 
