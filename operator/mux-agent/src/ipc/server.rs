@@ -229,7 +229,6 @@ mod tests {
 mod additional_tests {
     use super::*;
     use crate::ipc::command::{ClientKind, VerifyResult};
-    use tokio::sync::broadcast;
 
     #[test]
     fn test_serde_roundtrip_commands() {
