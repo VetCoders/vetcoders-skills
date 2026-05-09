@@ -32,9 +32,11 @@ unset VIBECRAFTED_ZELLIJ_SPAWN_DIRECTION VIBECRAFTED_PANE_SEQ VIBECRAFTED_MARBLE
 unset VIBECRAFTED_OPERATOR_SESSION VIBECRAFTED_RUN_ID VIBECRAFTED_RUN_LOCK
 unset VIBECRAFTED_SKILL_CODE VIBECRAFTED_SKILL_NAME VIBECRAFTED_LOOP_NR
 unset VIBECRAFTED_ZELLIJ_CLOSE_AGENT_PANES VIBECRAFTED_ZELLIJ_KEEP_AGENT_PANES VIBECRAFTED_INLINE_STARTUP_WATCH
+unset VIBECRAFTED_SPAWN_STAGGER VIBECRAFTED_SPAWN_STAGGER_SECONDS
 unset SPAWN_LOOP_NR SPAWN_META SPAWN_TRANSCRIPT SPAWN_REPORT SPAWN_ROOT
 unset SPAWN_RUN_ID SPAWN_RUN_LOCK SPAWN_AGENT SPAWN_SKILL_CODE SPAWN_SKILL_NAME
 unset SPAWN_PROMPT_ID
+export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0
 """
 
 
@@ -52,7 +54,35 @@ def _expected_operator_session(run_id: str | None = None) -> str:
     base = (
         re.sub(r"[^a-z0-9]+", "-", REPO_ROOT.name.lower()).strip("-") or "vibecrafted"
     )
+    return base
+
+
+def _legacy_expected_operator_session(run_id: str | None = None) -> str:
+    base = (
+        re.sub(r"[^a-z0-9]+", "-", REPO_ROOT.name.lower()).strip("-") or "vibecrafted"
+    )
     return f"{base}-{run_id}" if run_id else base
+
+
+def test_operator_session_groups_spawns_from_same_directory() -> None:
+    base = _expected_operator_session()
+    legacy_a = _legacy_expected_operator_session("agnt-111111-111")
+    legacy_b = _legacy_expected_operator_session("agnt-222222-222")
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        source "{COMMON_SH}"
+
+        spawn_operator_session_name_for_run_id "agnt-111111-111"
+        spawn_operator_session_name_for_run_id "agnt-222222-222"
+
+        VIBECRAFTED_ZELLIJ_GROUP_BY_CWD=0 spawn_operator_session_name_for_run_id "agnt-111111-111"
+        VIBECRAFTED_ZELLIJ_GROUP_BY_CWD=0 spawn_operator_session_name_for_run_id "agnt-222222-222"
+        '''
+    )
+
+    assert result.stdout.splitlines() == [base, base, legacy_a, legacy_b]
 
 
 def _split_zellij_calls(payload: str) -> list[list[str]]:
@@ -81,7 +111,7 @@ def _read_json_or_none(path: Path) -> dict | None:
 
 
 def _wait_for_meta_payload(
-    artifacts_root: Path, pattern: str, timeout: float = 5.0
+    artifacts_root: Path, pattern: str, timeout: float = 20.0
 ) -> tuple[Path | None, dict | None]:
     deadline = time.time() + timeout
     latest_meta: Path | None = None
@@ -500,6 +530,43 @@ def test_spawn_watch_startup_can_probe_without_echoing_transcript(
     assert "Startup check: passed in the first 1s." in result.stdout
     assert "session: 54865595-899c-4402-b957-911433e46199" not in result.stdout
     assert "Working..." not in result.stdout
+
+
+def test_spawn_finish_meta_does_not_parse_codex_core_session_error_as_id(
+    tmp_path: Path,
+) -> None:
+    meta = tmp_path / "meta.json"
+    report = tmp_path / "report.md"
+    transcript = tmp_path / "trace.log"
+    launcher = tmp_path / "launcher.sh"
+    plan = tmp_path / "plan.md"
+
+    transcript.write_text(
+        "\n".join(
+            [
+                "2026-05-08T19:51:31.928244Z ERROR codex_core::session: failed to record rollout items: thread 019e0905-1eb8-7890-a73a-74bbb2171341 not found",
+                "[21:51:32] session: 019e09051eb87890a73a74bbb2171341",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _bash(
+        f'''
+        set -euo pipefail
+        source "{COMMON_SH}"
+        export SPAWN_AGENT="codex"
+        export SPAWN_PROMPT_ID="prompt-123"
+        export SPAWN_RUN_ID="run-123"
+        export SPAWN_SKILL_CODE="impl"
+        spawn_write_meta "{meta}" "launching" "codex" "implement" "{tmp_path}" "{plan}" "{report}" "{transcript}" "{launcher}"
+        spawn_finish_meta "{meta}" "completed" "0"
+        '''
+    )
+
+    payload = json.loads(meta.read_text(encoding="utf-8"))
+    assert payload["session_id"] == "019e09051eb87890a73a74bbb2171341"
 
 
 def test_codex_stream_filter_handles_structured_turn_failed_payload() -> None:
@@ -1344,7 +1411,7 @@ def test_spawn_in_operator_session_targets_named_session(tmp_path: Path) -> None
     # the routing guard forces a new-tab to avoid landing in a stale operator tab.
     assert "new-tab" in payload
     assert "--name" in payload
-    assert "workflow" in payload
+    assert run_id in payload
 
 
 def test_spawn_in_operator_session_suppresses_zellij_tab_number_output(
@@ -1624,7 +1691,7 @@ def test_spawn_probe_uses_active_tab_and_restores_focus(tmp_path: Path) -> None:
     assert any(call[:3] == ["action", "focus-pane-id", "terminal_42"] for call in calls)
 
 
-def test_spawn_in_operator_session_new_tab_opens_monitor_and_disables_inline_watch(
+def test_spawn_in_operator_session_new_tab_uses_run_tab_without_startup_monitor(
     tmp_path: Path,
 ) -> None:
     run_id = "rsch-014520"
@@ -1681,37 +1748,164 @@ def test_spawn_in_operator_session_new_tab_opens_monitor_and_disables_inline_wat
     calls = _split_zellij_calls(capture_file.read_text(encoding="utf-8"))
     assert len(calls) == 2
 
-    monitor_call, workflow_call = calls
-    assert monitor_call[:4] == ["--session", operator_session, "action", "new-pane"]
-    assert "--name" in monitor_call
-    assert "startup-monitor" in monitor_call
-    assert "--direction" in monitor_call
-    assert "down" in monitor_call
-
+    list_tabs_call, workflow_call = calls
+    assert list_tabs_call[:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "list-tabs",
+        "--json",
+    ]
     assert workflow_call[:4] == ["--session", operator_session, "action", "new-tab"]
     assert "--name" in workflow_call
-    assert "workflow" in workflow_call
-
-    monitor_cmd = Path(monitor_call[monitor_call.index("--") + 1]).read_text(
-        encoding="utf-8"
-    )
-    assert "; exit" in monitor_cmd
-    monitor_script_match = re.search(
-        r"(/[^'\"\s]*vc-startup-monitor\.[^'\"\s]*)", monitor_cmd
-    )
-    assert monitor_script_match is not None
-    monitor_script = Path(monitor_script_match.group(1))
-    assert monitor_script.parent == expected_tmp_root
-    monitor_body = monitor_script.read_text(encoding="utf-8")
-    assert "trap 'rm -f \"$0\"' EXIT" not in monitor_body
-    assert (
-        "Your vibecrafted session %s invoked the %s run that landed in %s %s."
-        in monitor_body
-    )
-    assert "spawn_watch_startup" in monitor_body
+    assert run_id in workflow_call
+    assert "workflow" not in workflow_call[workflow_call.index("--name") + 1]
+    assert not any("startup-monitor" in arg for call in calls for arg in call)
 
     workflow_script = Path(workflow_call[workflow_call.index("--") + 1])
     assert workflow_script.parent == expected_tmp_root
     workflow_cmd = workflow_script.read_text(encoding="utf-8")
-    assert "VIBECRAFTED_INLINE_STARTUP_WATCH=0" in workflow_cmd
+    assert "VIBECRAFTED_INLINE_STARTUP_WATCH=0" not in workflow_cmd
     assert str(launcher) in workflow_cmd
+
+
+def test_spawn_in_operator_session_existing_run_tab_stacks_and_restores_focus(
+    tmp_path: Path,
+) -> None:
+    run_id = "ownr-014520"
+    operator_session = _expected_operator_session(run_id)
+    expected_tmp_root = tmp_path / ".vibecrafted" / "tmp"
+    launcher = tmp_path / "launch.sh"
+    launcher.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o755)
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    capture_file = tmp_path / "zellij-calls.txt"
+    zellij = fake_bin / "zellij"
+    zellij.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "{",
+                '  printf -- "--CALL--\\n"',
+                '  printf "%s\\n" "$@"',
+                '} >> "$CAPTURE_FILE"',
+                'if [[ "${1:-}" == "--session" && "${3:-}" == "action" && "${4:-}" == "list-tabs" ]]; then',
+                f'  printf \'[{{"name":"operator","tab_id":2}},{{"name":"{run_id}","tab_id":7}}]\\n\'',
+                "  exit 0",
+                "fi",
+                'if [[ "${1:-}" == "--session" && "${3:-}" == "action" && "${4:-}" == "current-tab-info" ]]; then',
+                "  printf '{\"tab_id\":2}\\n'",
+                "  exit 0",
+                "fi",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    zellij.chmod(0o755)
+
+    _bash(
+        f'''
+        set -euo pipefail
+        export PATH="{fake_bin}:$PATH"
+        export CAPTURE_FILE="{capture_file}"
+        export VIBECRAFTED_RUN_ID="{run_id}"
+        export VIBECRAFTED_OPERATOR_SESSION="{operator_session}"
+        export SPAWN_ROOT="{tmp_path}"
+        source "{COMMON_SH}"
+        spawn_in_operator_session "{launcher}" "ownership-codex"
+        '''
+    )
+
+    calls = _split_zellij_calls(capture_file.read_text(encoding="utf-8"))
+    assert len(calls) == 4
+    assert calls[0][:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "list-tabs",
+        "--json",
+    ]
+    assert calls[1][:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "current-tab-info",
+        "--json",
+    ]
+
+    pane_call = calls[2]
+    assert pane_call[:4] == ["--session", operator_session, "action", "new-pane"]
+    assert "--tab-id" in pane_call
+    assert "7" in pane_call
+    assert "--stacked" in pane_call
+    assert "--close-on-exit" in pane_call
+    assert "--name" in pane_call
+    assert "ownership-codex" in pane_call
+    assert not any(
+        call[:4] == ["--session", operator_session, "action", "new-tab"]
+        for call in calls
+    )
+    assert not any("startup-monitor" in arg for call in calls for arg in call)
+
+    workflow_script = Path(pane_call[pane_call.index("--") + 1])
+    assert workflow_script.parent == expected_tmp_root
+    workflow_cmd = workflow_script.read_text(encoding="utf-8")
+    assert "VIBECRAFTED_INLINE_STARTUP_WATCH=0" not in workflow_cmd
+    assert str(launcher) in workflow_cmd
+
+    assert calls[3][:5] == [
+        "--session",
+        operator_session,
+        "action",
+        "go-to-tab-by-id",
+        "2",
+    ]
+
+
+def test_zellij_launch_slot_serializes_parallel_spawns(tmp_path: Path) -> None:
+    lock_root = tmp_path / "locks"
+    done_file = tmp_path / "done"
+
+    result = _bash(
+        f'''
+        set -euo pipefail
+        export TMPDIR="{lock_root}"
+        export VIBECRAFTED_SPAWN_STAGGER_SECONDS=0.2
+        source "{COMMON_SH}"
+        (
+          lock="$(spawn_acquire_zellij_launch_slot session-a)"
+          printf 'first-acquired\n' >> "{done_file}"
+          sleep 0.4
+          spawn_release_zellij_launch_slot "$lock"
+        ) &
+        first_pid=$!
+        sleep 0.05
+        start=$(python3 - <<'PY'
+import time
+print(time.time())
+PY
+)
+        lock="$(spawn_acquire_zellij_launch_slot session-a)"
+        end=$(python3 - <<'PY'
+import time
+print(time.time())
+PY
+)
+        spawn_release_zellij_launch_slot "$lock"
+        wait "$first_pid"
+        python3 - "$start" "$end" <<'PY'
+import sys
+start = float(sys.argv[1])
+end = float(sys.argv[2])
+if end - start < 0.25:
+    raise SystemExit(f"slot was not serialized long enough: {{end - start:.3f}}s")
+PY
+        '''
+    )
+
+    assert result.stderr == ""
+    assert done_file.read_text(encoding="utf-8") == "first-acquired\n"

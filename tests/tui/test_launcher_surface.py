@@ -32,8 +32,8 @@ def test_compact_help_uses_release_engine_contract(tmp_path: Path) -> None:
 
     assert "Release engine for AI-developed software." in output
     assert "Install locally. Work from evidence." in output
-    assert "Skill inventory (18 live workflows):" in output
-    assert "Core: init · scaffold · workflow · implement" in output
+    assert "Skill inventory (19 live workflows):" in output
+    assert "marbles · polarize · dou" in output
     assert "For daily tasks, use implement or justdo as convenient aliases." in output
     assert "compatibility alias" not in output
     assert "leg" + "acy alias" not in output

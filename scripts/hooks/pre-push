@@ -57,6 +57,17 @@ while IFS= read -r file; do
     esac
 done <<< "$ALL_FILES"
 
+echo "▸ zellij pane targeting guard"
+leaks="$(
+    grep -nE 'zellij[^|]*action new-pane' skills/vc-agents/scripts/lib/*.sh 2>/dev/null \
+        | grep -vE 'tab-id|tab_id|--floating|# OPERATOR_TAB_OK' \
+        || true
+)"
+if [[ -n "$leaks" ]]; then
+    printf 'pre-push: zellij new-pane without --tab-id / --floating / OPERATOR_TAB_OK marker:\n%s\n' "$leaks" >&2
+    exit 1
+fi
+
 if [ ${#SH_FILES[@]} -gt 0 ]; then
     echo "▸ shellcheck (full)"
     python3 scripts/check_shell.py --require-shellcheck "${SH_FILES[@]}"

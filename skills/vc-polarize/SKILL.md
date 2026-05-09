@@ -1,64 +1,40 @@
 ---
 name: vc-polarize
-version: 0.1.0-experimental
+version: 1.0.0
 description: >
-  Experimental post-marbles concept and product truth polarization skill.
+  Post-marbles concept and product truth polarization skill.
   Use when a concept or product surface has high prism score: the implementation
   may work, but its truth is smeared across runtime paths, tests, docs,
   artifacts, public promises, or operator memory. Polarize chooses one axis,
   rejects competing truths, aligns surfaces, and emits DoU/release handoff.
-  This skill is not operationally real until Loctree exposes a stable CLI/MCP
-  contract for prism/code-smear analysis.
   Trigger phrases: "polarize", "vc-polarize", "wyostrz", "one sharp truth",
   "code smear", "prism score", "after marbles", "choose one axis".
-experimental: true
 requires:
   - stable loctree CLI/MCP prism support
-  - stable loct context task-comparison output
-  - context-corpus sidecar schema for stale-vs-live truth
 ---
 
 # vc-polarize — One Sharp Truth After Marbles
 
-> Experimental doctrine.
-> Do not present this as a real workflow until `loctree` has a stable prism
-> score / code-smear CLI and MCP surface.
+`vc-polarize` is a canonical workflow running on top of Loctree's `loct prism` code-smear and context-pack analysis.
 
-## Reality Boundary
-
-`vc-polarize` is currently a scaffolded skill, not a finished runtime workflow.
-
-It becomes real only when Loctree can reliably produce and compare context
-packs for one concept across task framings, for example:
-
-```bash
-loct context --with-aicx --task "auth"
-loct context --with-aicx --task "auth core"
-loct context --with-aicx --task "auth core portal"
-```
-
-The missing stable substrate is one of:
+Use Loctree to produce and compare context packs for one concept across task framings:
 
 ```bash
 loct prism --task "auth" --task "auth core" --task "auth core portal"
-loct context --compare-tasks "auth" "auth core" "auth core portal"
 ```
-
-Until that exists, this skill may create plans, corpus entries, and decision
-artifacts. It must not claim automated prism scoring or workflow completeness.
 
 ## Purpose
 
 `vc-polarize` runs after `vc-marbles` or after a `loct context` prism pack
 shows high conceptual smear.
 
-Marbles asks:
+`vc-marbles` establishes **Code Truth** (P0=0, P1=0, P2=0) by asking:
 
-> What is still false, duplicated, fragile, or drifting in the implementation?
+> What is still technically false, fragile, or untested in the implementation?
 
-Polarize asks:
+`vc-polarize` establishes **Product Truth** by asking:
 
-> Which one concept or product truth should now become authoritative?
+> Which one concept or product boundary should now become authoritative?
 
 The job is to collapse ambiguity into an explicit contract:
 
@@ -145,21 +121,35 @@ scaffold -> init -> workflow -> implement -> followup -> marbles -> [POLARIZE] -
 
 ## Operator Entry
 
-Future operator entry, once runtime support exists:
+### Living Tree / Worktree Rule
+
+This workflow runs in the operator's current checkout and current branch. Do not create, switch to, or move execution into a git worktree unless the operator explicitly asks for a worktree in this prompt. Generic words like "isolate", "parallel", or "clean branch" are not enough. Re-read files before editing, adapt to concurrent changes, and report a substrate failure if the current tree is too poisoned to continue safely.
+
+See [Living Tree Rule](../LIVING_TREE_RULE.md).
+
+Launch through the command deck:
 
 ```bash
-vibecrafted polarize codex --prompt 'Polarize the marbles operator surface'
+vibecrafted polarize codex --task 'marbles versus polarize skills: polarize them'
+vc-polarize codex --task 'installer public contract'
 vc-polarize claude --file /path/to/prism-pack.md
 vibecrafted polarize gemini --prompt 'Choose one launch thesis after marbles'
 ```
 
-Experimental/manual entry for now:
+When `--task` is present, the runner must execute a fresh prism preflight before
+choosing the execution path. The runner reads Loctree's `band_action` from the
+prism JSON, falls back to `total_score` for older payloads, and only dispatches
+an agent for `pass` and `doctrine` bands:
 
 ```bash
-loct context --with-aicx --task "marbles" > /tmp/polarize/01-marbles.context.md
-loct context --with-aicx --task "marbles operator" > /tmp/polarize/02-marbles-operator.context.md
-loct context --with-aicx --task "marbles operator zellij" > /tmp/polarize/03-marbles-operator-zellij.context.md
+loct prism --with-aicx --task '<operator task>' --task '<operator task> code truth' --task '<operator task> product truth' --json
 ```
+
+`--with-aicx` is the default prism mode. Operators may pass `--no-aicx` only
+when they explicitly need a repo-only prism pack.
+
+Operators may pass `--no-context-corpus` to skip optional retention pack
+emission in environments without AICX extraction.
 
 No `--count`. No convergence loop. This is not another marbles engine.
 
@@ -183,11 +173,11 @@ Not allowed:
 - using stale context packs as current code truth
 - scoring file count instead of authority drift
 
-## Prism Score V0
+## Prism Score
 
-Until Loctree provides a stable scorer, use this as manual rubric.
+Use the stable Loctree scorer to evaluate prism score.
 
-Score each axis from `0` to `3`, total `0..15`.
+Score each axis from `0` to `3`, total `0..15`:
 
 | Axis                | Meaning                                                                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -199,10 +189,10 @@ Score each axis from `0` to `3`, total `0..15`.
 
 Bands:
 
-- `0..4`: no corpus entry.
-- `5..8`: local note or Loctree tag.
-- `9..12`: context-corpus entry.
-- `13..15`: canonical doctrine entry plus regression contract.
+- `0..4`: `abort` — stop before agent dispatch and show the prism JSON path.
+- `5..8`: `memo` — emit a local memo and thin context-corpus example only.
+- `9..12`: `pass` — run the full polarize pass with the prism payload injected.
+- `13..15`: `doctrine` — run the full doctrine pass with a regression-contract expectation.
 
 ## Outputs
 
@@ -246,7 +236,7 @@ normal injected report and include these sections inside it.
    surfaces, and command help.
 
 3. **Score**
-   Use Prism Score V0 or the stable Loctree scorer once it exists.
+   Use the stable Loctree scorer to evaluate prism score.
 
 4. **Choose**
    Pick one axis to make authoritative. Reject competing axes explicitly.
@@ -268,9 +258,18 @@ normal injected report and include these sections inside it.
 
 ## Context Corpus Contract
 
-Prism context packs should be ingested as immutable examples with sidecars.
-Do not rewrite raw Markdown packs and do not mix them into ordinary AICX
-conversation chunks.
+The runner is the producer for prism context-corpus packs. For `pass` and
+`doctrine`, it captures the dispatched agent's `session: <uuid>` stdout line and
+wraps the canonical extractor:
+
+```bash
+aicx extract --agent <agent> --session <uuid> --output <raw-path>
+```
+
+Do not regenerate content from scratch, rewrite raw Markdown packs, or mix them
+into ordinary AICX conversation chunks. For `memo`, the runner writes only a
+thin local memo and sidecar. For `abort`, it writes no context-corpus pack
+because no useful truth was produced.
 
 Suggested retention path:
 
@@ -287,24 +286,23 @@ Sidecars must mark stale-vs-live truth:
 {
   "schema_version": "context_corpus.v1",
   "artifact_family": "loct-context-pack",
-  "external_batch": "vibecrafted-prism-context-20260502",
   "truth_status": {
     "role": "example",
     "runtime_authoritative": false,
-    "stale_against_current_head": true,
+    "stale_against_current_head": false,
     "current_head_when_ingested": "ded1e0b"
   },
   "learning_use": {
-    "allowed": [
-      "format_examples",
-      "section_order",
-      "authority_labeling",
-      "retrieval_tests"
-    ],
+    "allowed": ["format_examples", "section_order", "keyword_index"],
     "forbidden": ["current_code_truth", "implementation_claims", "gate_status"]
-  }
+  },
+  "keywords": ["installer", "contract"],
+  "band": "pass",
+  "total_score": 11
 }
 ```
+
+Memo-band sidecars restrict `learning_use.allowed` to `["format_examples"]`.
 
 Runtime truth must always come from fresh `loct context`, fresh repo reads, and
 relevant gates.
@@ -344,8 +342,8 @@ python3 -m json.tool <sidecar>.json
 
 ## Failure Modes
 
-- **No prism evidence**: ask for a `loct context --with-aicx --task ...` pack.
-- **No stable Loctree scorer**: remain experimental; do not claim runtime automation.
+- **No prism evidence**: ask for a `loct prism --task ...` pack.
+- **Prism band too low**: abort before agent dispatch and print `vc-polarize aborted: prism score <n>/15 is below threshold. Inspect <path-to-prism.json>`.
 - **Runtime cannot support desired promise**: send back to `vc-workflow` or `vc-marbles`.
 - **Two viable axes remain**: emit decision memo; do not average them.
 - **Public surfaces contradict release truth**: block release handoff.
@@ -360,11 +358,3 @@ python3 -m json.tool <sidecar>.json
 - Treating prism score as CI failure.
 - Treating old context packs as live code truth.
 - Hiding product choice behind technical cleanup.
-
-## First Real Implementation Path
-
-1. Stabilize `loctree` CLI/MCP support for prism/code-smear comparison.
-2. Ingest known context packs into AICX context corpus with sidecars.
-3. Promote this experimental skill to `skills/vc-polarize/SKILL.md`.
-4. Add generic command-deck wiring.
-5. Run the first real polarization pass on `marbles lifecycle` or `release surface`.

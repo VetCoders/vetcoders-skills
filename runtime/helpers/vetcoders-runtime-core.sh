@@ -220,7 +220,7 @@ _vetcoders_marbles_emit_probe() {
     else
       printf '\a[marbles %s] %s\n' "$marbles_run_id" "$body" >&2
     fi
-  ) &
+  ) </dev/null >/dev/null 2>&1 &
   disown 2>/dev/null || true
 }
 
@@ -378,6 +378,7 @@ _vetcoders_skill_prefix() {
     justdo) printf 'just\n' ;;
     marbles) printf 'marb\n' ;;
     partner) printf 'prtn\n' ;;
+    polarize) printf 'polr\n' ;;
     plan) printf 'plan\n' ;;
     prune) printf 'prun\n' ;;
     release) printf 'rels\n' ;;
