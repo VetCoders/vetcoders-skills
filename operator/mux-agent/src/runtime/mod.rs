@@ -185,6 +185,7 @@ pub async fn run_mux_internal_with_status(
     let socket_path = params.socket.clone();
     let cmd = params.cmd.clone();
     let args = params.args.clone();
+    let cwd = params.cwd.clone();
     let env = params.env.clone();
     let max_clients = params.max_clients;
     let tray_enabled = params.tray_enabled;
@@ -214,6 +215,8 @@ pub async fn run_mux_internal_with_status(
         .with_context(|| format!("failed to bind socket {}", socket_path.display()))?;
     info!("rmcp_mux listening on {}", socket_path.display());
 
+    let (event_tx, _) = tokio::sync::broadcast::channel(100);
+
     let state = Arc::new(Mutex::new(MuxState::new(MuxStateConfig {
         max_active_clients: max_clients,
         service_name: service_name.as_ref().clone(),
@@ -224,7 +227,18 @@ pub async fn run_mux_internal_with_status(
         max_restarts,
         queue_depth: 0,
         child_pid: None,
+        event_tx: Some(event_tx.clone()),
     })));
+
+    let ipc_ctx = Arc::new(crate::ipc::server::MuxControlContext::new(
+        state.clone(),
+        Some(event_tx),
+    ));
+    tokio::spawn(async move {
+        if let Err(e) = crate::ipc::server::run_server(ipc_ctx).await {
+            error!("IPC server error: {}", e);
+        }
+    });
 
     // Initialize heartbeat metrics with enabled state
     {
@@ -310,6 +324,7 @@ pub async fn run_mux_internal_with_status(
             ServerManagerConfig {
                 cmd: cmd.clone(),
                 args: args.clone(),
+                cwd: cwd.clone(),
                 env: env.clone().unwrap_or_default(),
                 lazy_start,
                 restart_backoff,

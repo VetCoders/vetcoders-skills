@@ -427,21 +427,30 @@ def _doctor_action_items(findings: Sequence["DoctorFinding"]) -> List[str]:
         for finding in issues
     ):
         actions.append(
-            "Required foundations are missing. Run `make foundations` or install them manually, then run `vibecrafted doctor` again."
+            "Required foundations are missing. Run `vibecrafted update` to "
+            "re-fetch the toolchain (or "
+            "`bash ~/.vibecrafted/tools/vibecrafted-current/scripts/install-foundations.sh` "
+            "directly), then re-run `vibecrafted doctor`. "
+            "If you cloned the repo, `make foundations` works too."
         )
     if any(
         finding.component.startswith(("runtime:", "symlink:", "stale-copy:"))
         for finding in issues
     ):
         actions.append(
-            "Runtime links need repair. Re-run `make install` to rebuild the shared skill views and remove stale copies."
+            "Runtime links need repair. Re-run `vibecrafted update` (or "
+            "`make install` from a repo checkout) to rebuild the shared "
+            "skill views and remove stale copies."
         )
     if any(
         finding.component in ("launcher-wrappers", "launcher-runtime")
         for finding in issues
     ):
         actions.append(
-            "Launcher commands need repair. Run `vibecrafted doctor --fix-launchers` for an in-place repair, or re-run `make install` to rebuild the full launcher surface."
+            "Launcher commands need repair. Run "
+            "`vibecrafted doctor --fix-launchers` for an in-place repair, "
+            "or `vibecrafted update` (or `make install` from a repo "
+            "checkout) to rebuild the full launcher surface."
         )
     if any(
         finding.component.startswith("shell-helper")
@@ -1524,6 +1533,7 @@ SKILL_WRAPPER_NAMES = [
     "marbles",
     "ownership",
     "partner",
+    "polarize",
     "prune",
     "release",
     "research",

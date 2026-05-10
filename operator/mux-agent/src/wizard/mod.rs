@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::{Result, anyhow};
-use clap::Args;
+use clap::{Args, ValueEnum};
 use crossterm::event::{self, Event, KeyEventKind};
 use crossterm::execute;
 use crossterm::terminal::{
@@ -37,6 +37,9 @@ mod ui;
 use keys::handle_key;
 use persist::{
     run_danger_auto_configure, run_per_client_generate, run_unified_generate, start_tray_daemon,
+};
+use services::{
+    append_default_services, build_services_from_scans, check_health, enrich_running_state,
 };
 use types::{
     AppState, CustomPathInput, PendingAction, SourceEntry, SourceStatus, Strategy, SummaryAction,
@@ -80,10 +83,30 @@ pub struct WizardArgs {
     /// Do not write files; just preview.
     #[arg(long, default_value_t = false)]
     pub dry_run: bool,
+    /// Non-interactive strategy for `--dry-run` previews.
+    #[arg(long, value_enum)]
+    pub strategy: Option<WizardStrategyArg>,
     /// Pre-load extra MCP client config files. Each path is added as a
     /// custom source on STEP 1 and selected by default.
     #[arg(long = "import-config")]
     pub import_configs: Vec<PathBuf>,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum WizardStrategyArg {
+    Unified,
+    PerClient,
+    AutoRewire,
+}
+
+impl From<WizardStrategyArg> for Strategy {
+    fn from(value: WizardStrategyArg) -> Self {
+        match value {
+            WizardStrategyArg::Unified => Strategy::Unified,
+            WizardStrategyArg::PerClient => Strategy::PerClient,
+            WizardStrategyArg::AutoRewire => Strategy::AutoRewire,
+        }
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -91,16 +114,27 @@ pub struct WizardArgs {
 // ─────────────────────────────────────────────────────────────────────────────
 
 pub async fn run_wizard(args: WizardArgs) -> Result<()> {
-    if !stdout().is_terminal() {
-        return Err(anyhow!(
-            "wizard requires an interactive TTY; use the CLI subcommands (scan / rewire / health) for non-interactive mode"
-        ));
-    }
-
     let config_path = args
         .config
         .clone()
         .unwrap_or_else(|| expand_path("~/.codex/mcp-mux.toml"));
+    let requested_strategy = args
+        .strategy
+        .map(Strategy::from)
+        .unwrap_or(Strategy::Unified);
+
+    if !stdout().is_terminal() {
+        if args.dry_run {
+            return run_noninteractive_dry_run(
+                &args.import_configs,
+                config_path,
+                requested_strategy,
+            );
+        }
+        return Err(anyhow!(
+            "wizard requires an interactive TTY; use the CLI subcommands (scan / rewire / health) for non-interactive mode"
+        ));
+    }
 
     let sources = build_initial_sources(&args.import_configs);
 
@@ -112,7 +146,7 @@ pub async fn run_wizard(args: WizardArgs) -> Result<()> {
         custom_path: CustomPathInput::default(),
         services: Vec::new(),
         selected_service: 0,
-        strategy: Strategy::Unified,
+        strategy: requested_strategy,
         summary_action: SummaryAction::Confirm,
         tray_choice: TrayChoice::No,
         message: String::new(),
@@ -124,6 +158,45 @@ pub async fn run_wizard(args: WizardArgs) -> Result<()> {
 
     run_tui(&mut app)?;
 
+    Ok(())
+}
+
+fn run_noninteractive_dry_run(
+    imports: &[PathBuf],
+    config_path: PathBuf,
+    strategy: Strategy,
+) -> Result<()> {
+    let sources = build_initial_sources(imports);
+    let services = build_services_for_selected_sources(&sources);
+    let app = AppState {
+        wizard_step: WizardStep::SummaryConfirm,
+        config_path,
+        sources,
+        selected_source: 0,
+        custom_path: CustomPathInput::default(),
+        services,
+        selected_service: 0,
+        strategy,
+        summary_action: SummaryAction::Confirm,
+        tray_choice: TrayChoice::No,
+        message: String::new(),
+        dry_run: true,
+        pending_action: None,
+        strategy_result: None,
+    };
+
+    println!("Selected services:");
+    for service in app.services.iter().filter(|service| service.selected) {
+        println!("  - {} [{}]", service.name, service.source.short_label());
+    }
+    println!();
+
+    let summary = match app.strategy {
+        Strategy::Unified => run_unified_generate(&app)?,
+        Strategy::PerClient => run_per_client_generate(&app)?,
+        Strategy::AutoRewire => run_danger_auto_configure(&app)?,
+    };
+    println!("{summary}");
     Ok(())
 }
 
@@ -153,6 +226,22 @@ fn build_initial_sources(imports: &[PathBuf]) -> Vec<SourceEntry> {
         });
     }
     out
+}
+
+fn build_services_for_selected_sources(sources: &[SourceEntry]) -> Vec<types::ServiceEntry> {
+    let scans: Vec<_> = sources
+        .iter()
+        .filter(|s| s.selected && matches!(s.status, SourceStatus::Ok { .. }))
+        .filter_map(|s| crate::scan::scan_host_file(&s.host_file).ok())
+        .collect();
+
+    let mut services = build_services_from_scans(&scans);
+    append_default_services(&mut services);
+    enrich_running_state(&mut services);
+    for svc in &mut services {
+        svc.health = check_health(&svc.config);
+    }
+    services
 }
 
 fn classify_source(host: &crate::scan::HostFile) -> SourceStatus {

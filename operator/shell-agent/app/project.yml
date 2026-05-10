@@ -1,0 +1,49 @@
+name: Vibecrafted
+options:
+  bundleIdPrefix: io.vetcoders
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    SWIFT_VERSION: "6.0"
+
+targets:
+  Vibecrafted:
+    type: application
+    platform: macOS
+    sources:
+      - path: Vibecrafted
+        excludes:
+          - "Bridge/shell_agent_ffiFFI.h"
+          - "Bridge/shell_agent_ffiFFI.modulemap"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.vetcoders.vibecrafted
+        INFOPLIST_GENERATION_MODE: GeneratedFile
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        INFOPLIST_KEY_LSUIElement: false
+        INFOPLIST_KEY_CFBundleExecutable: Vibecrafted
+        INFOPLIST_KEY_CFBundleName: Vibecrafted
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        SWIFT_OBJC_BRIDGING_HEADER: "Vibecrafted/Bridge/shell_agent_ffiFFI.h"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vibecrafted/Bridge"
+        LIBRARY_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/../../target/release"
+    dependencies:
+      - framework: ../../target/release/libshell_agent_ffi.dylib
+        embed: true
+    postBuildScripts:
+      - script: |
+          bash $SRCROOT/../scripts/build-rust-binaries.sh || true
+        name: Build Rust binaries
+        shell: /bin/bash

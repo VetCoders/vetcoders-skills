@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 use anyhow::{Context, Result, anyhow};
 use clap::Args;
@@ -182,6 +183,7 @@ pub struct HostService {
     pub name: String,
     pub command: String,
     pub args: Vec<String>,
+    pub cwd: Option<String>,
     pub socket: Option<String>,
     pub env: Option<HashMap<String, String>>,
     /// Optional `enabled` flag if the client's schema exposes one.
@@ -403,6 +405,7 @@ pub fn host_file_from_custom_path(path: &Path) -> HostFile {
 struct RawServer {
     command: Option<String>,
     args: Option<Vec<String>>,
+    cwd: Option<String>,
     socket: Option<String>,
     env: Option<HashMap<String, String>>,
     enabled: Option<bool>,
@@ -477,6 +480,7 @@ fn parse_json_servers_under_key(
             name: name.clone(),
             command,
             args: raw.args.unwrap_or_default(),
+            cwd: raw.cwd,
             socket: raw.socket,
             env: raw.env,
             enabled: raw.enabled,
@@ -509,6 +513,7 @@ fn parse_toml_mcp_servers(data: &str, path: &Path) -> Result<Vec<HostService>> {
             name: name.clone(),
             command,
             args: parsed.args.unwrap_or_default(),
+            cwd: parsed.cwd,
             socket: parsed.socket,
             env: parsed.env,
             enabled: parsed.enabled,
@@ -530,6 +535,84 @@ pub fn scan_hosts() -> Vec<ScanResult> {
             }
         })
         .collect()
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum DiscoveredMcpSource {
+    VibecraftedMcpDevPath,
+    VibecraftedMcpPipInstall,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct DiscoveredMcp {
+    pub name: String,
+    pub source: DiscoveredMcpSource,
+    pub command: String,
+    pub args: Vec<String>,
+    pub cwd: Option<PathBuf>,
+}
+
+impl DiscoveredMcp {
+    pub fn into_host_service(self) -> HostService {
+        HostService {
+            name: self.name,
+            command: self.command,
+            args: self.args,
+            cwd: self.cwd.map(|path| path.to_string_lossy().to_string()),
+            socket: None,
+            env: None,
+            enabled: None,
+        }
+    }
+}
+
+pub fn discover_vibecrafted_mcp() -> Option<DiscoveredMcp> {
+    discover_vibecrafted_mcp_with(
+        &expand_path("~/Libraxis/vibecrafted/vibecrafted-mcp"),
+        vibecrafted_mcp_pip_show,
+    )
+}
+
+pub fn discover_vibecrafted_mcp_with(
+    search_root: &Path,
+    pip_installed: impl Fn() -> bool,
+) -> Option<DiscoveredMcp> {
+    let pyproject = search_root.join("pyproject.toml");
+    if let Ok(raw) = fs::read_to_string(&pyproject)
+        && let Ok(toml::Value::Table(root)) = toml::from_str::<toml::Value>(&raw)
+        && root
+            .get("project")
+            .and_then(toml::Value::as_table)
+            .and_then(|project| project.get("name"))
+            .and_then(toml::Value::as_str)
+            == Some("vibecrafted-mcp")
+    {
+        return Some(DiscoveredMcp {
+            name: "vibecrafted-mcp".to_string(),
+            source: DiscoveredMcpSource::VibecraftedMcpDevPath,
+            command: "python".to_string(),
+            args: vec!["-m".to_string(), "vibecrafted_mcp".to_string()],
+            cwd: Some(search_root.to_path_buf()),
+        });
+    }
+
+    pip_installed().then(|| DiscoveredMcp {
+        name: "vibecrafted-mcp".to_string(),
+        source: DiscoveredMcpSource::VibecraftedMcpPipInstall,
+        command: "vibecrafted-mcp".to_string(),
+        args: Vec::new(),
+        cwd: None,
+    })
+}
+
+fn vibecrafted_mcp_pip_show() -> bool {
+    Command::new("pip")
+        .args(["show", "vibecrafted-mcp"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success())
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -611,6 +694,7 @@ pub fn merge_services(scans: &[ScanResult]) -> MergeOutcome {
 fn services_equivalent(a: &HostService, b: &HostService) -> bool {
     a.command == b.command
         && a.args == b.args
+        && a.cwd == b.cwd
         && env_equal(a.env.as_ref(), b.env.as_ref())
         && a.socket == b.socket
 }
@@ -664,6 +748,7 @@ pub fn build_manifest(scans: &[ScanResult], socket_dir: &Path) -> Config {
                 socket: Some(socket),
                 cmd: Some(svc.command.clone()),
                 args: Some(svc.args.clone()),
+                cwd: svc.cwd.clone(),
                 max_active_clients: Some(5),
                 tray: Some(false),
                 service_name: Some(svc.name.clone()),
@@ -714,6 +799,9 @@ pub fn generate_snippet(
             "args".to_string(),
             serde_json::Value::Array(args.into_iter().map(serde_json::Value::String).collect()),
         );
+        if let Some(cwd) = &svc.cwd {
+            server.insert("cwd".to_string(), serde_json::Value::String(cwd.clone()));
+        }
         if let Some(env) = &svc.env {
             server.insert(
                 "env".to_string(),
@@ -1096,6 +1184,59 @@ mod tests {
     }
 
     #[test]
+    fn discover_vibecrafted_mcp_dev_path_found() {
+        let dir = tempdir().expect("tempdir");
+        write_text(
+            &dir.path().join("pyproject.toml"),
+            r#"
+            [project]
+            name = "vibecrafted-mcp"
+            "#,
+        );
+
+        let discovered = discover_vibecrafted_mcp_with(dir.path(), || false)
+            .expect("dev-path package should be discovered");
+        assert_eq!(discovered.name, "vibecrafted-mcp");
+        assert_eq!(
+            discovered.source,
+            DiscoveredMcpSource::VibecraftedMcpDevPath
+        );
+        assert_eq!(discovered.command, "python");
+        assert_eq!(discovered.args, vec!["-m", "vibecrafted_mcp"]);
+        assert_eq!(discovered.cwd.as_deref(), Some(dir.path()));
+    }
+
+    #[test]
+    fn discover_vibecrafted_mcp_pip_show_found() {
+        let dir = tempdir().expect("tempdir");
+
+        let discovered = discover_vibecrafted_mcp_with(dir.path(), || true)
+            .expect("pip-installed package should be discovered");
+        assert_eq!(discovered.name, "vibecrafted-mcp");
+        assert_eq!(
+            discovered.source,
+            DiscoveredMcpSource::VibecraftedMcpPipInstall
+        );
+        assert_eq!(discovered.command, "vibecrafted-mcp");
+        assert!(discovered.args.is_empty());
+        assert!(discovered.cwd.is_none());
+    }
+
+    #[test]
+    fn discover_vibecrafted_mcp_returns_none_when_neither() {
+        let dir = tempdir().expect("tempdir");
+        write_text(
+            &dir.path().join("pyproject.toml"),
+            r#"
+            [project]
+            name = "not-vibecrafted-mcp"
+            "#,
+        );
+
+        assert!(discover_vibecrafted_mcp_with(dir.path(), || false).is_none());
+    }
+
+    #[test]
     fn parse_json_mcpservers_for_claude() {
         let dir = tempdir().expect("tempdir");
         let path = dir.path().join("claude.json");
@@ -1203,6 +1344,7 @@ mod tests {
             name: "memory".into(),
             command: "npx".into(),
             args: vec!["@modelcontextprotocol/server-memory".into()],
+            cwd: None,
             socket: None,
             env: None,
             enabled: None,
@@ -1244,6 +1386,7 @@ mod tests {
                     name: "memory".into(),
                     command: "npx".into(),
                     args: vec!["@modelcontextprotocol/server-memory".into()],
+                    cwd: None,
                     socket: None,
                     env: None,
                     enabled: None,
@@ -1255,6 +1398,7 @@ mod tests {
                     name: "memory".into(),
                     command: "uv".into(),
                     args: vec!["run".into(), "memory-server".into()],
+                    cwd: None,
                     socket: None,
                     env: None,
                     enabled: None,
@@ -1281,6 +1425,7 @@ mod tests {
                 name: "memory".into(),
                 command: "npx".into(),
                 args: vec!["@mcp/server-memory".into()],
+                cwd: None,
                 socket: None,
                 env: None,
                 enabled: None,
@@ -1309,6 +1454,7 @@ mod tests {
                 name: "svc".into(),
                 command: "npx".into(),
                 args: vec!["x".into()],
+                cwd: None,
                 socket: None,
                 env: None,
                 enabled: None,

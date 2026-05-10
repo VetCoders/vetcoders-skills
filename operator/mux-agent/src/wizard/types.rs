@@ -100,6 +100,11 @@ pub enum ServiceSource {
     /// Discovered inside a known MCP client config file (well-known clients
     /// or `HostKind::Custom` for user-provided paths).
     Client { kind: HostKind, path: PathBuf },
+    /// Built-in rust-mux default discovered outside a client config.
+    Default {
+        label: String,
+        path: Option<PathBuf>,
+    },
     /// Detected as a running process but not present in any scanned config.
     DetectedRunning,
 }
@@ -108,6 +113,7 @@ impl ServiceSource {
     pub fn short_label(&self) -> String {
         match self {
             ServiceSource::Client { kind, .. } => kind.as_label().to_string(),
+            ServiceSource::Default { .. } => "default".into(),
             ServiceSource::DetectedRunning => "running".into(),
         }
     }

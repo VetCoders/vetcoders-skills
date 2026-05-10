@@ -511,6 +511,70 @@ install_from_cargo() {
 # aicx installer
 # ---------------------------------------------------------------------------
 
+# aicx pulls llama-cpp-sys-2 which links against llama.cpp via bindgen+cmake.
+# Detect Linux toolchain prereqs early so we don't burn 5+ minutes of cargo
+# compile only to fail on missing libclang. Returns 0 if everything needed
+# for an aicx cargo build is present (or we're on macOS where Apple's
+# toolchain ships them), 1 otherwise.
+aicx_cargo_prereqs_ok() {
+  local os
+  os="$(detect_os)"
+  # macOS + xcode CLT ship clang/libclang/cmake — assume OK.
+  [[ "$os" != "linux" ]] && return 0
+
+  local missing=()
+
+  # libclang: bindgen needs libclang.so. Look in common locations + LIBCLANG_PATH.
+  local found_libclang=0
+  if [[ -n "${LIBCLANG_PATH:-}" && -d "$LIBCLANG_PATH" ]]; then
+    found_libclang=1
+  else
+    local candidate
+    for candidate in \
+      /usr/lib/llvm-*/lib/libclang.so* \
+      /usr/lib/x86_64-linux-gnu/libclang*.so* \
+      /usr/lib/aarch64-linux-gnu/libclang*.so* \
+      /usr/lib64/libclang*.so* \
+      /usr/lib/libclang*.so*; do
+      [[ -e "$candidate" ]] && { found_libclang=1; break; }
+    done
+  fi
+  (( found_libclang )) || missing+=("libclang (libclang-dev / clang-devel)")
+
+  # cmake: llama.cpp build script invokes cmake.
+  has_cmd cmake || missing+=("cmake")
+
+  # C++ compiler: g++ or clang++.
+  has_cmd g++ || has_cmd clang++ || missing+=("g++ or clang++")
+
+  if (( ${#missing[@]} > 0 )); then
+    warn "aicx requires native toolchain dependencies missing on this system:"
+    local item
+    for item in "${missing[@]}"; do
+      warn "    - $item"
+    done
+    warn ""
+    warn "Install them first:"
+    if has_cmd apt-get; then
+      warn "    sudo apt-get install -y libclang-dev cmake build-essential"
+    elif has_cmd dnf; then
+      warn "    sudo dnf install -y clang-devel cmake gcc-c++ make"
+    elif has_cmd pacman; then
+      warn "    sudo pacman -S --needed clang cmake base-devel"
+    elif has_cmd zypper; then
+      warn "    sudo zypper install -y libclang-devel cmake gcc-c++"
+    elif has_cmd apk; then
+      warn "    sudo apk add clang-dev cmake g++ make"
+    else
+      warn "    Use your distro package manager to install: libclang-dev cmake g++"
+    fi
+    warn "Or grab a prebuilt binary directly:"
+    warn "    https://github.com/$AICX_REPO/releases"
+    return 1
+  fi
+  return 0
+}
+
 install_aicx() {
   if has_cmd aicx-mcp; then
     ok "aicx-mcp already installed: $(command -v aicx-mcp)"
@@ -590,6 +654,13 @@ install_aicx() {
     fi
     rm -rf "$tmpdir"
     info "No matching binary release found, falling back to cargo..."
+  fi
+
+  # Cargo path: aicx pulls llama-cpp-sys-2 (libclang+cmake+C++ at build time).
+  # Bail early with an actionable message instead of compiling for 5 minutes
+  # only to fail at link time with a confusing libclang error.
+  if ! aicx_cargo_prereqs_ok; then
+    return 1
   fi
 
   install_from_cargo "$AICX_CRATE" "aicx-mcp"

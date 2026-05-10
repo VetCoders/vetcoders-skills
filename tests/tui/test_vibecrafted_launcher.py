@@ -1047,8 +1047,8 @@ def test_compact_help_teaches_implement_before_alias() -> None:
         text=True,
     )
 
-    assert "Skill inventory (18 live workflows):" in result.stdout
-    assert "Core: init · scaffold · workflow · implement" in result.stdout
+    assert "Skill inventory (19 live workflows):" in result.stdout
+    assert "marbles · polarize · dou" in result.stdout
     assert (
         "For daily tasks, use implement or justdo as convenient aliases."
         in result.stdout

@@ -125,6 +125,7 @@ fn test_state_with_max(max: usize) -> Arc<Mutex<MuxState>> {
         max_restarts: 5,
         queue_depth: 0,
         child_pid: None,
+        event_tx: None,
     })))
 }
 
@@ -151,6 +152,7 @@ fn params_with_socket(socket: PathBuf) -> ResolvedParams {
         socket,
         cmd: "echo".into(),
         args: vec![],
+        cwd: None,
         env: Some(HashMap::new()),
         max_clients: 5,
         tray_enabled: false,
@@ -368,6 +370,7 @@ fn resolve_params_overrides_from_config() {
                 socket: Some("/tmp/override.sock".into()),
                 cmd: Some("npx".into()),
                 args: Some(vec!["@mcp".into()]),
+                cwd: None,
                 env: None,
                 max_active_clients: Some(7),
                 tray: Some(true),
@@ -451,6 +454,7 @@ fn resolve_params_cli_overrides_socket() {
                 socket: Some("/tmp/cfg.sock".into()),
                 cmd: Some("npx".into()),
                 args: None,
+                cwd: None,
                 env: None,
                 max_active_clients: None,
                 tray: None,
@@ -533,6 +537,7 @@ fn resolve_params_prefers_cli_over_config_for_timeouts() {
                 socket: Some("/tmp/s.sock".into()),
                 cmd: Some("npx".into()),
                 args: None,
+                cwd: None,
                 env: None,
                 max_active_clients: None,
                 tray: None,
@@ -883,6 +888,7 @@ async fn mux_transport_roundtrip_with_loctree_mcp() {
         socket: socket.clone(),
         cmd: loctree.to_string_lossy().to_string(),
         args: vec![],
+        cwd: None,
         env: Some(HashMap::new()),
         max_clients: 5,
         tray_enabled: false,

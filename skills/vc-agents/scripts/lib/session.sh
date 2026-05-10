@@ -13,6 +13,10 @@ spawn_operator_session_name_for_run_id() {
   local run_id="${1:-}"
   local base
   base="$(spawn_session_base_name)"
+  if [[ "${VIBECRAFTED_ZELLIJ_GROUP_BY_CWD:-1}" != "0" ]]; then
+    printf '%s\n' "$base"
+    return 0
+  fi
   if [[ -n "$run_id" ]]; then
     printf '%s-%s\n' "$base" "$run_id"
   else
@@ -146,9 +150,11 @@ spawn_marbles_write_child_plan() {
 - If the substrate is too poisoned to operate on, return control to the operator/runtime layer. Do not solve substrate invalidity by moving sideways.
 
 ## Exit Contract
-- **COMMIT**: mandatory. One commit when done.
 - **REPORT**: mandatory. Write to the report path given at the end of this prompt.
-- **SCOPE**: do your work, commit, report, stop.
+  Filesystem artifact (report.md + meta.json + transcript.log) is the closure marker.
+- **COMMIT**: only if you produced staged changes that match the dispatched scope.
+  NO empty commits. NO `--allow-empty`. NO chore stamps.
+- **SCOPE**: do your work, write report, optionally commit if real changes, stop.
 ROUND_CONTRACT
 }
 

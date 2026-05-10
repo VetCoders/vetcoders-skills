@@ -1,6 +1,7 @@
 //! Server (MCP child process) management.
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::process::Stdio;
 use std::sync::Arc;
 use std::time::Duration;
@@ -108,6 +109,7 @@ pub async fn handle_server_message(
 pub struct ServerManagerConfig {
     pub cmd: String,
     pub args: Vec<String>,
+    pub cwd: Option<PathBuf>,
     pub env: HashMap<String, String>,
     pub lazy_start: bool,
     pub restart_backoff: Duration,
@@ -138,6 +140,7 @@ pub async fn server_manager(
     let ServerManagerConfig {
         cmd,
         args,
+        cwd,
         env,
         lazy_start,
         restart_backoff,
@@ -197,13 +200,16 @@ pub async fn server_manager(
             args,
             env.keys().collect::<Vec<_>>()
         );
-        let mut child = TokioCommand::new(&cmd)
+        let mut command = TokioCommand::new(&cmd);
+        command
             .args(&args)
             .envs(&env)
             .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn()
-            .context("failed to spawn MCP server")?;
+            .stdout(Stdio::piped());
+        if let Some(cwd) = &cwd {
+            command.current_dir(cwd);
+        }
+        let mut child = command.spawn().context("failed to spawn MCP server")?;
 
         {
             let mut st = state.lock().await;
