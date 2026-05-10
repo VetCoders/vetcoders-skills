@@ -11,10 +11,12 @@ This document provides a concise technical overview for AI agents working with t
 **Library-first MCP multiplexer** — share a single MCP server process across many hosts via Unix socket.
 
 Two usage modes:
+
 1. **As a library** — embed in Rust applications, run multiple MCP services in one process.
 2. **As a CLI** — standalone daemon plus wizard, scan, rewire, health, dashboard, and proxy commands.
 
 Core features:
+
 - JSON-RPC ID rewriting per client
 - `initialize` request caching and fan-out
 - Request limits, timeouts, and size guards
@@ -100,12 +102,12 @@ src/
 
 ### Core Types
 
-| Type | Description |
-|------|-------------|
-| `MuxConfig` | Builder for programmatic configuration |
-| `MuxHandle` | Lifecycle control for spawned servers |
-| `ResolvedParams` | Merged CLI + config parameters |
-| `CliOptions` | Trait for generic CLI parameter handling |
+| Type             | Description                              |
+| ---------------- | ---------------------------------------- |
+| `MuxConfig`      | Builder for programmatic configuration   |
+| `MuxHandle`      | Lifecycle control for spawned servers    |
+| `ResolvedParams` | Merged CLI + config parameters           |
+| `CliOptions`     | Trait for generic CLI parameter handling |
 
 ### Entry Points
 
@@ -137,31 +139,32 @@ MuxConfig::new(socket, cmd)
 
 ### MuxHandle Methods
 
-| Method | Description |
-|--------|-------------|
-| `shutdown()` | Request graceful shutdown (non-blocking) |
-| `wait().await` | Wait for server to terminate |
-| `is_running()` | Check if server is still active |
+| Method         | Description                              |
+| -------------- | ---------------------------------------- |
+| `shutdown()`   | Request graceful shutdown (non-blocking) |
+| `wait().await` | Wait for server to terminate             |
+| `is_running()` | Check if server is still active          |
 
 ## CLI Subcommands
 
-| Command | Purpose |
-|---------|---------|
-| (default) | Run mux daemon for a single service |
-| `wizard` | Three-step TUI: services → clients → save (safe vs `[DANGER]` paths) |
-| `scan` | Discover hosts, generate manifest/snippets |
-| `rewire` | Update host config to use proxy (creates `.bak`; supports `--dry-run`) |
-| `status` | Check whether a host is rewired |
-| `health` | Verify socket reachability for a service |
-| `daemon-status` | Query running multi-service daemon status via Unix socket |
-| `dashboard` | Tray dashboard for multi-service status (feature: tray) |
-| `proxy` | STDIO↔socket proxy (also exposed as the `rust-mux-proxy` binary) |
+| Command         | Purpose                                                                |
+| --------------- | ---------------------------------------------------------------------- |
+| (default)       | Run mux daemon for a single service                                    |
+| `wizard`        | Three-step TUI: services → clients → save (safe vs `[DANGER]` paths)   |
+| `scan`          | Discover hosts, generate manifest/snippets                             |
+| `rewire`        | Update host config to use proxy (creates `.bak`; supports `--dry-run`) |
+| `status`        | Check whether a host is rewired                                        |
+| `health`        | Verify socket reachability for a service                               |
+| `daemon-status` | Query running multi-service daemon status via Unix socket              |
+| `dashboard`     | Tray dashboard for multi-service status (feature: tray)                |
+| `proxy`         | STDIO↔socket proxy (also exposed as the `rust-mux-proxy` binary)       |
 
 ## Config (JSON / YAML / TOML)
 
 Default service config: `~/.codex/mcp-mux.toml` (override with `--config`, pick `--service` key under `servers.<name>`).
 
 **Fields per service:**
+
 - `socket`, `cmd`, `args` — required
 - `max_active_clients` — default 5
 - `lazy_start` — default false
@@ -250,28 +253,28 @@ CI (`.github/workflows/ci.yml`) runs with `--no-default-features` (tray off) so 
 
 ## Key Symbols for Navigation
 
-| Symbol | Location | Purpose |
-|--------|----------|---------|
-| `MuxConfig` | `lib.rs` (re-export from `config.rs`) | Builder for programmatic configuration |
-| `MuxHandle` | `lib.rs` | Lifecycle control (shutdown, wait, is_running) |
-| `run_mux_server` | `lib.rs` | Blocking server entry point |
-| `spawn_mux_server` | `lib.rs` | Non-blocking spawn returning MuxHandle |
-| `run_mux_with_shutdown` | `lib.rs` | External CancellationToken support |
-| `check_health` | `lib.rs` | Socket health check |
-| `CliOptions` | `config.rs` | Trait for generic CLI parameter handling |
-| `ResolvedParams` | `config.rs` | Merged CLI + config parameters |
-| `MuxState` | `state.rs` | Runtime state (clients, pending, cache) |
-| `StatusSnapshot` / `DaemonStatus` | `state.rs` | JSON status output |
-| `run_mux` / `run_mux_internal` | `runtime/mod.rs` | Main mux loop (internal vs external shutdown) |
-| `server_manager` | `runtime/server.rs` | Child process lifecycle + restart backoff |
-| `handle_client` | `runtime/client.rs` | Per-client connection handler |
-| `heartbeat_loop` | `runtime/heartbeat.rs` | Child health probe |
-| `run_proxy` | `runtime/proxy.rs` | STDIO↔socket bridge (also `rust-mux-proxy` binary) |
-| `run_wizard` | `wizard/mod.rs` | TUI entry point (feature: cli) |
-| `WizardStep` | `wizard/types.rs` | Step enum (Server / Client / Confirmation) |
-| `discover_hosts` | `scan.rs` | Find host config files (feature: cli) |
-| `emit_mux_config` | `mux_gen.rs` | Safe wizard path: write `~/.config/mux/*` |
-| `apply_with_backup` | `danger.rs` | `[DANGER]` wizard path: backup → preview → rewrite → rollback |
+| Symbol                            | Location                              | Purpose                                                       |
+| --------------------------------- | ------------------------------------- | ------------------------------------------------------------- |
+| `MuxConfig`                       | `lib.rs` (re-export from `config.rs`) | Builder for programmatic configuration                        |
+| `MuxHandle`                       | `lib.rs`                              | Lifecycle control (shutdown, wait, is_running)                |
+| `run_mux_server`                  | `lib.rs`                              | Blocking server entry point                                   |
+| `spawn_mux_server`                | `lib.rs`                              | Non-blocking spawn returning MuxHandle                        |
+| `run_mux_with_shutdown`           | `lib.rs`                              | External CancellationToken support                            |
+| `check_health`                    | `lib.rs`                              | Socket health check                                           |
+| `CliOptions`                      | `config.rs`                           | Trait for generic CLI parameter handling                      |
+| `ResolvedParams`                  | `config.rs`                           | Merged CLI + config parameters                                |
+| `MuxState`                        | `state.rs`                            | Runtime state (clients, pending, cache)                       |
+| `StatusSnapshot` / `DaemonStatus` | `state.rs`                            | JSON status output                                            |
+| `run_mux` / `run_mux_internal`    | `runtime/mod.rs`                      | Main mux loop (internal vs external shutdown)                 |
+| `server_manager`                  | `runtime/server.rs`                   | Child process lifecycle + restart backoff                     |
+| `handle_client`                   | `runtime/client.rs`                   | Per-client connection handler                                 |
+| `heartbeat_loop`                  | `runtime/heartbeat.rs`                | Child health probe                                            |
+| `run_proxy`                       | `runtime/proxy.rs`                    | STDIO↔socket bridge (also `rust-mux-proxy` binary)            |
+| `run_wizard`                      | `wizard/mod.rs`                       | TUI entry point (feature: cli)                                |
+| `WizardStep`                      | `wizard/types.rs`                     | Step enum (Server / Client / Confirmation)                    |
+| `discover_hosts`                  | `scan.rs`                             | Find host config files (feature: cli)                         |
+| `emit_mux_config`                 | `mux_gen.rs`                          | Safe wizard path: write `~/.config/mux/*`                     |
+| `apply_with_backup`               | `danger.rs`                           | `[DANGER]` wizard path: backup → preview → rewrite → rollback |
 
 ## Notes for AI Agents
 
@@ -304,4 +307,4 @@ CI (`.github/workflows/ci.yml`) runs with `--no-default-features` (tray off) so 
 
 11. **Prefer `rust-mux-proxy` over `socat`** for host STDIO integration — it's the supported bridge.
 
-12. **`.ai-agents/**` is scratch space.** Do not commit. Root-level `AGENTS.md` (if present) is deprecated; ignore it. The canonical per-repo source is `.vibecrafted/GUIDELINES.md`.
+12. **`.ai-agents/**`is scratch space.** Do not commit. Root-level`AGENTS.md`(if present) is deprecated; ignore it. The canonical per-repo source is`.vibecrafted/GUIDELINES.md`.

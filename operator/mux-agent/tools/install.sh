@@ -65,6 +65,10 @@ ensure_path_line() {
     return
   fi
 
+  # The literal `$PATH` inside the format string is intentional: this printf
+  # emits a line into the user's rc file as plain text, where `$PATH` will be
+  # expanded at shell-reload time, not at install time.
+  # shellcheck disable=SC2016
   printf '\n%s\nexport PATH="%s:%s:$PATH"\n' "$tag" "$cargo" "$install" >>"$file"
   warn "Appended PATH to $file; reload shell or run: source $file"
 }

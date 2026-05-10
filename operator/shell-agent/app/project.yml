@@ -18,8 +18,16 @@ targets:
     sources:
       - path: Vibecrafted
         excludes:
+          - "Bridge/shell_agent_ffi.swift"
           - "Bridge/shell_agent_ffiFFI.h"
           - "Bridge/shell_agent_ffiFFI.modulemap"
+          - "Bridge/vibecrafted_shell_ffiFFI.h"
+          - "Bridge/vibecrafted_shell_ffiFFI.modulemap"
+    preBuildScripts:
+      - name: "Build Rust FFI"
+        script: |
+          cd "$PROJECT_DIR/../.." && cargo build -p vibecrafted-shell-ffi --release
+          cargo run -p vibecrafted-uniffi-bindgen -- generate --library target/release/libvibecrafted_shell_ffi.dylib --language swift --out-dir shell-agent/app/Vibecrafted/Bridge/ || true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.vetcoders.vibecrafted
@@ -28,19 +36,31 @@ targets:
         CURRENT_PROJECT_VERSION: 1
         GENERATE_INFOPLIST_FILE: true
         INFOPLIST_KEY_NSPrincipalClass: NSApplication
-        INFOPLIST_KEY_LSUIElement: false
         INFOPLIST_KEY_CFBundleExecutable: Vibecrafted
         INFOPLIST_KEY_CFBundleName: Vibecrafted
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
-        SWIFT_OBJC_BRIDGING_HEADER: "Vibecrafted/Bridge/shell_agent_ffiFFI.h"
+        SWIFT_OBJC_BRIDGING_HEADER: "Vibecrafted/Bridge/vibecrafted_shell_ffiFFI.h"
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGN_STYLE: Manual
+        OTHER_LDFLAGS:
+          - "$(PROJECT_DIR)/../../target/release/libvibecrafted_shell_ffi.a"
+          - "-framework"
+          - "Security"
+          - "-framework"
+          - "SystemConfiguration"
+          - "-framework"
+          - "Carbon"
         HEADER_SEARCH_PATHS:
           - "$(PROJECT_DIR)/Vibecrafted/Bridge"
         LIBRARY_SEARCH_PATHS:
           - "$(PROJECT_DIR)/../../target/release"
+      configs:
+        Release:
+          SWIFT_OPTIMIZATION_LEVEL: "-O"
+          GCC_OPTIMIZATION_LEVEL: "s"
+          SWIFT_COMPILATION_MODE: wholemodule
     dependencies:
-      - framework: ../../target/release/libshell_agent_ffi.dylib
+      - framework: ../../target/release/libvibecrafted_shell_ffi.dylib
         embed: true
     postBuildScripts:
       - script: |

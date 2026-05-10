@@ -16,15 +16,15 @@
 
 Use the `Makefile`. Do **not** invent equivalent ad-hoc cargo invocations; the operator and CI key off these names.
 
-| Target | Meaning |
-|---|---|
-| `make gates` | **Required green before any commit:** `fmt-check + clippy + test` (all features). |
-| `make test-full` | `gates` + `--ignored` transport tests (`mux_transport_roundtrip_with_loctree_mcp` needs local `loctree-mcp` running). |
-| `make check` | `cargo check --all-targets --all-features` |
-| `make wizard` / `make wizard-dry-run` | Three-step TUI: services → clients → save (with safe vs `[DANGER]` paths). |
-| `make run` / `make run-tray` | Run mux daemon for `SERVICE` from `CONFIG` (default `~/.codex/mcp-mux.toml`). |
-| `make proxy` | Run `rust-mux-proxy` against `SOCKET`. |
-| `make health` / `make daemon-status` / `make dashboard` | Single-service health, multi-service daemon status, tray dashboard. |
+| Target                                                  | Meaning                                                                                                               |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `make gates`                                            | **Required green before any commit:** `fmt-check + clippy + test` (all features).                                     |
+| `make test-full`                                        | `gates` + `--ignored` transport tests (`mux_transport_roundtrip_with_loctree_mcp` needs local `loctree-mcp` running). |
+| `make check`                                            | `cargo check --all-targets --all-features`                                                                            |
+| `make wizard` / `make wizard-dry-run`                   | Three-step TUI: services → clients → save (with safe vs `[DANGER]` paths).                                            |
+| `make run` / `make run-tray`                            | Run mux daemon for `SERVICE` from `CONFIG` (default `~/.codex/mcp-mux.toml`).                                         |
+| `make proxy`                                            | Run `rust-mux-proxy` against `SOCKET`.                                                                                |
+| `make health` / `make daemon-status` / `make dashboard` | Single-service health, multi-service daemon status, tray dashboard.                                                   |
 
 Override variables on the command line: `make run SERVICE=brave-search CONFIG=~/.codex/mcp.json`.
 
@@ -57,13 +57,13 @@ This repo runs **parallel agents on a shared worktree** (Claude, Codex, Gemini a
 
 Always run `loctree-mcp slice <file>` before editing a hub. Current top hubs (importer counts, drift fast):
 
-| File | Importers | Role |
-|---|---|---|
-| `src/config.rs` | 13 | `MuxConfig`, `ServerConfig`, `ResolvedParams`, `CliOptions` trait |
-| `src/state.rs` | 11 | `MuxState`, `StatusSnapshot`, error/id helpers |
-| `src/scan.rs` | 9 | Host discovery, rewire (1388 LOC — split candidate when touched) |
-| `src/multi.rs` | 6 | Multi-service supervisor |
-| `src/runtime/mod.rs` | 5 | `run_mux`, `run_mux_internal`, entrypoints |
+| File                 | Importers | Role                                                              |
+| -------------------- | --------- | ----------------------------------------------------------------- |
+| `src/config.rs`      | 13        | `MuxConfig`, `ServerConfig`, `ResolvedParams`, `CliOptions` trait |
+| `src/state.rs`       | 11        | `MuxState`, `StatusSnapshot`, error/id helpers                    |
+| `src/scan.rs`        | 9         | Host discovery, rewire (1388 LOC — split candidate when touched)  |
+| `src/multi.rs`       | 6         | Multi-service supervisor                                          |
+| `src/runtime/mod.rs` | 5         | `run_mux`, `run_mux_internal`, entrypoints                        |
 
 Known structural debt — **triage, don't chop:**
 
@@ -144,6 +144,7 @@ use rust_mux::{
 Internal modules (`runtime::client`, `runtime::server`, `wizard::services`, ...) are private; if a consumer needs a symbol from there, promote it through `lib.rs` deliberately — do not leak the path.
 
 Feature gating:
+
 - default: `["tray", "cli"]`
 - `cli` → wizard, scan, binaries (clap, ratatui, crossterm, tracing-subscriber)
 - `tray` → tray-icon + image (GUI deps; CI builds with `--no-default-features` to keep headless green)
@@ -160,6 +161,7 @@ Feature gating:
 ## .env hygiene
 
 Repo currently ships zero `.env*` files. If you ever need one locally:
+
 - Add the exact filename to `.gitignore` (the existing `/.vibecrafted` + `/*.py` rules are intentional; widening to `.env*` is a normal addition).
 - Never commit even an example with real secrets.
 - Pre-commit blocks accidental `.env` commits; if a hook fires, fix the cause, don't bypass.
@@ -188,6 +190,7 @@ Repo currently ships zero `.env*` files. If you ever need one locally:
 ## Init discipline
 
 Every session on this repo starts with:
+
 1. Read `~/.claude/Klaudiusz/kronika_*.md` (or equivalent agent chronicle).
 2. `/vc-init` (no-op): perception via `loctree-mcp context()`, intentions via `aicx_intents project=rust-mux`, ground truth via `repo-full`.
 3. **Then** touch code.

@@ -32,18 +32,18 @@ matching entries and surfaces ps-only orphans.
 
 Default sources (auto-discovered if the file exists):
 
-| Path | Client | Schema |
-|---|---|---|
-| `~/.claude.json` | Claude Code | JSON `mcpServers` |
-| `~/Library/Application Support/Claude/claude_desktop_config.json` | Claude Desktop | JSON `mcpServers` |
-| `~/.codex/config.toml` | Codex CLI | TOML `[mcp_servers.<name>]` |
-| `~/.junie/mcp/mcp.json` | Junie | JSON `mcpServers` |
-| `~/.agents/mcp.json` | Junie (generic) | JSON `mcpServers` / `servers` |
-| `~/.ai/mcp.json` | Junie (generic) | JSON `mcpServers` / `servers` |
-| `~/.gemini/settings.json` | Gemini CLI | JSON `mcpServers` / `servers` |
-| `~/Library/Application Support/Cursor/User/settings.json` | Cursor | JSON (legacy) |
-| `~/Library/Application Support/Code/User/settings.json` | VS Code | JSON (legacy) |
-| `~/Library/Application Support/JetBrains/LLM/mcp.json` | JetBrains IDEs | JSON (legacy) |
+| Path                                                              | Client          | Schema                        |
+| ----------------------------------------------------------------- | --------------- | ----------------------------- |
+| `~/.claude.json`                                                  | Claude Code     | JSON `mcpServers`             |
+| `~/Library/Application Support/Claude/claude_desktop_config.json` | Claude Desktop  | JSON `mcpServers`             |
+| `~/.codex/config.toml`                                            | Codex CLI       | TOML `[mcp_servers.<name>]`   |
+| `~/.junie/mcp/mcp.json`                                           | Junie           | JSON `mcpServers`             |
+| `~/.agents/mcp.json`                                              | Junie (generic) | JSON `mcpServers` / `servers` |
+| `~/.ai/mcp.json`                                                  | Junie (generic) | JSON `mcpServers` / `servers` |
+| `~/.gemini/settings.json`                                         | Gemini CLI      | JSON `mcpServers` / `servers` |
+| `~/Library/Application Support/Cursor/User/settings.json`         | Cursor          | JSON (legacy)                 |
+| `~/Library/Application Support/Code/User/settings.json`           | VS Code         | JSON (legacy)                 |
+| `~/Library/Application Support/JetBrains/LLM/mcp.json`            | JetBrains IDEs  | JSON (legacy)                 |
 
 Use `--import-config <path>` (repeatable) on the CLI to pre-add custom
 sources before the wizard starts. Inside STEP 1, `i` opens the custom-path
@@ -135,11 +135,11 @@ selected.
 
 Writes three files into `~/.config/mux/`:
 
-| File | Role |
-|---|---|
-| `config.toml` | Daemon truth — what `rust-mux` should run upstream. |
-| `mcp.json` | Client-facing JSON; every server's `command` is `rust-mux-proxy`. |
-| `mcp.toml` | Same shape as `mcp.json` but in TOML for Codex-style tooling. |
+| File          | Role                                                              |
+| ------------- | ----------------------------------------------------------------- |
+| `config.toml` | Daemon truth — what `rust-mux` should run upstream.               |
+| `mcp.json`    | Client-facing JSON; every server's `command` is `rust-mux-proxy`. |
+| `mcp.toml`    | Same shape as `mcp.json` but in TOML for Codex-style tooling.     |
 
 Per-client startup snippets are printed on STEP 5:
 
@@ -213,9 +213,9 @@ Strategy-specific previews:
 - **Unified** — three concrete output paths.
 - **Per-client** — daemon `config.toml` plus one predicted file per
   selected source kind.
-- **Auto-rewire** — explicit list of files that *will* be rewritten,
+- **Auto-rewire** — explicit list of files that _will_ be rewritten,
   plus the list of sources skipped because of `eligible_for_danger =
-  false`.
+false`.
 
 Choose `Confirm`, `Back`, or `Cancel`. Confirm queues the strategy as a
 `PendingAction` so it can run on cooked stdout/stdin once the alt screen
@@ -296,7 +296,7 @@ and ignored by the 5-step flow.
   setup.
 
 - **`CONFIRM` prompt didn't appear after Auto-rewire.** It appears on
-  cooked stdout *after* the alt screen is dropped. If you see no
+  cooked stdout _after_ the alt screen is dropped. If you see no
   prompt, the plan had zero `Planned` actions (every selected source
   was either invalid or ineligible).
 

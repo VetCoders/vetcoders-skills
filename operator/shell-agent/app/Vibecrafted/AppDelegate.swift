@@ -15,6 +15,7 @@ final class EventObserver: @unchecked Sendable, EventCallback {
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var mainWindow: MainWindowController?
+    private var statusItem: NSStatusItem?
     let eventObserver = EventObserver()
 
     func showMainWindowIfNeeded() {
@@ -28,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         buildMainMenu()
+        buildStatusItem()
         
         let socketPath = "/tmp/vibecrafted-mux.sock"
         do {
@@ -55,6 +57,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     // MARK: - Main Menu
+
+    private func buildStatusItem() {
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        item.button?.image = NSImage(systemSymbolName: "hammer.fill", accessibilityDescription: "Vibecrafted")
+        item.button?.imagePosition = .imageLeading
+        item.button?.title = "Vibecrafted"
+
+        let menu = NSMenu()
+        menu.addItem(withTitle: "Open Console", action: #selector(openConsoleFromStatusItem), keyEquivalent: "")
+        menu.addItem(.separator())
+        menu.addItem(withTitle: "Quit Vibecrafted", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        item.menu = menu
+        statusItem = item
+    }
+
+    @objc private func openConsoleFromStatusItem() {
+        Task {
+            _ = try? await getServerStatus()
+            await MainActor.run {
+                self.showMainWindowIfNeeded()
+            }
+        }
+    }
 
     private func buildMainMenu() {
         let mainMenu = NSMenu()

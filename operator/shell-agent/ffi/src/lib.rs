@@ -2,7 +2,7 @@ uniffi::setup_scaffolding!();
 
 use std::path::PathBuf;
 use std::sync::OnceLock;
-use tray_agent::ipc_client::{send_command, ClientKind, MuxControlCommand, MuxControlResponse};
+use tray_agent::ipc_client::{ClientKind, MuxControlCommand, MuxControlResponse, send_command};
 
 static SOCKET_PATH: OnceLock<PathBuf> = OnceLock::new();
 

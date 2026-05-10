@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::env;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use crate::ipc_client::ClientKind;
+use crate::ipc_client::{ClientKind, client_label};
 use anyhow::Result;
 use muda::accelerator::{Accelerator, Code, Modifiers};
 use muda::{Menu, MenuItem, PredefinedMenuItem, Submenu};
@@ -54,14 +54,7 @@ pub fn build_menu() -> Result<(Menu, MenuIds)> {
     let mut verify_clients = Vec::new();
     let verify_menu = Submenu::new("Verify Clients", true);
     for kind in [ClientKind::Claude, ClientKind::Codex, ClientKind::Gemini] {
-        let label = match &kind {
-            ClientKind::Claude => "Claude",
-            ClientKind::Codex => "Codex",
-            ClientKind::Gemini => "Gemini",
-            ClientKind::Junie => "Junie",
-            ClientKind::Generic { name } => name.as_str(),
-        };
-        let item = MenuItem::new(label, true, None);
+        let item = MenuItem::new(client_label(&kind), true, None);
         verify_clients.push((kind, item.id().clone()));
         verify_menu.append(&item)?;
     }

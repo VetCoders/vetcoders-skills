@@ -21,31 +21,31 @@ From the code, we can see this is a standard Rust project (`Cargo.toml` with `ed
 need:
 
 1. **Rust toolchain** (compiler + Cargo)
-    - Recommended installation method: use the official [rustup](https://rustup.rs/) installer.
-    - On macOS or Linux this usually looks like:
+   - Recommended installation method: use the official [rustup](https://rustup.rs/) installer.
+   - On macOS or Linux this usually looks like:
 
-      ```bash
-      curl https://sh.rustup.rs -sSf | sh
-      ```
+     ```bash
+     curl https://sh.rustup.rs -sSf | sh
+     ```
 
-    - After installation, open a new terminal and verify:
+   - After installation, open a new terminal and verify:
 
-      ```bash
-      rustc --version
-      cargo --version
-      ```
+     ```bash
+     rustc --version
+     cargo --version
+     ```
 
-    - You should see version numbers printed (exact numbers don’t matter, but Rust 1.70+ is a good baseline for a
-      2021‑edition project).
+   - You should see version numbers printed (exact numbers don’t matter, but Rust 1.70+ is a good baseline for a
+     2021‑edition project).
 
 2. **A Unix‑like environment**
-    - The code uses Unix domain sockets (`tokio::net::UnixListener`, `UnixStream`) and paths like `/tmp/...` or `~/...`.
-      This is typical for macOS and Linux.
-    - Windows is not explicitly supported in the code; if you need Windows support, expect extra work.
+   - The code uses Unix domain sockets (`tokio::net::UnixListener`, `UnixStream`) and paths like `/tmp/...` or `~/...`.
+     This is typical for macOS and Linux.
+   - Windows is not explicitly supported in the code; if you need Windows support, expect extra work.
 
 3. **Network and process permissions**
-    - To run MCP servers (for example via `npx` or another CLI), you need permission to run child processes.
-    - To create Unix sockets, your user must be able to create files in the chosen directory (e.g., `/tmp/mcp-sockets`).
+   - To run MCP servers (for example via `npx` or another CLI), you need permission to run child processes.
+   - To create Unix sockets, your user must be able to create files in the chosen directory (e.g., `/tmp/mcp-sockets`).
 
 ### 1.2. Project layout (code‑based view)
 
@@ -242,9 +242,7 @@ A minimal JSON config for a single server named `memory` could look like this:
     "memory": {
       "socket": "/tmp/memory.sock",
       "cmd": "npx",
-      "args": [
-        "@mcp/server-memory"
-      ]
+      "args": ["@mcp/server-memory"]
     }
   }
 }
@@ -266,8 +264,8 @@ The `expand_path` function in `src/config.rs` implements a simple `~/` expansion
 - if a path string starts with `~/`, it replaces `~` with the value of the `HOME` environment variable;
 - otherwise, it uses the path as‑is.
 
-This behavior is used for config paths, socket paths, and status file paths that come from the configuration. It does *
-*not** implement full shell‑style expansion (no `$VAR` support), only the `~/` pattern.
+This behavior is used for config paths, socket paths, and status file paths that come from the configuration. It does \*
+\*not\*\* implement full shell‑style expansion (no `$VAR` support), only the `~/` pattern.
 
 ### 1.5. Helper binary: `rmcp_mux_proxy`
 
@@ -444,8 +442,8 @@ Based on current code patterns, good candidates include:
 
 #### 2.4.2. Integration tests in a separate `tests/` directory
 
-The current codebase uses module‑internal tests only; there is no `tests/` directory yet. Rust, however, supports *
-*integration tests** placed under a top‑level `tests/` directory.
+The current codebase uses module‑internal tests only; there is no `tests/` directory yet. Rust, however, supports \*
+\*integration tests\*\* placed under a top‑level `tests/` directory.
 
 To add one:
 
@@ -498,62 +496,62 @@ General recommendations:
 From the codebase we can observe several conventions:
 
 1. **Rust 2021 edition**
-    - Modern Rust idioms are used: `Result<T, anyhow::Error>`, `async`/`await`, `tokio` runtime, and `clap` for CLI
-      parsing.
+   - Modern Rust idioms are used: `Result<T, anyhow::Error>`, `async`/`await`, `tokio` runtime, and `clap` for CLI
+     parsing.
 
 2. **Error handling with `anyhow`**
-    - Functions that can fail generally return `anyhow::Result<T>`.
-    - The `anyhow!` macro is used to create user‑friendly error messages.
-    - The `Context` trait (`with_context(|| ...)`) is used when reading/parsing config files to add path information to
-      errors.
+   - Functions that can fail generally return `anyhow::Result<T>`.
+   - The `anyhow!` macro is used to create user‑friendly error messages.
+   - The `Context` trait (`with_context(|| ...)`) is used when reading/parsing config files to add path information to
+     errors.
 
 3. **Logging with `tracing`**
-    - The mux initializes logging in `main` via
-      `tracing_subscriber::fmt().with_max_level(level).with_target(false).init();`.
-    - Log messages use structured fields (for example in `runtime.rs`):
+   - The mux initializes logging in `main` via
+     `tracing_subscriber::fmt().with_max_level(level).with_target(false).init();`.
+   - Log messages use structured fields (for example in `runtime.rs`):
 
-      ```rust
-      tracing::info!(
-          service = params.service_name.as_str(),
-          socket = %params.socket.display(),
-          cmd = %params.cmd,
-          max_clients = params.max_clients,
-          tray = params.tray_enabled,
-          "mux starting"
-      );
-      ```
+     ```rust
+     tracing::info!(
+         service = params.service_name.as_str(),
+         socket = %params.socket.display(),
+         cmd = %params.cmd,
+         max_clients = params.max_clients,
+         tray = params.tray_enabled,
+         "mux starting"
+     );
+     ```
 
-    - When debugging issues, increasing `--log-level` to `debug` can provide more insight.
+   - When debugging issues, increasing `--log-level` to `debug` can provide more insight.
 
 4. **Async concurrency with Tokio**
-    - The main async runtime uses `#[tokio::main]` in `src/main.rs` and `src/bin/rmcp_mux_proxy.rs`.
-    - Internally, components use:
-        - `tokio::net::UnixListener` / `UnixStream` for sockets.
-        - `tokio::sync::mpsc` channels for internal messaging.
-        - `tokio::sync::watch` channels for publishing status updates.
-        - `tokio::sync::Semaphore` to limit active client count.
-        - `tokio::time::sleep` and `Duration` values for backoff and timeouts.
+   - The main async runtime uses `#[tokio::main]` in `src/main.rs` and `src/bin/rmcp_mux_proxy.rs`.
+   - Internally, components use:
+     - `tokio::net::UnixListener` / `UnixStream` for sockets.
+     - `tokio::sync::mpsc` channels for internal messaging.
+     - `tokio::sync::watch` channels for publishing status updates.
+     - `tokio::sync::Semaphore` to limit active client count.
+     - `tokio::time::sleep` and `Duration` values for backoff and timeouts.
 
 5. **State management**
-    - Shared state is encapsulated in `MuxState` (`src/state.rs`), wrapped in `Arc<Mutex<MuxState>>` when shared across
-      async tasks.
-    - Status snapshots are represented by `StatusSnapshot` and marshalled as JSON via `serde`.
+   - Shared state is encapsulated in `MuxState` (`src/state.rs`), wrapped in `Arc<Mutex<MuxState>>` when shared across
+     async tasks.
+   - Status snapshots are represented by `StatusSnapshot` and marshalled as JSON via `serde`.
 
 6. **Configuration merging**
-    - CLI values override config values; config values override built‑in defaults.
-    - Defaults for key parameters (from `resolve_params`):
-        - `max_active_clients`: CLI default is `5`.
-        - `lazy_start`: default `false`.
-        - `max_request_bytes`: default `1_048_576` (1 MiB).
-        - `request_timeout_ms`: default `30_000` (30 seconds).
-        - `restart_backoff_ms`: default `1_000` (1 second).
-        - `restart_backoff_max_ms`: default `30_000` (30 seconds).
-        - `max_restarts`: default `5`.
+   - CLI values override config values; config values override built‑in defaults.
+   - Defaults for key parameters (from `resolve_params`):
+     - `max_active_clients`: CLI default is `5`.
+     - `lazy_start`: default `false`.
+     - `max_request_bytes`: default `1_048_576` (1 MiB).
+     - `request_timeout_ms`: default `30_000` (30 seconds).
+     - `restart_backoff_ms`: default `1_000` (1 second).
+     - `restart_backoff_max_ms`: default `30_000` (30 seconds).
+     - `max_restarts`: default `5`.
 
 7. **ID management**
-    - `MuxState::next_request_id` increments a `next_global_id` counter.
-    - `state::set_id` updates JSON‑RPC messages by setting the `"id"` field in a `serde_json::Value` object, used in
-      tests and runtime.
+   - `MuxState::next_request_id` increments a `next_global_id` counter.
+   - `state::set_id` updates JSON‑RPC messages by setting the `"id"` field in a `serde_json::Value` object, used in
+     tests and runtime.
 
 ### 3.2. Debugging and observability
 
@@ -613,26 +611,26 @@ If you do not need a tray icon (for example on a server), you can:
 ### 3.3. Workflow tips for non‑programmer specialists
 
 1. **Start with test runs before making changes**
-    - Run `cargo test` to ensure the baseline is green.
-    - After adjusting configuration or making code changes with a developer, run `cargo test` again.
+   - Run `cargo test` to ensure the baseline is green.
+   - After adjusting configuration or making code changes with a developer, run `cargo test` again.
 
 2. **Use log levels for diagnosis**
-    - If something behaves strangely, rerun the mux with `--log-level debug` to get more detailed logs.
-    - Capture logs from the terminal when reporting bugs.
+   - If something behaves strangely, rerun the mux with `--log-level debug` to get more detailed logs.
+   - Capture logs from the terminal when reporting bugs.
 
 3. **Use the health check and status file instead of attaching debuggers**
-    - The `health` subcommand and JSON status file are designed for operational visibility without low‑level tools.
+   - The `health` subcommand and JSON status file are designed for operational visibility without low‑level tools.
 
 4. **Prefer configuration changes over code changes**
-    - Many behaviors (timeouts, max clients, logging) can be adjusted via config or CLI flags without changing Rust
-      code.
-    - If you need a behavior not exposed in config (for example, a new host scanning rule in `scan.rs`), coordinate with
-      a Rust developer.
+   - Many behaviors (timeouts, max clients, logging) can be adjusted via config or CLI flags without changing Rust
+     code.
+   - If you need a behavior not exposed in config (for example, a new host scanning rule in `scan.rs`), coordinate with
+     a Rust developer.
 
 5. **When in doubt, capture three things**
-    - The exact `rmcp-mux` command you ran.
-    - The configuration snippet for the relevant service.
-    - The terminal output (logs and, if available, the status JSON file contents).
+   - The exact `rmcp-mux` command you ran.
+   - The configuration snippet for the relevant service.
+   - The terminal output (logs and, if available, the status JSON file contents).
 
 ---
 
@@ -641,10 +639,10 @@ If you do not need a tray icon (for example on a server), you can:
 - Use **Rust + Cargo** to build: `cargo build` for development, `cargo build --release` for production.
 - Run **tests regularly** with `cargo test`; tests are fast and already cover much of the core logic.
 - When adding code, follow the existing patterns:
-    - `anyhow` for errors
-    - `tracing` for logging
-    - `tokio` for async runtime
-    - `serde`/`serde_json`/`serde_yaml`/`toml` for configuration and JSON handling
+  - `anyhow` for errors
+  - `tracing` for logging
+  - `tokio` for async runtime
+  - `serde`/`serde_json`/`serde_yaml`/`toml` for configuration and JSON handling
 - Extend tests in the same style as existing ones – place unit tests in `#[cfg(test)] mod tests` within the module, and
   consider integration tests under a top‑level `tests/` directory if needed.
 - Prefer configuration tweaks (via `Config` / `ServerConfig` and CLI flags) over invasive code changes when adjusting

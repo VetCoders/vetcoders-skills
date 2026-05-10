@@ -35,20 +35,20 @@ let config = MuxConfig::new("/tmp/my-service.sock", "npx")
 
 ### Configuration Options
 
-| Method | Default | Description |
-|--------|---------|-------------|
-| `new(socket, cmd)` | required | Socket path and command to run |
-| `with_args(vec)` | `[]` | Command arguments |
-| `with_max_clients(n)` | `5` | Max concurrent active clients |
-| `with_service_name(s)` | socket filename | Name for logging/status |
-| `with_log_level(s)` | `"info"` | trace/debug/info/warn/error |
-| `with_lazy_start(bool)` | `false` | Spawn server on first request |
-| `with_max_request_bytes(n)` | `1048576` | Max request size (1MB) |
-| `with_request_timeout(dur)` | `30s` | Request timeout |
-| `with_restart_backoff(init, max)` | `1s, 30s` | Restart delay range |
-| `with_max_restarts(n)` | `5` | Max restarts (0 = unlimited) |
-| `with_status_file(path)` | none | JSON status snapshot path |
-| `with_tray(bool)` | `false` | Enable tray icon (requires `tray` feature) |
+| Method                            | Default         | Description                                |
+| --------------------------------- | --------------- | ------------------------------------------ |
+| `new(socket, cmd)`                | required        | Socket path and command to run             |
+| `with_args(vec)`                  | `[]`            | Command arguments                          |
+| `with_max_clients(n)`             | `5`             | Max concurrent active clients              |
+| `with_service_name(s)`            | socket filename | Name for logging/status                    |
+| `with_log_level(s)`               | `"info"`        | trace/debug/info/warn/error                |
+| `with_lazy_start(bool)`           | `false`         | Spawn server on first request              |
+| `with_max_request_bytes(n)`       | `1048576`       | Max request size (1MB)                     |
+| `with_request_timeout(dur)`       | `30s`           | Request timeout                            |
+| `with_restart_backoff(init, max)` | `1s, 30s`       | Restart delay range                        |
+| `with_max_restarts(n)`            | `5`             | Max restarts (0 = unlimited)               |
+| `with_status_file(path)`          | none            | JSON status snapshot path                  |
+| `with_tray(bool)`                 | `false`         | Enable tray icon (requires `tray` feature) |
 
 ## Usage Patterns
 
@@ -217,11 +217,11 @@ async fn load_services(config_path: &str) -> anyhow::Result<Vec<MuxHandle>> {
 
 The `MuxHandle` returned by `spawn_mux_server` provides:
 
-| Method | Description |
-|--------|-------------|
-| `shutdown()` | Request graceful shutdown (non-blocking) |
-| `wait().await` | Wait for server to terminate |
-| `is_running()` | Check if server is still active |
+| Method         | Description                              |
+| -------------- | ---------------------------------------- |
+| `shutdown()`   | Request graceful shutdown (non-blocking) |
+| `wait().await` | Wait for server to terminate             |
+| `is_running()` | Check if server is still active          |
 
 ## Status Monitoring
 
@@ -253,19 +253,19 @@ Status file format:
 
 All async functions return `anyhow::Result`. Common errors:
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| "failed to bind socket" | Socket path in use | Remove stale socket or use different path |
-| "failed to spawn child" | Command not found | Verify `cmd` is in PATH |
-| "request timeout" | Server unresponsive | Increase `request_timeout` or check server |
+| Error                   | Cause                 | Solution                                   |
+| ----------------------- | --------------------- | ------------------------------------------ |
+| "failed to bind socket" | Socket path in use    | Remove stale socket or use different path  |
+| "failed to spawn child" | Command not found     | Verify `cmd` is in PATH                    |
+| "request timeout"       | Server unresponsive   | Increase `request_timeout` or check server |
 | "max restarts exceeded" | Server keeps crashing | Check server logs, increase `max_restarts` |
 
 ## Feature Flags
 
-| Feature | Default | Adds |
-|---------|---------|------|
-| `cli` | yes | CLI binary, wizard, scan (clap, ratatui, crossterm) |
-| `tray` | yes | System tray icon (tray-icon, image) |
+| Feature | Default | Adds                                                |
+| ------- | ------- | --------------------------------------------------- |
+| `cli`   | yes     | CLI binary, wizard, scan (clap, ratatui, crossterm) |
+| `tray`  | yes     | System tray icon (tray-icon, image)                 |
 
 For library-only (minimal deps):
 
@@ -295,11 +295,13 @@ rmcp-mux = { version = "0.3", default-features = false }
 If you were running `rmcp-mux` as a separate process:
 
 **Before (CLI):**
+
 ```bash
 rmcp-mux --socket /tmp/mcp.sock --cmd npx -- @mcp/server-memory
 ```
 
 **After (Library):**
+
 ```rust
 let config = MuxConfig::new("/tmp/mcp.sock", "npx")
     .with_args(vec!["-y".into(), "@mcp/server-memory".into()]);
@@ -311,6 +313,7 @@ All CLI flags map directly to `MuxConfig` builder methods.
 ## Troubleshooting
 
 ### Socket already in use
+
 ```rust
 // Remove stale socket before starting
 let _ = std::fs::remove_file("/tmp/mcp.sock");
@@ -318,6 +321,7 @@ let config = MuxConfig::new("/tmp/mcp.sock", "server");
 ```
 
 ### Child process not starting
+
 ```rust
 // Enable debug logging
 let config = MuxConfig::new("/tmp/mcp.sock", "server")
@@ -325,6 +329,7 @@ let config = MuxConfig::new("/tmp/mcp.sock", "server")
 ```
 
 ### Requests timing out
+
 ```rust
 // Increase timeout for slow operations
 let config = MuxConfig::new("/tmp/mcp.sock", "server")
@@ -333,6 +338,6 @@ let config = MuxConfig::new("/tmp/mcp.sock", "server")
 
 ## Version Compatibility
 
-| rmcp-mux | Rust | tokio | rmcp |
-|----------|------|-------|------|
-| 0.3.x | 1.70+ | 1.x | 0.9.x |
+| rmcp-mux | Rust  | tokio | rmcp  |
+| -------- | ----- | ----- | ----- |
+| 0.3.x    | 1.70+ | 1.x   | 0.9.x |

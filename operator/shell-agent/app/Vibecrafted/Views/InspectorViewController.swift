@@ -125,7 +125,7 @@ class InspectorViewController: NSViewController {
         guard currentServerName != nil else { return }
         Task {
             do {
-                let res = try await verifyClient(kind: .other(value: "All"))
+                let res = try await verifyClient(kind: .codex)
                 DispatchQueue.main.async {
                     let alert = NSAlert()
                     alert.messageText = "Verify Results"

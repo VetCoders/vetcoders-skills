@@ -34,11 +34,16 @@ osc_progress_indeterminate() { printf '\e]9;4;3\a'; }
 osc_progress_pct() { printf '\e]9;4;1;%d\a' "$1"; }
 
 # OSC 8 hyperlink: $1=url $2=text [$3=id]
+# Format strings carry the literal terminator `\e\\` per the OSC 8 protocol
+# (ESC `\`). shellcheck SC1003 reads `\\` as a missed single-quote escape;
+# in this context it is intentional protocol bytes, not escaped quoting.
 osc_link() {
     local url="$1" text="$2" id="${3:-}"
     if [[ -n "$id" ]]; then
+        # shellcheck disable=SC1003
         printf '\e]8;id=%s;%s\e\\%s\e]8;;\e\\' "$id" "$url" "$text"
     else
+        # shellcheck disable=SC1003
         printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$url" "$text"
     fi
 }
@@ -241,7 +246,7 @@ main() {
 
     if [[ $html_mode -eq 1 ]]; then
         if command -v aicx >/dev/null 2>&1; then
-            printf "\n  ${c_dim}startuje HTML dashboard w tle...${c_reset}\n"
+            printf '\n  %sstartuje HTML dashboard w tle...%s\n' "$c_dim" "$c_reset"
             aicx dashboard --serve --bg --port 9478 >/dev/null 2>&1 &
             sleep 1
             open http://127.0.0.1:9478 2>/dev/null || true

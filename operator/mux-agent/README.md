@@ -3,6 +3,7 @@
 Small Rust daemon that lets many MCP clients reuse a single STDIO server process (e.g. `npx @modelcontextprotocol/server-memory`) over a Unix socket. It rewrites JSON-RPC IDs per client, caches `initialize`, restarts the child on failure, and cleans up the socket on exit.
 
 ## Features
+
 - One child process per service (spawned from `--cmd ...`).
 - Many clients via Unix socket; ID rewriting keeps responses matched to the right client.
 - `initialize` is executed once; later clients get the cached response immediately.
@@ -14,26 +15,34 @@ Small Rust daemon that lets many MCP clients reuse a single STDIO server process
 - Optional tray indicator (`--tray`) shows live server status (running/restarting), client and pending counts, initialize cache state, and restart reason.
 
 ## Build
+
 ```
 cargo build --release
 ```
+
 Binaries live in `target/release/rust-mux`.
 
 ## Install (curl | sh)
+
 ```
 curl -fsSL https://raw.githubusercontent.com/Loctree/rust-mux/main/tools/install.sh | sh
 ```
+
 - Places wrapper in `$HOME/.local/bin/rust-mux` and ensures PATH contains cargo bin + wrapper dir.
 - Env overrides: `INSTALL_DIR`, `CARGO_HOME`, `MUX_REF` (branch/tag, default main), `MUX_NO_LOCK=1` to skip `--locked`.
 
 ### Built-in proxy (no socat required)
+
 If your MCP host wants a STDIO command, use the bundled proxy:
+
 ```
 rust-mux-proxy --socket /tmp/mcp-memory.sock
 ```
+
 Point host config to `rust-mux-proxy` with the matching socket path.
 
 ## Run (example: memory server)
+
 ```
 ./target/release/rust-mux \
   --socket /tmp/mcp-memory.sock \
@@ -44,8 +53,10 @@ Point host config to `rust-mux-proxy` with the matching socket path.
 ```
 
 ## Config-driven run (JSON/YAML/TOML)
+
 - Default config path: `~/.codex/mcp.json` (override via `--config <path>`). Parser auto-detects by extension (`.json`, `.yaml`/`.yml`, `.toml`).
 - JSON:
+
 ```
 {
   "servers": {
@@ -67,7 +78,9 @@ Point host config to `rust-mux-proxy` with the matching socket path.
   }
 }
 ```
+
 - YAML:
+
 ```
 servers:
   general-memory:
@@ -85,7 +98,9 @@ servers:
     tray: true
     service_name: "general-memory"
 ```
+
 - TOML:
+
 ```
 [servers.general-memory]
 socket = "~/mcp-sockets/general-memory.sock"
@@ -122,23 +137,24 @@ lazy_start = false
 tray = true
 service_name = "general-memory"
 ```
+
 ### Parameter reference
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `socket` | required | Unix socket path (supports `~` expansion) |
-| `cmd` | required | MCP server command |
-| `args` | `[]` | Arguments for command |
-| `env` | `{}` | Environment variables for child process |
-| `max_active_clients` | `5` | Concurrent client limit |
-| `lazy_start` | `false` | Defer child spawn until first request |
-| `max_request_bytes` | `1048576` | Max request size (1 MiB) |
-| `request_timeout_ms` | `30000` | Request timeout (30s) |
-| `restart_backoff_ms` | `1000` | Initial restart delay (1s) |
-| `restart_backoff_max_ms` | `30000` | Max restart delay (30s) |
-| `max_restarts` | `5` | Restart limit (0 = unlimited) |
-| `tray` | `false` | Enable tray icon for this server |
-| `status_file` | none | Path for JSON status snapshots |
+| Parameter                | Default   | Description                               |
+| ------------------------ | --------- | ----------------------------------------- |
+| `socket`                 | required  | Unix socket path (supports `~` expansion) |
+| `cmd`                    | required  | MCP server command                        |
+| `args`                   | `[]`      | Arguments for command                     |
+| `env`                    | `{}`      | Environment variables for child process   |
+| `max_active_clients`     | `5`       | Concurrent client limit                   |
+| `lazy_start`             | `false`   | Defer child spawn until first request     |
+| `max_request_bytes`      | `1048576` | Max request size (1 MiB)                  |
+| `request_timeout_ms`     | `30000`   | Request timeout (30s)                     |
+| `restart_backoff_ms`     | `1000`    | Initial restart delay (1s)                |
+| `restart_backoff_max_ms` | `30000`   | Max restart delay (30s)                   |
+| `max_restarts`           | `5`       | Restart limit (0 = unlimited)             |
+| `tray`                   | `false`   | Enable tray icon for this server          |
+| `status_file`            | none      | Path for JSON status snapshots            |
 
 ### Client Configuration (Claude Desktop, etc.)
 
@@ -147,9 +163,11 @@ MCP hosts expecting STDIO communication connect through `rust-mux-proxy`:
 ```
 ./target/release/rust-mux --config ~/.codex/mcp.json --service general-memory
 ```
+
 - CLI flags still override config (e.g. `--socket`, `--cmd`, `--tray`).
 
 ### Resolution order & defaults
+
 - `socket` / `cmd`: required (either CLI or config). `--service` is required when `--config` is provided.
 - `args`: CLI `--` tail wins, otherwise config, otherwise empty.
 - `max_active_clients`: CLI default 5 unless overridden by config entry.
@@ -163,32 +181,37 @@ MCP hosts expecting STDIO communication connect through `rust-mux-proxy`:
 - `status_file`: optional; accepts `~` and absolute/relative paths.
 
 ### Interactive wizard (TUI)
+
 - Launch a guided editor (ratatui) to build/update your mux config:
+
 ```
 rust-mux wizard --config ~/.codex/mcp-mux.toml --service general-memory
 ```
+
 - Controls: `↑/↓` move, `Enter` edit field, `Space` toggle tray, `s` save, `q` quit. Saves JSON/YAML/TOML based on the extension; creates a `.bak` before overwriting.
 - `--dry-run` runs the wizard without writing files.
 - `--import-config <path>` (repeatable) imports a workspace-local or otherwise non-default MCP config file (JSON or TOML). The wizard auto-detects the schema (`mcpServers`/`servers` for JSON, `[mcp_servers.*]` for TOML).
 
 #### Step 3 — confirm dialog actions
 
-| Action          | What it does |
-|-----------------|--------------|
-| `SAFE GEN`      | Writes `~/.config/mux/{config.toml,mcp.json,mcp.toml}`. `config.toml` is the daemon truth (original upstream commands), `mcp.json`/`mcp.toml` are client-facing snippets where every server runs `rust-mux-proxy --socket <path>`. Never modifies any existing client config. Prints per-client setup commands. |
-| `MUX ONLY`      | Writes the legacy mux config to whichever path you passed via `--config`. |
-| `CLIPBOARD`     | Copies the mux TOML to the macOS clipboard (`pbcopy`). |
-| `[DANGER] auto` | Backup-first preview-first rewrite of *existing* MCP server blocks in known client configs to use `rust-mux-proxy`. Wizard leaves the alternate screen, prints a full preview (planned changes per file, skipped sources with reasons), and refuses to mutate anything until the user types `CONFIRM`. Each modified file gets a timestamped `<file>.<unix_seconds>.bak` next to it; rollback commands are printed at the end. Files that fail to parse are *never* modified. |
+| Action          | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SAFE GEN`      | Writes `~/.config/mux/{config.toml,mcp.json,mcp.toml}`. `config.toml` is the daemon truth (original upstream commands), `mcp.json`/`mcp.toml` are client-facing snippets where every server runs `rust-mux-proxy --socket <path>`. Never modifies any existing client config. Prints per-client setup commands.                                                                                                                                                               |
+| `MUX ONLY`      | Writes the legacy mux config to whichever path you passed via `--config`.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `CLIPBOARD`     | Copies the mux TOML to the macOS clipboard (`pbcopy`).                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `[DANGER] auto` | Backup-first preview-first rewrite of _existing_ MCP server blocks in known client configs to use `rust-mux-proxy`. Wizard leaves the alternate screen, prints a full preview (planned changes per file, skipped sources with reasons), and refuses to mutate anything until the user types `CONFIRM`. Each modified file gets a timestamped `<file>.<unix_seconds>.bak` next to it; rollback commands are printed at the end. Files that fail to parse are _never_ modified. |
 
 The `[DANGER]` flow understands real-world client realities:
+
 - **Claude Code** & **Claude Desktop** are eligible (JSON `mcpServers` schema, surgical update keeps unrelated keys).
 - **Codex** is eligible (TOML `[mcp_servers.<name>]` schema).
 - **Junie** is eligible (`~/.junie/mcp/mcp.json` plus generic `~/.agents/mcp.json` / `~/.ai/mcp.json`).
-- **Gemini** is by default *ineligible* — there's no observed strict-config flag, so the wizard prefers generated `gemini mcp add ...` commands in the safe path. You can still aim a `--import-config` at a Gemini settings file for inspection.
+- **Gemini** is by default _ineligible_ — there's no observed strict-config flag, so the wizard prefers generated `gemini mcp add ...` commands in the safe path. You can still aim a `--import-config` at a Gemini settings file for inspection.
 
 #### Per-client guidance the safe path prints
 
 After `SAFE GEN`, run the printed commands per client. Quick reference:
+
 - Claude Code: `claude --strict-mcp-config --mcp-config "$HOME/.config/mux/mcp.json"`
 - Claude Desktop: merge the `mcpServers` block from `~/.config/mux/mcp.json` into `~/Library/Application Support/Claude/claude_desktop_config.json` (no strict-config CLI flag in this variant).
 - Codex CLI: merge the `[mcp_servers]` block from `~/.config/mux/mcp.toml` into `~/.codex/config.toml`, or run `codex mcp add ...` per server. (`codex --config k=v` is a key-value override, not a config-file flag — the wizard will not invent one.)
@@ -198,51 +221,68 @@ After `SAFE GEN`, run the printed commands per client. Quick reference:
 See `docs/WIZARD.md` for the full guided walk-through, conflict handling, and rollback procedure.
 
 ### Dependency notes
+
 - `ratatui` + `crossterm` power the TUI wizard; both are pure-Rust and optional (build with `--no-default-features` to skip).
 - `tempfile` is dev-only for isolated FS fixtures in tests.
 
 ### Scan and rewire host configs
+
 - Detect MCP hosts (Codex, Cursor/VSCode, Claude, JetBrains paths) and build a mux manifest + host snippets that point to the bundled proxy:
+
 ```
 rust-mux scan --manifest ~/.codex/mcp-mux.toml --snippet ~/.codex/mcp-mux
 ```
+
 #### `scan` – Discover and generate configs
+
 ```
 rust-mux rewire --host codex --socket-dir ~/.rmcp-servers/rust-mux/sockets
 ```
+
 - Snippets use the installed `rust-mux-proxy` binary: `command = "rust-mux-proxy"; args = ["--socket", "<service.sock>"]`.
 - Check whether a host is already pointed at the mux proxy:
+
 ```
 rust-mux status --host codex --proxy-cmd rust-mux-proxy
 ```
 
 ### Health check
+
 - Verify that config resolves and the mux socket is reachable:
+
 ```
 rust-mux health --socket /tmp/mcp-memory.sock --cmd npx -- @modelcontextprotocol/server-memory
 ```
+
 - With a config file:
+
 ```
 rust-mux health --config ~/.codex/mcp.json --service general-memory
 ```
 
 ## Tray status (optional)
+
 - Run with `--tray` to spawn a small status icon. The drawer lists service name, server state, connected/active clients, pending requests, initialize cache state, and restart count/reason.
 - Click “Quit mux” in the tray menu to stop the daemon (propagates shutdown to the child and cleans the socket).
 - To feed your own UI/monitor, write status snapshots to JSON: `rust-mux --status-file ~/.rmcp_servers/rust_mux/status.json ...`. The file is updated on every state change.
+
 ```
 
 ### Proxy config for MCP hosts
 Use the bundled proxy instead of `socat`:
 ```
+
 rust-mux-proxy --socket /tmp/mcp-memory.sock
+
 ```
 Do this per service (memory, brave-search, etc.) with distinct sockets and mux instances.
 
 ### launchd (macOS) example
 A template lives at `tools/launchd/rust-mux.sample.plist`. Copy to `~/Library/LaunchAgents/`, replace paths/user, then:
 ```
+
 launchctl load -w ~/Library/LaunchAgents/rust-mux.general-memory.plist
+
 ```
 Label should be unique per service; logs go to the paths defined in the plist.
 
@@ -262,9 +302,11 @@ Label should be unique per service; logs go to the paths defined in the plist.
 
 ## Tests and coverage
 ```
+
 cargo test
 cargo clippy --all-targets --all-features
 cargo tarpaulin --all-targets --timeout 120
+
 ```
 Current unit tests cover ID rewriting, initialize caching, and reset fan-out. Integration tests with a fake server can be added to raise coverage.
 
@@ -273,3 +315,4 @@ Current unit tests cover ID rewriting, initialize caching, and reset fan-out. In
 - Consider persistent initialize params after child restart (auto re-init).
 - Add configurable child restart backoff and max retries.
 - Expand host detection/rewire coverage and add automated host-side validation.
+```
