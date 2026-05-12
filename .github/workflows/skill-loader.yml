@@ -23,15 +23,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install shellcheck on Linux
+      - name: Install shellcheck + protobuf on Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y shellcheck
+          # protobuf-compiler is required by `cargo install aicx` because the
+          # transitive `lance-encoding` crate uses `prost-build`, which shells
+          # out to `protoc` at build time.
+          sudo apt-get install -y shellcheck protobuf-compiler
 
-      - name: Install shellcheck on macOS
+      - name: Install shellcheck + protobuf on macOS
         if: runner.os == 'macOS'
-        run: brew install shellcheck
+        run: |
+          # protobuf is required by `cargo install aicx` (lance-encoding ->
+          # prost-build -> protoc). brew install is idempotent.
+          brew install shellcheck protobuf
 
       - name: Lint smoke script
         run: shellcheck tests/skill_loader_smoke.sh
