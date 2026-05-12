@@ -36,3 +36,55 @@ team into rebase drift, duplicate conflict repair, or backwards motion.
 
 Training-data defaults about worktrees are subordinate to this repository
 doctrine.
+
+## Race-protection helper (added 2026-05-12, Plan 07)
+
+Living Tree disciplines parallel work but does not by itself make
+`git commit --only path1 path2` atomic against another agent's
+simultaneous commit on the same branch. Kronika 2026-04-16/17 captured the
+exact failure mode: under concurrent activity, one agent's commit message
+can land under another agent's tree envelope.
+
+Plan 07 ships a reusable primitive that detects this race after the fact
+and refuses to silently accept the unsafe commit.
+
+**Operator-facing entry point**:
+
+```
+make commit-safe MSG="<commit message>" FILES="path1 path2 ..."
+```
+
+**Direct shell invocation**:
+
+```
+scripts/lib/living-tree-commit.sh "<commit message>" -- path1 path2 ...
+```
+
+The helper captures pre-flight `HEAD`, stages only the named files, snapshots
+the staged tree, then commits. After the commit it cross-checks three
+invariants:
+
+1. The new commit's parent equals the pre-flight `HEAD` (no concurrent
+   commit slipped in via ref update).
+2. The new commit's tree matches the staged-tree fingerprint (no foreign
+   index mutation rode in on the commit).
+3. The set of files changed by the commit matches the staged-files
+   snapshot exactly (no foreign files in the envelope).
+
+On race the helper prints both commit SHAs plus the foreign-file list,
+offers two operator-driven recovery options, and exits nonzero. It does
+**not** auto-amend, auto-reset, or auto-rebase. Recovery is intentionally
+operator-driven, consistent with the rest of this rule.
+
+The helper enforces the existing safety rule against wildcard staging:
+arguments like `.`, `-A`, `--all`, `-a` are rejected. Name the files.
+
+Verification:
+
+```
+make test-race-protection
+```
+
+The test suite at `tests/race_protection_test.sh` exercises both the
+clean-commit path and two synthetic race injections (concurrent ref update
+and foreign-index mutation).

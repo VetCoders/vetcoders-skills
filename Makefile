@@ -10,7 +10,7 @@ SOURCE   := $(CURDIR)
 BRANCH   ?= main
 VERSION_FILE := VERSION
 
-.PHONY: help vibecrafted gui-install wizard wizard-dev check test install skills helpers setup-dev dry-run doctor list update uninstall restore migrate migrate-dry init-hooks bundle bundle-check foundations foundations-check semgrep version version-show version-bump bump-patch bump-minor bump-major iterm-plugin iterm-plugin-refresh iterm-plugin-show iterm-plugin-uninstall demo demo-full
+.PHONY: help vibecrafted gui-install wizard wizard-dev check test test-skills install skills helpers setup-dev dry-run doctor list update uninstall restore migrate migrate-dry init-hooks bundle bundle-check foundations foundations-check semgrep version version-show version-bump bump-patch bump-minor bump-major iterm-plugin iterm-plugin-refresh iterm-plugin-show iterm-plugin-uninstall demo demo-full commit-safe test-race-protection
 
 help:
 	@printf "\n"
@@ -35,7 +35,10 @@ help:
 	@printf "  \033[32m◇\033[0m  make bundle        \033[2mRefresh marketplace plugin bundle\033[0m\n"
 	@printf "  \033[32m◇\033[0m  make bundle-check  \033[2mFail if the committed marketplace bundle drifted from repo truth\033[0m\n"
 	@printf "  \033[32m✓\033[0m  make test          \033[2mRun installer + marketplace pytest gates\033[0m\n"
+	@printf "  \033[32m✓\033[0m  make test-skills   \033[2mRun skill-loader integration smoke (frontmatter + helpers + doctor)\033[0m\n"
+	@printf "  \033[32m✓\033[0m  make test-race-protection \033[2mVerify Living Tree commit race detection helper\033[0m\n"
 	@printf "  \033[32m✓\033[0m  make check         \033[2mRun basic linters on shell scripts\033[0m\n"
+	@printf "  \033[32m◆\033[0m  make commit-safe MSG=\"...\" FILES=\"...\" \033[2mRace-protected commit under concurrent agent activity\033[0m\n"
 	@printf "  \033[32m◇\033[0m  make version-show  \033[2mShow VERSION and release tag state\033[0m\n"
 	@printf "  \033[32m↟\033[0m  make version-bump VERSION=X \033[2mBump VERSION; X={patch|minor|major|x.y.z}\033[0m\n"
 	@printf "\n"
@@ -195,6 +198,9 @@ test:
 		PYTHONPATH="$(SOURCE)" $(PYTHON) -m pytest tests/tui -q; \
 	fi
 
+test-skills:
+	@bash tests/skill_loader_smoke.sh
+
 update:
 	@if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
 		printf "Git repo detected — pulling origin/$(BRANCH)...\n"; \
@@ -255,3 +261,26 @@ init-hooks:
 	else \
 		echo "Not a git repo — skipping hooks."; \
 	fi
+
+# -----------------------------------------------------------------------------
+# Living Tree race protection (Plan 07 — kronika 2026-04-16/17 incident learning)
+#
+# `make commit-safe MSG="..." FILES="path1 path2"` wraps
+# scripts/lib/living-tree-commit.sh: stages the named files, snapshots the
+# index, commits, and verifies no concurrent agent commit interleaved
+# between stage and commit. Exits nonzero on detected race.
+# -----------------------------------------------------------------------------
+
+commit-safe:
+	@if [ -z "$(MSG)" ] || [ -z "$(FILES)" ]; then \
+		echo "usage: make commit-safe MSG=\"<commit message>\" FILES=\"path1 path2 ...\"" >&2; \
+		echo "" >&2; \
+		echo "Race-protected commit helper for Living Tree workflow." >&2; \
+		echo "Detects HEAD shift, staged-tree mismatch, and foreign-file" >&2; \
+		echo "inclusion under concurrent agent activity." >&2; \
+		exit 1; \
+	fi
+	@bash scripts/lib/living-tree-commit.sh "$(MSG)" -- $(FILES)
+
+test-race-protection:
+	@bash tests/race_protection_test.sh

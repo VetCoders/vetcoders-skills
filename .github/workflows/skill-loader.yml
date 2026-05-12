@@ -1,0 +1,55 @@
+name: Skill Loader Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "release/*"
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "release/*"
+
+jobs:
+  skill-loader:
+    name: skill-loader (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Install shellcheck on macOS
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+
+      - name: Lint smoke script
+        run: shellcheck tests/skill_loader_smoke.sh
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install vibecrafted (non-interactive)
+        run: make install
+
+      - name: Run skill-loader smoke
+        run: make test-skills
+
+      - name: Verify negative fixture is caught
+        run: |
+          if bash tests/skill_loader_smoke.sh --negative-fixture-only; then
+            echo "Negative fixture correctly rejected by smoke."
+          else
+            echo "Negative-fixture-only mode failed unexpectedly." >&2
+            exit 1
+          fi
