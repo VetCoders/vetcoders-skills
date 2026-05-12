@@ -62,7 +62,12 @@ jobs:
       - name: Install make + python3 (already present, but be explicit)
         run: |
           set -euo pipefail
-          sudo apt-get install -y make python3 python3-venv
+          # protobuf-compiler is required by `cargo install aicx` because the
+          # transitive `lance-encoding` crate uses `prost-build`, which shells
+          # out to `protoc` at build time. Without it the install fails with
+          # "Could not find `protoc`". apt-get update already ran in the
+          # lint step above for this job.
+          sudo apt-get install -y make python3 python3-venv protobuf-compiler
 
       - name: Run make install (non-interactive)
         run: make install
@@ -102,12 +107,16 @@ jobs:
           apt-get update
           # Match the pre-flight: tar + make + python3 + curl + git + ca-certs.
           # bash + coreutils are already present in debian-slim.
+          # protobuf-compiler is required by `cargo install aicx` because the
+          # transitive `lance-encoding` crate uses `prost-build`, which shells
+          # out to `protoc` at build time.
           apt-get install -y --no-install-recommends \
             bash \
             ca-certificates \
             curl \
             git \
             make \
+            protobuf-compiler \
             python3 \
             python3-venv \
             shellcheck \
