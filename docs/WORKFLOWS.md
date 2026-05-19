@@ -84,9 +84,9 @@ flowchart TD
   `$artifact_root/marbles/`.
 - `make vibecrafted` and `make wizard` are installer entry points, not skill
   execution paths; they exist to get the command deck and wrappers onto the machine.
-- `vibecrafted implement` is the default autonomous delivery command. The
-  `justdo` command and `vc-justdo` helper remain aliases for installed
-  agents and old prompts, not the official front face.
+- `vibecrafted implement` is the canonical autonomous delivery command. The
+  `justdo` command and `vc-justdo` helper remain aliases for installed agents
+  and old prompts, not the official front face.
 - All workflows run in the operator's current checkout and current branch.
   Git worktrees are forbidden unless the operator explicitly asks for a
   worktree; "parallel", "isolate", or "clean branch" wording is not enough.
