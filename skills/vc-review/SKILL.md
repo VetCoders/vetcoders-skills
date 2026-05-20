@@ -1,253 +1,286 @@
 ---
 name: vc-review
-version: 1.0.0
+version: 2.0.0
 description: >
-  Bounded code review pipeline: review a PR, branch diff, commit range, or
-  generated artifact pack, then produce findings-first output with concrete
-  evidence. Use when the user asks to "review PR", "analyze branch", "run
-  prview", "sprawdź PR", "zrób review", "audit PR", "daj findings", "zbadaj
-  branch", "artifact pack", "PR quality check", "merge gate", "findings-max",
-  "deep review", or needs structured diff artifacts with line-level analysis
-  for AI review pipelines. Do not use this as a synonym for post-implementation
-  direction audit; that is `vc-followup`.
+  READ-ONLY bounded code review. Generates structured artifacts with
+  prview-rs, then runs findings-max analysis with falsification-first
+  discipline. Every finding carries an explicit evidence grade
+  (STRONG / MEDIUM / WEAK / NONE) and either passes or fails an
+  adversarial pass. Stage-aware verdicts prevent mid-stage PRs from
+  being judged as fully-staged. Per-implementation perception step
+  in the pipeline; for per-plan post-marbles falsification use
+  `vc-audit` instead; for trajectory direction checking use
+  `vc-followup`. Trigger phrases: "review PR", "analyze branch",
+  "run prview", "sprawdź PR", "zrób review", "daj findings",
+  "zbadaj branch", "artifact pack", "PR quality check", "merge gate",
+  "findings-max", "deep review".
+default: vc-review
+aliases:
+  - vc-pr
+compatibility:
+  tools:
+    - Skill
+    - TaskCreate
+    - TaskUpdate
+    - Bash
+    - Read
+    - Write
+requires:
+  - vc-init
+  - loctree
+  - prview
 ---
 
-# vc-review — Bounded Code Review (Generate + Audit)
+# vc-review — READ-ONLY Bounded Code Review
 
-Two-phase skill: **Phase 1** generates structured artifacts with `prview-rs`, **Phase 2** squeezes maximum findings from them. Output: P-leveled findings with evidence + before-merge TODO checklist.
+> The per-implementation perception charter. Where `vc-audit` says
+> **"falsify the spec claim"** and `vc-followup` says **"is the
+> trajectory healthy?"**, this one says **"findings-max on a bounded
+> diff, every claim defaults to UNVERIFIED, the reviewer never
+> touches the code"**.
 
-Use `vc-followup` instead when the target is not a bounded diff/artifact and the real question is whether the implementation direction is healthy.
-
-- Binary: `prview` (resolve via `command -v prview`; do not assume cargo path)
-- Source: `https://github.com/VetCoders/prview-rs`
-- Author: Monika (@m-szymanska) — VetCoders
+---
 
 ## Operator Entry
 
 ### Living Tree / Worktree Rule
 
-This workflow runs in the operator's current checkout and current branch. Do not create, switch to, or move execution into a git worktree unless the operator explicitly asks for a worktree in this prompt. Generic words like "isolate", "parallel", or "clean branch" are not enough. Re-read files before editing, adapt to concurrent changes, and report a substrate failure if the current tree is too poisoned to continue safely.
+Runs in the operator's current checkout and current branch. Do not
+move into a worktree unless explicitly asked. Re-read files before
+judging final state. See [Living Tree Rule](../LIVING_TREE_RULE.md).
 
-See [Living Tree Rule](../LIVING_TREE_RULE.md).
+### Canonical Orientation Gate
 
-## Canonical Orientation Gate
+Before review, consume fresh `vc-init` evidence for the repo. If
+absent, run `vc-init` first. Use `Loctree:loctree` (repo-view, focus,
+slice, impact, find, follow) before grep / docs / memory claims.
+Loctree-side questions (importer graphs, blast radius, dead code,
+symbol locations) bypassed via grep = process failure.
 
-Before this workflow performs repo-specific analysis, planning, implementation, review, release, or delegation, it MUST run or consume the `vc-init` procedure for the assigned repo. If fresh `vc-init` evidence is absent, perform the init pass first and treat workflow-specific work as blocked until repo truth exists.
-
-`Loctree:loctree` is the default structural perception skill for that pass. Use Loctree before grep or docs-driven claims to produce or refresh the Code-Derived Application Map: repo-view, focus, slice, impact, find, and follow as relevant. Search for existing symbols and contracts before creating new ones; run impact before delete or major refactor; run slice before editing.
-
-The point is to find the hooks: load-bearing hubs, twins, dead code, drift, runtime entrypoints, and blast-radius traps. If the task is explicitly non-repo or no-code, state the no-repo exception in the report. Otherwise, missing `vc-init`/Loctree evidence is a process failure.
-
-Enter the framework via `vibecrafted start` (or `vc-start`). Then launch through the command deck — never raw `skills/.../*.sh` paths:
+Standard launcher:
 
 ```bash
+vibecrafted start
 vibecrafted review claude --prompt 'Review PR #4'
-vc-review codex --prompt 'Deep review of release/v1.2.1 branch against main'
+vc-review codex --prompt 'Deep review of release/v1.2.1 vs main'
 vibecrafted review codex --prompt 'Review HEAD~10..HEAD'
 vibecrafted review gemini --file /path/to/pr-artifacts-pack.md
 ```
 
-`vc-review` must have a bounded target: a PR, branch diff, commit range, or generated artifact pack. Prefer `--pr` or other review-specific inputs.
+`vc-review` needs a **bounded target**: PR, branch diff, commit range,
+or generated artifact pack. Prefer `--pr` or other review-specific
+inputs.
 
 ---
 
-## Phase 1 — Generate Artifacts
+## Purpose
+
+Use this skill when a bounded diff (PR, branch, commit range, artifact
+pack) needs evidence-graded findings before merge. Output: P-leveled
+findings with evidence grade + Before-Merge TODO checklist.
+
+This skill **never modifies code**. It produces a verdict + a findings
+list — nothing else. Code modification belongs downstream in
+`vc-marbles` (over-write) and `vc-polarize` (decisive cut).
+
+---
+
+## When To Use It
+
+Use `vc-review` when:
+
+- a PR / branch / commit-range needs gating before merge
+- prview artifacts need findings-max extraction
+- a multi-commit PR needs commit-progression analysis
+- the target is **bounded diff**, not "the whole repo"
+
+Do **not** use this skill when:
+
+- the target is a multi-task plan claiming completion — that's `vc-audit`
+- the question is "is the implementation direction healthy?" — that's
+  `vc-followup`
+- the operator wants gaps fixed during the pass — that's `vc-marbles`
+  (review is READ-ONLY)
+
+---
+
+## Pipeline Position
+
+`vc-review` is the **per-implementation perception** step:
+
+```
+... → implement (WRITE) → followup (READ) → [REVIEW: READ-ONLY] → marbles (WRITE) → audit (READ) → ...
+```
+
+READ-ONLY: produces verdict + findings + report, never modifies code.
+
+---
+
+## Default Stance: Falsification
+
+Default verdict for every spec-claim the diff makes is **UNVERIFIED**.
+PR descriptions, commit messages, "fixes #123" markers, and prior agent
+reports are _claims_, not evidence. `vc-review` converts those claims
+to evidence by inspecting code + tests.
+
+### Hard Non-Trust Rules
+
+You MUST NOT trust PR description bullets, commit messages naming the
+fix, `// done` / `# implemented` inline comments, prior `vc-followup`
+or `vc-review` reports, frontmatter status on linked task files,
+AICX / kronika / memory slices, or "fixes #123" / "closes #456"
+annotations — unless **independently confirmed in current code/tests**.
+
+### Evidence Taxonomy
+
+Every finding carries an explicit evidence grade:
+
+| Grade  | Criteria                                                                         |
+| ------ | -------------------------------------------------------------------------------- |
+| STRONG | Code in diff + test asserting exact behavior + negative check (old path removed) |
+| MEDIUM | Code in diff + weak/general test, or type-system-enforced                        |
+| WEAK   | Code in diff only, no test, no negative check                                    |
+| NONE   | No direct evidence — finding tagged `[VERIFY]`, severity capped at P3            |
+
+A "ready to merge" recommendation is only valid if every P0/P1
+candidate finding scored STRONG or MEDIUM. WEAK on a P0 candidate
+means the review itself is UNVERIFIED on that axis.
+
+### Stage-Aware Verdicts
+
+Most PRs are mid-stage. A PR landing Stage 1 of 3 must NOT be marked
+P1-blocking because Stage 2 is queued. Tag each finding explicitly:
+
+- `[STAGE-OK-DEFERRED]` — gap is explicitly out of scope for this PR
+- `[STAGE-PARTIAL]` — landed stage has a real gap inside its scope
+- `[STAGE-DRIFT]` — PR mixes deferred and landed scope without saying so
+
+Stage tags ride alongside P-level: `[P2][STAGE-OK-DEFERRED]` is a
+hygiene note, not a merge blocker.
+
+### P-Level Scale
+
+| P-level | Definition                                           | Examples                                              |
+| ------- | ---------------------------------------------------- | ----------------------------------------------------- |
+| **P0**  | Blocker merge / security / data loss / failing gate  | Failing tsc, leaked credentials, missing artifacts    |
+| **P1**  | High regression risk in core flow, breaking contract | Breaking API, large untested changes, critical cycles |
+| **P2**  | Medium: edge cases, a11y, telemetry, partial tests   | Missing i18n keys, hardcoded URLs, no error handling  |
+| **P3**  | Low risk / hygiene / minor drift                     | Empty doc titles, test setup duplication, naming      |
+
+---
+
+## Operating Model
+
+Two phases. Each detailed in companion files.
+
+### Phase 1 — Generate Artifacts ([PRVIEW.md](PRVIEW.md))
 
 Most common dispatches:
 
 ```bash
-prview --pr <NUMBER>                                    # local branch vs develop/main
-prview -R --remote-only <branch> <base>                 # remote branch (no checkout)
-prview --pr <NUMBER> --with-tests --with-lint           # GitHub PR by number
-prview --deep                                           # all gates
+prview --pr <NUMBER>                          # local branch vs develop/main
+prview -R --remote-only <branch> <base>       # remote branch (no checkout)
+prview --pr <NUMBER> --with-tests --with-lint # GitHub PR by number
+prview --deep                                 # all gates
 ```
 
-Default for vc-review: **do not use `--quick`**. Use `--quick` only for explicit fast triage, artifact refresh under time pressure, or when heavy gates are impossible.
+Default for vc-review: **do not use `--quick`**. Use `--quick` only
+for explicit fast triage or when heavy gates are impossible.
 
-Add `--gh-repo owner/repo` if origin is ambiguous.
+Add `--gh-repo owner/repo` if origin is ambiguous. Full flag reference,
+mode table, profile detection, policy system, and tooling-special-cases
+in [`PRVIEW.md`](PRVIEW.md).
 
-> See [references/artifact-pack-layout.md](references/artifact-pack-layout.md) for full flag reference, mode table, profile detection, policy system, and tooling-special-cases.
+### Phase 2 — Analyze Artifacts ([FINDINGS.md](FINDINGS.md))
+
+Findings-max philosophy. Reading order, mandatory pattern scans,
+adversarial pass, minimum coverage requirements, and output format
+all in [`FINDINGS.md`](FINDINGS.md).
 
 ---
 
-## Artifact Pack Quick Map
+## Output Contract
 
-Output: `$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/<timestamp>/` (newest = default; symlink `latest`).
+Three mandatory sections, in this order:
 
-Top-level structure:
+1. **Findings (P0/P1/P2/P3 with evidence grade)** — see
+   [`FINDINGS.md`](FINDINGS.md) for full template
+2. **Before-Merge TODO** — markdown checkboxes cross-referencing
+   finding IDs (`P1-01`, `P1-02`, ...) with verification commands
+3. **Self-Attack Pass + Model Check** — attack every STRONG verdict,
+   downgrade if a falsifier exists; emit `model_confidence: high |
+medium | low`. If confidence ≠ high, cannot recommend "merge as-is"
+   — only "merge after operator verifies X"
 
-- `report.json` — **default structured report** (parse first)
-- `dashboard.html` — interactive HTML
-- `AI_INDEX.md` — artifact map + reading order
-- `00_summary/` — MERGE_GATE, RUN, MANIFEST, SANITY, pr-metadata, file-status, commit-list
-- `10_diff/` — `full.patch`, `per-commit-diffs/`, `per-file-diffs/`
-- `20_quality/` — per-gate logs/results, `checks-errors.log`, `coverage-delta.txt`, `BREAKING_CHANGES.md`
-- `30_context/` — `INLINE_FINDINGS.sarif`, `changed-tests.txt`, tooling output
-- `artifacts.zip` — everything zipped
-
-Empty/missing newest dir → finding **P0**.
-
----
-
-## Phase 2 — Analyze Artifacts (Findings-Max)
-
-### Philosophy
-
-Tryb: **Findings-max**. Nie kończ na "kilku punktach". Jeśli widać 25 osobnych problemów, wypisz 25. Lepiej 20 celnych findingów niż 5 ogólników.
-
-Każdy finding MUSI mieć:
-
-- **Dowód**: artefakt + ścieżka (najlepiej 1–2 linie z patcha/logu)
-- **Komentarz**: dlaczego to ważne (1 zdanie) + co grozi
-- **Rekomendacja**: co zrobić / jak zweryfikować
-
-Zasady:
-
-- Jeden punkt = jeden problem (nie łącz tematów).
-- Czego nie da się potwierdzić z artefaktów: oznacz **[VERIFY]**.
-- Rozdzielaj **problem w kodzie** vs **problem narzędzia [TOOLING]**.
-
-### P-Level Scale
-
-| P-level | Definicja                                                          | Przykłady                                                              |
-| ------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| **P0**  | Blocker merge / security / data loss / failing blocking check      | Failing tsc, leaked credentials, missing artifacts                     |
-| **P1**  | Wysoki risk regresji w core flow, niekompatybilne zmiany kontraktu | Breaking API, duże zmiany bez testów, import cycles in critical module |
-| **P2**  | Średni risk: edge-cases, a11y, telemetria, częściowy brak testów   | Missing i18n keys, hardcoded URLs, no error handling on external call  |
-| **P3**  | Niskie ryzyko / higiena / drobne niespójności                      | Empty doc titles, test setup duplication, cosmetic naming              |
+Optional sections (add when they provide value): Executive Summary,
+Architecture Context, Scope / What Changed, Commit Progression, Test
+Coverage Matrix, Security & Privacy Check, QA Plan, Evidence Index.
 
 ---
 
-## Reading Order (Obowiązkowy)
+## Composition with adjacent skills
 
-1. **`AI_INDEX.md`** (if exists) — verify it points to real paths. Lying index → P3 [TOOLING].
-2. **`report.json`** (default) — `meta`, `gate.allow_merge` + `policy_mode` + reasons, `checks[]` (status/log_path/command), `diff.stats` + `diff.files[]` (scale/churn/hotspots), `quality` (breaking/coverage/sarif/heuristics).
-3. **`00_summary/MERGE_GATE.json` + `SANITY.json`** — cross-check with `report.json`. Inconsistency → P2 [TOOLING]. "All checks passed" with WARN/INLINE_FINDINGS = misleading.
-4. **`00_summary/pr-metadata.txt` + `file-status.txt` + `commit-list.txt`** — scope, A/M/D categories, commit progression. Look for branch drift (infra files outside PR scope).
-5. **`30_context/INLINE_FINDINGS.sarif`** — every SARIF result = ready-made finding. Transfer all to findings list.
-6. **`20_quality/*`** — PASS gates: extract warnings from logs (cargo warns, tsc non-errors). WARN/ERROR/FAIL: root cause + recommendation. `checks-errors.log` for high-signal filtered errors. `BREAKING_CHANGES.md`: assess real weight (P?). `coverage-delta.txt`: flag critical "NO_TEST_CHANGE" entries.
-7. **`30_context/changed-tests.txt`** — cross-reference with source changes. Untested source files → finding.
-8. **Diffs (selective)** — `10_diff/per-file-diffs/00-INDEX.txt` for top churn. Per-file patches for hotspots. `10_diff/per-commit-diffs/00-SUMMARY.md` for highest-impact commits.
+`vc-review` composes with — does not replace — these:
 
----
-
-## Mandatory Pattern Scans
-
-Scan per-file patches and `full.patch` for:
-
-**Rust** — `.unwrap()`, `.expect(`, `panic!`, `todo!`, `unsafe`, `dbg!`, `println!`, `#[allow(`
-
-**TypeScript / JavaScript** — `any`, `as unknown as` (double cast), `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `// TODO|FIXME|HACK`, empty `catch {}` without log/rethrow, non-null assertion `!` on uncertain values, `console.log|warn|error` (should use secureLogger in Vista)
-
-**Security / PII** — logging tokens/emails/passwords/personal IDs, new telemetry without privacy review, new endpoints/command handlers without auth checks, hardcoded URLs/keys/secrets
-
-**Data / Performance** — query in loop (N+1), missing batching for bulk ops, large payloads without pagination, unnecessary I/O in hot paths
-
-Each "hit" in the diff = potential finding with evidence.
-
----
-
-## Minimum Coverage Requirements
-
-To prevent laconic reports:
-
-- **All** entries in `INLINE_FINDINGS.sarif`
-- **Top 10** files by churn — read per-file patch
-- **All** files in core risk categories: auth, payments, database, session, security, encryption, middleware
-- **All** critical "NO_TEST_CHANGE" entries from `coverage-delta.txt`
-- **All** entries in `BREAKING_CHANGES.md` with assessed P-level
-- **Per-commit progression** for PRs with >5 commits — identify phases, risky transitions
-
----
-
-## Output Format (Obowiązkowy)
-
-Two mandatory sections, in this order:
-
-### 1) Findings (P0/P1/P2/P3)
-
-```
-- **[P?] <Title>** (optionally: [VERIFY] or [TOOLING])
-  - **Evidence:** `<artifact-path>` + `<file:line>` + short fragment (1-2 lines)
-  - **Comment:** 1 sentence on risk/impact
-  - **Recommendation:** concrete "what to do" / "how to verify"
-  - **Owner:** `author` / `reviewer` / `infra` (optional)
-```
-
-Number for cross-referencing: `P1-01`, `P1-02`, `P2-01`, etc.
-
-### 2) Before-Merge TODO (Markdown Checkboxes)
-
-```markdown
-- [ ] **(P0)** ... (ref: P0-01)
-- [ ] **(P1)** ... (ref: P1-01, P1-02)
-- [ ] **(P2)** ... (ref: P2-01)
-- [ ] **(P3)** ... (ref: P3-01)
-```
-
-Each TODO references finding IDs. Include verification commands in code fences where applicable.
-
-### 3) Optional Sections
-
-Add when they provide value:
-
-- **Executive Summary** (max 8 bullets): gate verdict, top 3 risks, test signal, top hotspots, scope delta
-- **Architecture Context**: diagram or description of affected subsystem
-- **Scope / What Changed**: based on `diff.stats` + top directories + top files
-- **Commit Progression**: phases of work for multi-commit PRs
-- **Test Coverage Matrix**: source → test → new tests count
-- **Security & Privacy Check**: PII in logs, data flows, event filtering
-- **QA Plan**: 5-15 manual + automated test recommendations
-- **Evidence Index**: links to key artifacts used
-
----
-
-## 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Pipeline Integration
-
-As input to `vc-followup`:
-
-```bash
-prview --pr $PR_NUMBER --with-tests --with-lint
-ARTIFACTS="$VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/latest"
-```
-
-Subagent delegation context:
-
-```
-- prview artifacts at: $VIBECRAFTED_ROOT/.prview/pr-artifacts/<branch>/latest/
-- Parse report.json first (default)
-- Read 00_summary/MERGE_GATE.json for quick verdict
-- Read 20_quality/checks-errors.log for error details
-- Read 10_diff/per-file-diffs/ for hotspot patches
-```
-
-JSON pipeline:
-
-```bash
-prview --json --quiet | jq '.checks[] | select(.status == "Failed")'
-```
+- **`vc-init`** — required gate before review.
+- **`vc-audit`** — sibling READ-ONLY role at per-plan scope (not per-diff).
+- **`vc-followup`** — sibling READ-ONLY role at trajectory scope.
+- **`vc-marbles`** — downstream WRITE step that fixes what review finds.
+- **`vc-polarize`** — downstream WRITE step that cuts to one truth.
 
 ---
 
 ## Anti-Patterns
 
-### Tool usage
+Tool usage:
 
 - Using `--quick` as default for PR review (drops test/lint/security signal)
-- Running `--deep` on every PR when `--with-tests --with-lint` is enough (save `--deep` for merge gate / high-risk PRs)
+- Running `--deep` on every PR when `--with-tests --with-lint` suffices
 - Reading `full.patch` entirely for large PRs (use `per-file-diffs/`)
-- Ignoring `report.json` and `MERGE_GATE.json` (parse structured data first)
-- Not using `--update` after amend/force-push (generates duplicate artifact sets)
-- Running without `--no-fetch` on slow networks
+- Ignoring `report.json` / `MERGE_GATE.json` (parse structured first)
+- Not using `--update` after amend/force-push (duplicate artifact sets)
 
-### Analysis
+Analysis:
 
-- Stopping at 5 findings when 25 are visible (findings-max means exhaustive)
-- Findings without evidence (every point needs artifact path + code fragment)
+- Stopping at 5 findings when 25 are visible (findings-max = exhaustive)
+- Findings without evidence grade (STRONG / MEDIUM / WEAK / NONE mandatory)
+- Findings without negative check ("old path removed" must be verified)
 - Mixing separate problems into one finding (one point = one problem)
-- Ignoring tooling issues (tool crash ≠ code issue, but still a finding)
-- Skipping pattern scans (the `.unwrap()` / `any` / PII checklist is mandatory)
-- Not cross-referencing coverage-delta with changed source files
+- Skipping pattern scans (`.unwrap()` / `any` / PII checklist mandatory)
+- Skipping the adversarial pass (Phase 2.5 is mandatory)
+- Skipping self-attack on STRONG verdicts
+- Modifying code during review (READ-ONLY — fixes belong in marbles)
+- Trusting PR description / commits / `// done` without code verification
+- Recommending "merge" while `model_confidence` ≠ `high`
+- Treating mid-stage PRs as fully-staged (use `[STAGE-OK-DEFERRED]`)
+
+---
+
+## Call to Action
+
+Read [`PRVIEW.md`](PRVIEW.md) before your first dispatch — it carries
+the prview flag reference and artifact pack layout. Read
+[`FINDINGS.md`](FINDINGS.md) before your first findings pass — it
+carries the reading order, mandatory pattern scans, adversarial pass,
+and full output template. Then default every claim to UNVERIFIED and
+earn each finding's evidence grade.
+
+---
+
+## Closing Rail
+
+```text
+=======================
+Remember: review mode is permission to refuse a merge, not permission
+to fix the diff. You read prview, you grade evidence, you tag stage,
+you attack your own verdict, you stop. The operator owns the merge
+button.
+(•_•)つ━☆
+=======================
+
+Suchar: Why does a reviewer with WEAK evidence sleep poorly?
+Because the diff still owns the receipt.  (._.)
+```
 
 ---
 

@@ -1,23 +1,43 @@
 ---
 name: vc-followup
-version: 2.1.0
+version: 2.2.0
 description: >
-  Post-implementation follow-up audit skill. Use this when implementation
-  exists and the team needs to evaluate whether the work is heading in the
-  right direction, what gaps remain, what drift was introduced, and what the
-  next highest-leverage move should be. This is not the same as bounded
-  `vc-review`: followup is trajectory-aware, post-implementation, and may
-  inspect code, runtime behavior, UX, docs, or packaging without requiring a
-  single artifact like a PR or commit range as its frame. Trigger phrases:
-  "follow-up check", "followup audit", "czy sa jeszcze luki",
-  "readiness before hands-on", "audit this implementation", "po implementacji",
-  "gaps after agents", "co zostało do zrobienia", "post-implementation review",
+  READ-ONLY post-implementation trajectory check. Evaluates whether
+  the work is heading in the right direction, what gaps remain, what
+  drift was introduced, and what the next highest-leverage move should
+  be. May inspect code, runtime behavior, UX, docs, or packaging
+  without requiring a single artifact like a PR or commit range as its
+  frame. Sibling to `vc-review` (per-implementation diff perception)
+  and `vc-audit` (per-plan spec falsification) in the READ-ONLY
+  perception layer of the pipeline. Trigger phrases: "follow-up check",
+  "followup audit", "czy sa jeszcze luki", "readiness before hands-on",
+  "audit this implementation", "po implementacji", "gaps after agents",
+  "co zostało do zrobienia", "post-implementation review",
   "czy to idzie dobrze", "czy ten kierunek ma sens", "what still feels off".
 compatibility:
   tools: []
 ---
 
-# vc-followup
+# vc-followup — READ-ONLY Trajectory Check
+
+> READ-ONLY perception step. Sibling to `vc-review` (per-diff) and
+> `vc-audit` (per-plan). This one asks **"is the direction healthy?"**
+> across whatever surfaces the operator points at — code, UX, docs,
+> packaging, integration, install path — without a bounded artifact
+> requirement. Produces a report, never modifies code.
+
+## Pipeline Position
+
+`vc-followup` lives in the **trajectory perception** slot:
+
+```
+... → implement (WRITE) → [FOLLOWUP: READ-ONLY] → review (READ) → marbles (WRITE) → ...
+```
+
+Followup answers **"is the trajectory healthy?"**. Review answers
+**"is this diff clean?"**. Audit answers **"did the written spec
+land?"**. All three are READ-ONLY; none of them modify code. Fixes
+belong downstream in `vc-marbles`.
 
 ## Operator Entry
 

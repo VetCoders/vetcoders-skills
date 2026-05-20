@@ -3,7 +3,92 @@
 All notable changes to 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 2.0.0 — 2026-05-20
+
+> Quality-layer reform. The pipeline epistemic rhythm
+> (READ-ONLY perception ↔ WRITE action) is now first-class in the
+> manifest and across every skill. `vc-audit` is added as a new
+> READ-ONLY falsification step. `vc-marbles` is reframed from
+> "truth convergence" to "deliberate over-write whose excess is the
+> point of polarize stripping it back". All edited skills land under
+> the 12k marketplace cap with companion files for detail.
+
+### Added
+
+- **`docs/runtime/MANIFESTO_PL.md` + `MANIFESTO_EN.md`**: new
+  **Pipeline (Sculpting Pattern)** section with the explicit
+  WRITE → READ → WRITE → READ rhythm diagram and the **carve-from-
+  marble** pattern at the centre of the quality cycle. Tooling
+  ontology table grows a **Mode** column (READ / READ-ONLY / WRITE /
+  meta / infra) and splits the **Quality** layer into perception
+  (`vc-followup` + `vc-review`, READ) and falsification (`vc-audit`,
+  READ-ONLY).
+- **`skills/vc-audit/`** (NEW): READ-ONLY plan-vs-code falsification
+  skill. Default verdict UNVERIFIED, PASS earned via code + test +
+  negative check. Eight-phase procedure (Context Receipt → Task
+  Ingestion → Atomic Requirements → Positive + Negative Verification →
+  Adversarial Pass → Stage-Aware Verdict → Per-Task Table → Self-
+  Attack + Model Check). Output contract: `audit_report.md`,
+  `audit_requirements_matrix.jsonl`, `audit_trace.log`. Companions:
+  `PHASES.md`, `DISPATCH.md`. Plugin manifest registered.
+- **Pipeline-position section** added to every reformed skill
+  (`vc-review`, `vc-marbles`, `vc-polarize`, `vc-audit`,
+  `vc-followup`, `vc-dou`) so READ-ONLY vs WRITE membership is
+  explicit at the top of each skill.
+
+### Changed
+
+- **`skills/vc-review/SKILL.md` → version 2.0.0**. Explicit READ-ONLY
+  framing. Default-stance section: every spec-claim defaults to
+  UNVERIFIED until proven by code/tests. Hard non-trust rules: PR
+  descriptions, commit messages, `// done` comments, AICX entries,
+  and `fixes #N` annotations are claims, not evidence. New evidence
+  taxonomy (STRONG / MEDIUM / WEAK / NONE) on every finding. New
+  adversarial pass between pattern scans and output. Stage-aware
+  finding tags (`[STAGE-OK-DEFERRED]`, `[STAGE-PARTIAL]`,
+  `[STAGE-DRIFT]`) prevent mid-stage PRs from being mis-blocked. New
+  self-attack + model check section in output. Heavy detail moved to
+  companion files `PRVIEW.md` (Phase 1 artifact generation) and
+  `FINDINGS.md` (Phase 2 reading order, pattern scans, output
+  template). SKILL.md trimmed from 12.4k to 10.7k.
+- **`skills/vc-marbles/SKILL.md` → version 7.0.0**. Epistemic reframe
+  from "Truth Convergence Rounds" to **"Deliberate Excess (Worker-
+  Blind, Swarm-Wide)"**. Individual worker discipline preserved (one
+  round, one commit, up to 3 targets) — but the swarm-level intent is
+  now explicit: marbles in every crack, deliberate over-application,
+  `vc-polarize` strips back. Pipeline-position diagram added. Worker
+  blindness + reception remembers section condensed. Detail kept in
+  existing `FLOW.md` and `RECEPTION.md` companions. SKILL.md trimmed
+  to 11.8k.
+- **`skills/vc-polarize/SKILL.md` → version 2.0.0**. Explicit
+  framing as the **decisive cut** WRITE step that strips back the
+  marbles excess. Pipeline-position diagram added. Heavy detail
+  (full lifecycle, prism axis scoring criteria, context-corpus
+  retention contract, minimum-gates list, failure-mode playbook)
+  moved to new companion `PROCEDURE.md`. SKILL.md trimmed from 12.8k
+  to 10.0k. Closing rail + suchar + canonical signature added.
+- **`skills/vc-followup/SKILL.md` → version 2.2.0**. Explicit READ-
+  ONLY framing in description and body. New "Pipeline Position"
+  section locates it in the trajectory-perception slot.
+- **`skills/vc-dou/SKILL.md` → version 2.0.0**. Explicit READ-ONLY
+  framing in description and body. New "Pipeline Position" section
+  locates it in the shipping-readiness slot between polarize and
+  hydrate / decorate / release.
+- **Marketplace cap discipline**: every reformed SKILL.md is now
+  under the 12 000-character marketplace cap. Heavy detail lives in
+  companion files at the same level as SKILL.md (no `references/`
+  subdir), matching the `vc-operator` reference pattern.
+
+### Removed
+
+- Earlier "Unreleased" entries from 1.x cycle (Prism → Polarize gate,
+  release-report contract, marketplace plugin stubs) are kept inline
+  below for historical continuity; the 2.0.0 reform is the first
+  named cycle.
+
+---
+
+## Unreleased (legacy 1.x — folded into 2.0.0 release scope)
 
 ### Added
 
