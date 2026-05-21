@@ -11,16 +11,16 @@ artifacts.
 
 Frontmatter shape demo:
 
-```yaml
+```text
 ---
-prompt_id: { { PROMPT_ID } }
-agent: { { AGENT } }
-skill: { { SKILL } }
-wave: { { WAVE } }
-slot: { { SLOT } }
-baseline_branch: { { BASELINE_BRANCH } }
-authored_by: { { AUTHORED_BY } }
-target_repo: { { TARGET_REPO } }
+prompt_id: {{PROMPT_ID}}
+agent: {{AGENT}}
+skill: {{SKILL}}
+wave: {{WAVE}}
+slot: {{SLOT}}
+baseline_branch: {{BASELINE_BRANCH}}
+authored_by: {{AUTHORED_BY}}
+target_repo: {{TARGET_REPO}}
 ---
 ```
 
@@ -30,18 +30,18 @@ target_repo: { { TARGET_REPO } }
 
 ### 1. YAML frontmatter
 
-```yaml
+```text
 ---
-prompt_id: { { PROMPT_ID } }
-agent: { { AGENT } }
-skill: { { SKILL } }
-wave: { { WAVE } }
-slot: { { SLOT } }
-baseline_branch: { { BASELINE_BRANCH } }
-parallel_with: { { PARALLEL_WITH } }
-authored_by: { { AUTHORED_BY } }
-target_repo: { { TARGET_REPO } }
-report_path: { { REPORT_PATH } }
+prompt_id: {{PROMPT_ID}}
+agent: {{AGENT}}
+skill: {{SKILL}}
+wave: {{WAVE}}
+slot: {{SLOT}}
+baseline_branch: {{BASELINE_BRANCH}}
+parallel_with: {{PARALLEL_WITH}}
+authored_by: {{AUTHORED_BY}}
+target_repo: {{TARGET_REPO}}
+report_path: {{REPORT_PATH}}
 ---
 ```
 
