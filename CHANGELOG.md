@@ -13,6 +13,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 > point of polarize stripping it back". All edited skills land under
 > the 12k marketplace cap with companion files for detail.
 
+### vc-operator 2.0.0 reform (2026-05-21)
+
+- **Operator mode shipped as a coherent reform batch**: `skills/vc-operator/RUNNER.md`,
+  `skills/vc-operator/WHY_MATRIX_TABLE.md`,
+  `skills/vc-operator/DISPATCH_TEMPLATE.md`,
+  `skills/vc-operator/FEEDBACK_2026-05-20_claude.md`, and
+  `skills/vc-operator/FEEDBACK_2026-05-20_claude_runtime.md` are the
+  durable operator references instead of transcript-only doctrine.
+- **Wave 5 await/watch rail landed**: `skills/vc-agents/scripts/vibecrafted-await-watch.sh`
+  plus the `spawn_await_watch_pane` hook in
+  `skills/vc-agents/scripts/lib/zellij.sh` give long-running dispatches a
+  visible watch surface.
+- **`skills/vc-operator/SKILL.md` patched from 0.1.0 to 2.0.0** with the
+  runner contract, why-matrix dispatch discipline, feedback intake, and
+  operator-facing closure rails.
+- **Sharp-move recommendations absorbed**: REC-1/2/3/4/6/7/8/9/10/11 are
+  now represented across the operator contract, modes table mandate, dispatch
+  template, runner loop, and feedback files.
+- **17 live runtime pains recorded** in
+  `skills/vc-operator/FEEDBACK_2026-05-20_claude.md` and
+  `skills/vc-operator/FEEDBACK_2026-05-20_claude_runtime.md`, including the
+  REC-10 modes-table requirement and dispatcher/runtime pain catalog that made
+  the reform necessary.
+
 ### Added
 
 - **`docs/runtime/MANIFESTO_PL.md` + `MANIFESTO_EN.md`**: new

@@ -168,6 +168,7 @@ def test_vc_start_launches_operator_entrypoint_layout(tmp_path: Path) -> None:
 def test_helper_exports_vc_skill_wrappers() -> None:
     expected_wrappers = [
         "vc-agents",
+        "vc-audit",
         "vc-decorate",
         "vc-delegate",
         "vc-dou",

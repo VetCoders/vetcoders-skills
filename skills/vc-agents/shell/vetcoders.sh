@@ -2274,6 +2274,10 @@ codex-skill-agents() { _vetcoders_skill_entry codex agents "$@"; }
 claude-skill-agents() { _vetcoders_skill_entry claude agents "$@"; }
 gemini-skill-agents() { _vetcoders_skill_entry gemini agents "$@"; }
 
+codex-skill-audit() { _vetcoders_skill_entry codex audit "$@"; }
+claude-skill-audit() { _vetcoders_skill_entry claude audit "$@"; }
+gemini-skill-audit() { _vetcoders_skill_entry gemini audit "$@"; }
+
 codex-skill-decorate() { _vetcoders_skill_entry codex decorate "$@"; }
 claude-skill-decorate() { _vetcoders_skill_entry claude decorate "$@"; }
 gemini-skill-decorate() { _vetcoders_skill_entry gemini decorate "$@"; }
@@ -2416,6 +2420,7 @@ _vetcoders_skill_wrapper() {
 }
 
 vc-agents() { _vetcoders_skill_wrapper agents "$@"; }
+vc-audit() { _vetcoders_skill_wrapper audit "$@"; }
 vc-decorate() { _vetcoders_skill_wrapper decorate "$@"; }
 vc-delegate() { _vetcoders_skill_wrapper delegate "$@"; }
 vc-dou() { _vetcoders_skill_wrapper dou "$@"; }
@@ -2440,10 +2445,10 @@ vc-help() {
   cat <<'HELP'
 𝚅𝚒𝚋𝚎𝚌𝚛𝚊𝚏𝚝𝚎𝚍. Framework — Skills & Helpers
 
-Pipeline:  scaffold → init → workflow → implement → followup → marbles → dou → decorate → hydrate → release
+Pipeline:  scaffold → init → workflow → implement → followup → marbles → audit → dou → decorate → hydrate → release
 Modes:     partner (shared steering) | ownership (take the wheel)
 Research:  research (triple-agent) | delegate (in-session)
-Quality:   review (bounded diff/PR/commit) | followup (post-implementation direction) | prune
+Quality:   audit (plan falsification) | review (bounded diff/PR/commit) | followup (post-implementation direction) | prune
 Video:     screenscribe (foundation)
 
 Spawn helpers (per agent):
@@ -2453,6 +2458,7 @@ Spawn helpers (per agent):
   <agent>-prompt "text"          Quick one-shot prompt
   <agent>-scaffold                Architecture planning
   <agent>-followup               Post-implementation direction audit
+  <agent>-skill-audit            Plan-vs-code falsification
   <agent>-dou                    Definition of Undone audit
   <agent>-hydrate                Market packaging
   <agent>-marbles                Convergence loop

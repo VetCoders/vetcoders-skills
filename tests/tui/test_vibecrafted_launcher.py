@@ -1047,8 +1047,8 @@ def test_compact_help_teaches_implement_before_alias() -> None:
         text=True,
     )
 
-    assert "Skill inventory (19 live workflows):" in result.stdout
-    assert "marbles · polarize · dou" in result.stdout
+    assert "Skill inventory (20 live workflows):" in result.stdout
+    assert "marbles · audit · polarize · dou" in result.stdout
     assert (
         "For daily tasks, use implement or justdo as convenient aliases."
         in result.stdout
@@ -1079,10 +1079,21 @@ def test_review_and_followup_help_separate_bounded_review_from_direction_audit()
         capture_output=True,
         text=True,
     )
+    audit = subprocess.run(
+        [str(LAUNCHER), "audit", "--help"],
+        check=True,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
 
+    assert "version 1.0.0" in audit.stdout
+    assert "READ-ONLY falsification of a completed plan" in audit.stdout
     assert "Bounded PR, branch, commit-range, or artifact-pack review" in review.stdout
+    assert "version 2.0.0" in review.stdout
     assert 'vibecrafted review codex --prompt "Review PR #14"' in review.stdout
     assert "Post-implementation direction audit" in followup.stdout
+    assert "version 2.2.0" in followup.stdout
     assert (
         'vibecrafted followup codex --prompt "Audit post-implementation direction"'
         in followup.stdout
@@ -1093,6 +1104,7 @@ def test_review_and_followup_help_separate_bounded_review_from_direction_audit()
     ("wrapper_name", "skill", "description"),
     [
         ("vc-followup", "followup", "Post-implementation direction audit"),
+        ("vc-audit", "audit", "READ-ONLY falsification of a completed plan"),
         ("vc-intents", "intents", "Plan-to-runtime truth audit"),
         (
             "vc-ownership",

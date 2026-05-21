@@ -32,8 +32,8 @@ def test_compact_help_uses_release_engine_contract(tmp_path: Path) -> None:
 
     assert "Release engine for AI-developed software." in output
     assert "Install locally. Work from evidence." in output
-    assert "Skill inventory (19 live workflows):" in output
-    assert "marbles · polarize · dou" in output
+    assert "Skill inventory (20 live workflows):" in output
+    assert "marbles · audit · polarize · dou" in output
     assert "For daily tasks, use implement or justdo as convenient aliases." in output
     assert "compatibility alias" not in output
     assert "leg" + "acy alias" not in output
@@ -72,10 +72,15 @@ def test_implement_help_is_canonical_and_names_alias(tmp_path: Path) -> None:
 def test_review_and_followup_help_stay_semantically_separate(tmp_path: Path) -> None:
     review = _run_launcher_help(tmp_path, "review", "--help")
     followup = _run_launcher_help(tmp_path, "followup", "--help")
+    audit = _run_launcher_help(tmp_path, "audit", "--help")
 
+    assert "version 1.0.0" in audit
+    assert "READ-ONLY falsification of a completed plan" in audit
     assert "Bounded PR, branch, commit-range, or artifact-pack review" in review
+    assert "version 2.0.0" in review
     assert 'vibecrafted review codex --prompt "Review PR #14"' in review
     assert "Post-implementation direction audit" in followup
+    assert "version 2.2.0" in followup
     assert (
         'vibecrafted followup codex --prompt "Audit post-implementation direction"'
         in followup
