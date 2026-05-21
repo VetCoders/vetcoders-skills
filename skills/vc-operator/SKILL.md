@@ -204,8 +204,8 @@ themselves keep the rail because they are worker-facing reference material.
 - **`vc-init`** — required gate. Without fresh init evidence, fleet work is blind.
 - **`vc-scaffold`** — owns plan authoring. No plan → escalate to `vc-scaffold` first.
 - **`vc-ownership`** — each worker you dispatch is in ownership mode for their slice; you are in operator mode for the chain.
-- **`vc-marbles`** — when a wave keeps failing on truth-drift, escalate the failing slice into marbles, not another implementation pass.
-- **`vc-partner`** — partner mode for architecture triage **before** the plan; operator mode for execution **after** it. Don't blur them.
+- **`vc-marbles`** — when a wave fails on truth-drift, escalate the slice into marbles, not another implementation pass.
+- **`vc-partner`** — partner mode for triage **before** the plan; operator mode for execution **after** it. Don't blur them.
 
 ---
 
